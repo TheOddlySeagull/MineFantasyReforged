@@ -7,7 +7,6 @@ import com.google.gson.JsonParseException;
 import minefantasy.mfr.MineFantasyReforged;
 import minefantasy.mfr.config.ConfigCrafting;
 import minefantasy.mfr.constants.Constants;
-import minefantasy.mfr.mixin.InvokerLoadConstants;
 import minefantasy.mfr.recipe.factories.SpecialRecipeFactory;
 import minefantasy.mfr.recipe.types.SpecialRecipeType;
 import minefantasy.mfr.util.FileUtils;
@@ -28,14 +27,13 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 public class CraftingManagerSpecial {
 
-	public static final String RECIPE_FOLDER_PATH = "/recipes_mfr/special_recipes";
+	public static final String RECIPE_FOLDER_PATH = "/recipes_mfr/special_recipes/";
 
 	public static final String CONFIG_RECIPE_DIRECTORY = "config/" + Constants.CONFIG_DIRECTORY + "/custom/recipes/special_recipes/";
 
@@ -68,44 +66,16 @@ public class CraftingManagerSpecial {
 		Loader.instance().setActiveModContainer(modContainer);
 	}
 
-	private static void loadRecipesForEachModDirectory(ModContainer mod, File source, String base) {
-		File recipeDirectory = new File(source.toPath().resolve(base).toString());
-		File[] files = recipeDirectory.listFiles();
-		if (files != null) {
-			for (File d : files) {
-				if (d.isDirectory()) {
-					Path modId = d.toPath().getName(d.toPath().getNameCount() - 1);
-					if (!Loader.isModLoaded(modId.toString())) {
-						return;
-					}
-					String modBase = base + "/" + modId;
-					loadRecipes(mod, source, modBase);
-				}
-			}
+	private static void loadRecipesForEachModDirectory(ModContainer currentMod, File source, String base) {
+		for (ModContainer mod : Loader.instance().getActiveModList()) {
+			loadRecipes(currentMod, source, base + mod.getModId());
 		}
 	}
 
 	private static void loadRecipes(ModContainer mod, File source, String base) {
 		JsonContext ctx = new JsonContext(mod.getModId());
 
-		FileUtils.findFiles(source, base, root -> {
-			Path fPath = root.resolve("_constants.json");
-			if (fPath != null && Files.exists(fPath)) {
-				BufferedReader reader = null;
-				try {
-					reader = Files.newBufferedReader(fPath);
-					InvokerLoadConstants.loadContext(ctx, new File(fPath.toString()));
-				}
-				catch (IOException e) {
-					MineFantasyReforged.LOG.error("Error loading _constants.json: ", e);
-					return false;
-				}
-				finally {
-					IOUtils.closeQuietly(reader);
-				}
-			}
-			return true;
-		}, (root, file) -> {
+		FileUtils.findFiles(source, base, root -> FileUtils.loadConstants(root, ctx), (root, file) -> {
 			Loader.instance().setActiveModContainer(mod);
 
 			String relative = root.relativize(file).toString();
