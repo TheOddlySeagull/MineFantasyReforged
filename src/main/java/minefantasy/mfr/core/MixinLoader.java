@@ -21,6 +21,11 @@ public class MixinLoader implements IEarlyMixinLoader, IFMLLoadingPlugin {
 	}
 
 	@Override
+	public boolean shouldMixinConfigQueue(String mixinConfig) {
+		return mixinConfig.equals("mixins.minefantasyreforged.json");
+	}
+
+	@Override
 	public String[] getASMTransformerClass() {
 		return new String[0];
 	}
