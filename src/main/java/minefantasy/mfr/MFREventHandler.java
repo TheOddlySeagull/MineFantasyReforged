@@ -475,13 +475,13 @@ public final class MFREventHandler {
 			for (EntityItem entItem : event.getDrops()) {
 				ItemStack drop = entItem.getItem();
 
-				if (drop.getItem() == Items.LEATHER) {
+				if (ConfigHardcore.dropRawhide && drop.getItem() == Items.LEATHER) {
 					entItem.setDead();
 					dropHide = true;
 				}
 			}
 		}
-		if (dropHide && hide != null && !(ConfigHardcore.hunterKnife && !mob.getEntityData().hasKey(Constants.HUNTER_KILL_TAG))) {
+		if (ConfigHardcore.dropRawhide && dropHide && hide != null && !(ConfigHardcore.hunterKnife && !mob.getEntityData().hasKey(Constants.HUNTER_KILL_TAG))) {
 			mob.entityDropItem(new ItemStack(hide), 0.0F);
 		}
 	}
