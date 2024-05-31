@@ -38,7 +38,7 @@ public class TransformationRecipeBlockState extends TransformationRecipeBase {
 	@Override
 	public boolean matches(ItemStack tool, ItemStack input, IBlockState state) {
 		return ToolHelper.getToolTypeFromStack(tool).equals(this.tool)
-				&& state == this.input;
+				&& state == this.input && state != this.output;
 	}
 
 	@Override

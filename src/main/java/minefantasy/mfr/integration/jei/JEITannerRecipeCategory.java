@@ -29,8 +29,8 @@ public class JEITannerRecipeCategory implements IRecipeCategory<JEITannerRecipe>
 	static final ResourceLocation TEXTURE = new ResourceLocation(MineFantasyReforged.MOD_ID, "textures/integration/jei/tanner_background.png");
 	private final IDrawable icon;
 
-	static final int WIDTH = 66;
-	static final int HEIGHT = 41;
+	static final int WIDTH = 85;
+	static final int HEIGHT = 55;
 
 	private final IDrawable background;
 
@@ -77,7 +77,7 @@ public class JEITannerRecipeCategory implements IRecipeCategory<JEITannerRecipe>
 		List<List<ItemStack>> outputList = ingredients.getOutputs(VanillaTypes.ITEM);
 
 		slots.init(0, true, 1, 1);//inputs
-		slots.init(1, false, 47, 1);//outputs
+		slots.init(1, false, 66, 1);//outputs
 
 		slots.set(0, inputs.get(0));
 		slots.set(1, outputList.get(0));

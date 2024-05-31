@@ -1,0 +1,11 @@
+{
+    "type": "smelting",
+    "ingredient": {
+        "type": "item",
+        "item": "minefantasyreforged:reinforced_stone_bricks"
+    },
+    "result" : {
+        "item": "minefantasyreforged:reinforced_stone_bricks_cracked"
+    },
+    "experience": 0.1
+}
