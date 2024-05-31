@@ -11,6 +11,8 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTUtil;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -42,9 +44,15 @@ public class JEITransformationRecipe implements IRecipeWrapper {
 		else {
 			IBlockState input = ((TransformationRecipeBlockState) recipe).getInput();
 			ItemStack inputStack = new ItemStack(input.getBlock());
+			NBTTagCompound nbt = new NBTTagCompound();
+			NBTUtil.writeBlockState(nbt, input);
 			if (inputStack.getHasSubtypes()) {
 				inputStack = new ItemStack(input.getBlock(), 1, input.getBlock().getMetaFromState(input));
 			}
+			if (!nbt.isEmpty()) {
+				inputStack.setTagCompound(nbt);
+			}
+
 			inputs = Collections.singletonList(
 					inputStack);
 		}

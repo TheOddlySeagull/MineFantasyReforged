@@ -4,10 +4,12 @@ import mezz.jei.api.ingredients.IIngredients;
 import mezz.jei.api.ingredients.VanillaTypes;
 import mezz.jei.api.recipe.IRecipeWrapper;
 import mezz.jei.api.recipe.IStackHelper;
+import minefantasy.mfr.init.MineFantasyItems;
 import minefantasy.mfr.recipe.BlastFurnaceRecipeBase;
 import net.minecraft.client.Minecraft;
 import net.minecraft.item.ItemStack;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class JEIBlastFurnaceRecipe implements IRecipeWrapper {
@@ -25,6 +27,13 @@ public class JEIBlastFurnaceRecipe implements IRecipeWrapper {
 
 	@Override
 	public void getIngredients(IIngredients ingredients) {
+		ItemStack coalFlux = new ItemStack(MineFantasyItems.COAL_FLUX);
+		List<ItemStack> coalFluxList = new ArrayList<>();
+		coalFluxList.add(coalFlux);
+		if (!this.ingredients.contains(coalFluxList)) {
+			this.ingredients.add(coalFluxList);
+		}
+
 		ingredients.setInputLists(VanillaTypes.ITEM, this.ingredients);
 		ingredients.setOutput(VanillaTypes.ITEM, result);
 	}

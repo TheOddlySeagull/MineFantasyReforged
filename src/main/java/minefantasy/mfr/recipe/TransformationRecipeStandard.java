@@ -1,5 +1,6 @@
 package minefantasy.mfr.recipe;
 
+import minefantasy.mfr.MineFantasyReforged;
 import minefantasy.mfr.constants.Skill;
 import minefantasy.mfr.constants.Tool;
 import minefantasy.mfr.util.BlockUtils;
@@ -45,7 +46,8 @@ public class TransformationRecipeStandard extends TransformationRecipeBase {
 
 	public boolean matches(ItemStack tool, ItemStack input, IBlockState state) {
 		return ToolHelper.getToolTypeFromStack(tool).equals(this.tool)
-				&& inputs.stream().anyMatch(ingredient -> ingredient.apply(input));
+				&& inputs.stream().anyMatch(ingredient -> ingredient.apply(input))
+				&& !ItemStack.areItemStacksEqual(input, output);
 	}
 
 	@Override

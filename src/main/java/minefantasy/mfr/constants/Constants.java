@@ -7,6 +7,7 @@ public final class Constants {
 
 	public static final String ASSET_DIRECTORY = "minefantasyreforged";
 	public static final String CONFIG_DIRECTORY = "MineFantasyReforged";
+	public static final String JSON_FILE_EXT = "json";
 	public static final String CRAFTED_BY_NAME_TAG = "mfr_crafted_by_name";
 	public static final String MF_HELD_ITEM_TAG = "MF_HeldItem";
 	public static final String UNBREAKABLE_TAG = "Unbreakable";

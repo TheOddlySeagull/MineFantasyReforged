@@ -35,21 +35,21 @@ public class JEITannerRecipe implements IRecipeWrapper {
 		GuiHelper.renderToolIcon(minecraft.currentScreen, recipe.getToolType().getName(), recipe.getTannerTier(), recipeWidth - 20, recipeHeight - 20, true, true);
 
 		// draw bench icon with required tier int
-		GuiHelper.renderToolIcon(minecraft.currentScreen, "tanner", recipe.getTannerTier(), recipeWidth - 65, recipeHeight - 20, true, true);
+		GuiHelper.renderToolIcon(minecraft.currentScreen, "tanner", recipe.getTannerTier(), recipeWidth - 85, recipeHeight - 20, true, true);
 
 		if (GuiHelper.isPointInRegion(recipeWidth - 20, recipeHeight - 20, 20, 20, mouseX, mouseY, 0, 0)) {
 			// Shows the tool tooltip text with the name of the tool and the minimum tier
 			String s2 = I18n.format("tooltype." + recipe.getToolType().getName()) + ", " + (recipe.getTannerTier() > -1
 					? I18n.format("attribute.mfcrafttier.name") + " " + recipe.getTannerTier()
 					: I18n.format("attribute.nomfcrafttier.name"));
-			minecraft.fontRenderer.drawStringWithShadow(s2, (float) ((recipeWidth / 2) - minecraft.fontRenderer.getStringWidth(s2) / 2), (float) 50, 16777215);
+			minecraft.fontRenderer.drawStringWithShadow(s2, (float) ((recipeWidth / 2) - minecraft.fontRenderer.getStringWidth(s2) / 2), recipeHeight - 33, 16777215);
 		}
-		else if (GuiHelper.isPointInRegion(recipeWidth - 65, recipeHeight - 20, 20, 20, mouseX, mouseY, 0, 0)) {
+		else if (GuiHelper.isPointInRegion(recipeWidth - 85, recipeHeight - 20, 20, 20, mouseX, mouseY, 0, 0)) {
 			// Shows the carpenter tooltip text with the minimum carpenter tier
 			String s2 = I18n.format("tooltype.tanner") + ", " + (recipe.getTannerTier() > -1
 					? I18n.format("attribute.mfcrafttier.name") + " " + recipe.getTannerTier()
 					: I18n.format("attribute.nomfcrafttier.name"));
-			minecraft.fontRenderer.drawStringWithShadow(s2, (float) ((recipeWidth / 2) - minecraft.fontRenderer.getStringWidth(s2) / 2), (float) 50, 16777215);
+			minecraft.fontRenderer.drawStringWithShadow(s2, (float) ((recipeWidth / 2) - minecraft.fontRenderer.getStringWidth(s2) / 2), recipeHeight - 33, 16777215);
 		}
 	}
 

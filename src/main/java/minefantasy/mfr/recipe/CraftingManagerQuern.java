@@ -29,6 +29,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -68,58 +69,66 @@ public class CraftingManagerQuern {
 		//noinspection ConstantConditions
 		loadRecipes(modContainer, new File(CONFIG_RECIPE_DIRECTORY), "");
 		Loader.instance().getActiveModList().forEach(m ->
-				loadRecipesForEachModDirectory(m, m.getSource(), "assets/" + m.getModId() + RECIPE_FOLDER_PATH));
+				loadRecipes(m, m.getSource(), "assets/" + m.getModId() + RECIPE_FOLDER_PATH));
 
 		Loader.instance().setActiveModContainer(modContainer);
-	}
-
-	private static void loadRecipesForEachModDirectory(ModContainer currentMod, File source, String base) {
-		for (ModContainer mod : Loader.instance().getActiveModList()) {
-			loadRecipes(currentMod, source, base + mod.getModId());
-		}
 	}
 
 	private static void loadRecipes(ModContainer mod, File source, String base) {
 		JsonContext ctx = new JsonContext(mod.getModId());
 
-		FileUtils.findFiles(source, base, root -> FileUtils.loadConstants(root, ctx), (root, file) -> {
-			Loader.instance().setActiveModContainer(mod);
+		FileUtils.findFiles(source, base, root -> FileUtils.loadConstants(source, base, ctx), (root, file) -> {
+			Path relative = root.relativize(file);
+			if (relative.getNameCount() > 1) {
+				String extension = FilenameUtils.getExtension(file.toString());
 
-			String relative = root.relativize(file).toString();
-			if (!"json".equals(FilenameUtils.getExtension(file.toString())) || relative.startsWith("_"))
-				return;
+				if (!extension.equals(Constants.JSON_FILE_EXT)) {
+					return;
+				}
 
-			String name = FilenameUtils.removeExtension(relative).replaceAll("\\\\", "/");
-			ResourceLocation key = new ResourceLocation(ctx.getModId(), name);
+				String modName = relative.getName(0).toString();
+				String fileName = FilenameUtils.removeExtension(relative.getName(1).toString());
 
-			BufferedReader reader = null;
-			try {
-				reader = Files.newBufferedReader(file);
-				JsonObject json = JsonUtils.fromJson(GSON, reader, JsonObject.class);
+				if (!Loader.isModLoaded(modName) || fileName.startsWith("_")) {
+					return;
+				}
 
-				String type = ctx.appendModId(JsonUtils.getString(json, "type"));
-				if (Loader.isModLoaded(mod.getModId())) {
-					if (QuernRecipeType.getByNameWithModId(type, mod.getModId()) != QuernRecipeType.NONE) {
-						QuernRecipeBase recipe = factory.parse(ctx, json);
-						if (CraftingHelper.processConditions(json, "conditions", ctx)) {
-							addRecipe(recipe, mod.getModId().equals(MineFantasyReforged.MOD_ID), key);
+				Loader.instance().setActiveModContainer(mod);
+
+				if (!"json".equals(FilenameUtils.getExtension(file.toString())) || relative.startsWith("_"))
+					return;
+
+				ResourceLocation key = new ResourceLocation(ctx.getModId(), fileName);
+
+				BufferedReader reader = null;
+				try {
+					reader = Files.newBufferedReader(file);
+					JsonObject json = JsonUtils.fromJson(GSON, reader, JsonObject.class);
+
+					String type = ctx.appendModId(JsonUtils.getString(json, "type"));
+					if (Loader.isModLoaded(mod.getModId())) {
+						if (QuernRecipeType.getByNameWithModId(type, mod.getModId()) != QuernRecipeType.NONE) {
+							QuernRecipeBase recipe = factory.parse(ctx, json);
+							if (CraftingHelper.processConditions(json, "conditions", ctx)) {
+								addRecipe(recipe, mod.getModId().equals(MineFantasyReforged.MOD_ID), key);
+							}
+						} else {
+							MineFantasyReforged.LOG.info("Skipping recipe {} of type {} because it's not a MFR Quern recipe", key, type);
 						}
-					} else {
-						MineFantasyReforged.LOG.info("Skipping recipe {} of type {} because it's not a MFR Quern recipe", key, type);
+					}
+					else {
+						MineFantasyReforged.LOG.info("Skipping recipe {} of type {} because it the mod it depends on is not loaded", key, type);
 					}
 				}
-				else {
-					MineFantasyReforged.LOG.info("Skipping recipe {} of type {} because it the mod it depends on is not loaded", key, type);
+				catch (JsonParseException e) {
+					MineFantasyReforged.LOG.error("Parsing error loading recipe {}", key, e);
 				}
-			}
-			catch (JsonParseException e) {
-				MineFantasyReforged.LOG.error("Parsing error loading recipe {}", key, e);
-			}
-			catch (IOException e) {
-				MineFantasyReforged.LOG.error("Couldn't read recipe {} from {}", key, file, e);
-			}
-			finally {
-				IOUtils.closeQuietly(reader);
+				catch (IOException e) {
+					MineFantasyReforged.LOG.error("Couldn't read recipe {} from {}", key, file, e);
+				}
+				finally {
+					IOUtils.closeQuietly(reader);
+				}
 			}
 		});
 	}

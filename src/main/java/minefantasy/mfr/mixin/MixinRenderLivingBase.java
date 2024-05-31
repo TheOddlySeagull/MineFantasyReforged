@@ -1,5 +1,6 @@
 package minefantasy.mfr.mixin;
 
+import minefantasy.mfr.MineFantasyReforged;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderLivingBase;
@@ -28,7 +29,9 @@ public abstract class MixinRenderLivingBase<T extends EntityLivingBase> extends 
 		 * Modified: Args for limbSwingAmount and LimbSwing in the method RenderModel(T entitylivingbaseIn, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scaleFactor)
 		 * 		are modified to account for shouldRiderSit() returning false.
 	 */
-	@ModifyArgs(method = {"doRender*"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/RenderLivingBase;renderModel(Lnet/minecraft/entity/EntityLivingBase;FFFFFF)V", ordinal = 1))
+	@ModifyArgs(method = {"doRender*"},
+			at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/RenderLivingBase;renderModel(Lnet/minecraft/entity/EntityLivingBase;FFFFFF)V", ordinal = 1),
+			remap = MineFantasyReforged.shouldRemap)
 	private void setRenderModelArgs(Args args) {
 		EntityLivingBase entity = args.get(0);
 		float limbSwing;
@@ -53,7 +56,9 @@ public abstract class MixinRenderLivingBase<T extends EntityLivingBase> extends 
 		}
 	}
 
-	@ModifyArgs(method = {"doRender*"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/RenderLivingBase;renderLayers(Lnet/minecraft/entity/EntityLivingBase;FFFFFFF)V", ordinal = 1))
+	@ModifyArgs(method = {"doRender*"},
+			at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/RenderLivingBase;renderLayers(Lnet/minecraft/entity/EntityLivingBase;FFFFFFF)V", ordinal = 1),
+			remap = MineFantasyReforged.shouldRemap)
 	private void setRenderLayerArgs(Args args) {
 		EntityLivingBase entity = args.get(0);
 		float limbSwing;

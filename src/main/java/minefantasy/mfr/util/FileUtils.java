@@ -4,11 +4,14 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import minefantasy.mfr.MineFantasyReforged;
+import minefantasy.mfr.constants.Constants;
 import minefantasy.mfr.mixin.JsonContextAccessor;
 import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.util.JsonUtils;
 import net.minecraftforge.common.crafting.CraftingHelper;
 import net.minecraftforge.common.crafting.JsonContext;
+import net.minecraftforge.fml.common.Loader;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 
 import javax.annotation.Nonnull;
@@ -41,31 +44,47 @@ public class FileUtils {
 	}
 
 	@Nonnull
-	public static Boolean loadConstants(Path root, JsonContext ctx) {
-		Path fPath = root.resolve("_constants.json");
-		if (fPath != null && Files.exists(fPath)) {
-			BufferedReader reader = null;
-			try {
-				reader = Files.newBufferedReader(fPath);
-				JsonObject[] jsonList = net.minecraft.util.JsonUtils.fromJson(GSON, reader, JsonObject[].class);
-				if (jsonList != null) {
-					Map<String, Ingredient> constants = ((JsonContextAccessor) ctx).getConstants();
-					for (JsonObject json : jsonList) {
-						String name = JsonUtils.getString(json, "name");
-						Ingredient ingredient = CraftingHelper.getIngredient(json.get("ingredient"), ctx);
-						constants.put(name, ingredient);
+	public static Boolean loadConstants(File source, String base, JsonContext ctx) {
+		findFiles(source, base, (root, file) -> {
+			Path relative = root.relativize(file);
+			if (relative.getNameCount() > 1) {
+				String extension = FilenameUtils.getExtension(file.toString());
+
+				if (!extension.equals(Constants.JSON_FILE_EXT)) {
+					return;
+				}
+
+				String modName = relative.getName(0).toString();
+				String fileName = FilenameUtils.removeExtension(relative.getFileName().toString());
+
+				if (!Loader.isModLoaded(modName) || !fileName.equals("_constants")) {
+					return;
+				}
+
+				if (Files.exists(file)) {
+					BufferedReader reader = null;
+					try {
+						reader = Files.newBufferedReader(file);
+						JsonObject[] jsonList = net.minecraft.util.JsonUtils.fromJson(GSON, reader, JsonObject[].class);
+						if (jsonList != null) {
+							Map<String, Ingredient> constants = ((JsonContextAccessor) ctx).getConstants();
+							for (JsonObject json : jsonList) {
+								String name = JsonUtils.getString(json, "name");
+								Ingredient ingredient = CraftingHelper.getIngredient(json.get("ingredient"), ctx);
+								constants.put(name, ingredient);
+							}
+							((JsonContextAccessor) ctx).setConstants(constants);
+						}
 					}
-					((JsonContextAccessor) ctx).setConstants(constants);
+					catch (IOException e) {
+						MineFantasyReforged.LOG.error("Error loading _constants.json: ", e);
+					}
+					finally {
+						IOUtils.closeQuietly(reader);
+					}
 				}
 			}
-			catch (IOException e) {
-				MineFantasyReforged.LOG.error("Error loading _constants.json: ", e);
-				return false;
-			}
-			finally {
-				IOUtils.closeQuietly(reader);
-			}
-		}
+		});
 		return true;
 	}
 
