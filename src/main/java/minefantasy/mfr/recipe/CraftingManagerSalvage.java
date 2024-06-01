@@ -81,8 +81,8 @@ public class CraftingManagerSalvage {
 					return;
 				}
 
-				String modName = relative.getName(0).toString();
-				String fileName = FilenameUtils.removeExtension(relative.getName(1).toString());
+				String modName = relative.getName(relative.getNameCount() - 2).toString();
+				String fileName = FilenameUtils.removeExtension(relative.getFileName().toString());
 
 				if (!Loader.isModLoaded(modName) || fileName.startsWith("_")) {
 					return;
