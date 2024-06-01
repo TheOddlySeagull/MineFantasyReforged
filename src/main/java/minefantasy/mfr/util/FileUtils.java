@@ -54,7 +54,7 @@ public class FileUtils {
 					return;
 				}
 
-				String modName = relative.getName(0).toString();
+				String modName = relative.getName(relative.getNameCount() - 2).toString();
 				String fileName = FilenameUtils.removeExtension(relative.getFileName().toString());
 
 				if (!Loader.isModLoaded(modName) || !fileName.equals("_constants")) {
