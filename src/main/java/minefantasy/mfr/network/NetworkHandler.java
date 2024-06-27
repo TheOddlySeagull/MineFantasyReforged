@@ -44,6 +44,7 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.network.FMLEventChannel;
 import net.minecraftforge.fml.common.network.IGuiHandler;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
+import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.fml.relauncher.Side;
 
 import javax.annotation.Nullable;
@@ -76,6 +77,7 @@ public class NetworkHandler implements IGuiHandler {
 	private static final int RACK_COMMAND_PACKET = 23;
 	private static final int AMMO_BOX_COMMAND_PACKET = 24;
 	private static final int COGWORK_CONTROL_PACKET = 26;
+	private static final int SPARK_PARTICLE_PACKET = 27;
 
 	//unused:
 	public static final int GUI_CRUCIBLE = 1;
@@ -123,6 +125,7 @@ public class NetworkHandler implements IGuiHandler {
 		PacketMF.registerPacket(RACK_COMMAND_PACKET, RackCommandPacket.class, RackCommandPacket::new);
 		PacketMF.registerPacket(AMMO_BOX_COMMAND_PACKET, AmmoBoxCommandPacket.class, AmmoBoxCommandPacket::new);
 		PacketMF.registerPacket(COGWORK_CONTROL_PACKET, CogworkControlPacket.class, CogworkControlPacket::new);
+		PacketMF.registerPacket(SPARK_PARTICLE_PACKET, SparkParticlePacket.class, SparkParticlePacket::new);
 
 		NetworkRegistry.INSTANCE.registerGuiHandler(MineFantasyReforged.INSTANCE, this);
 
@@ -146,6 +149,10 @@ public class NetworkHandler implements IGuiHandler {
 	public static void sendToAllTracking(Entity e, PacketMF pkt) {
 		WorldServer server = (WorldServer) e.world;
 		server.getEntityTracker().sendToTracking(e, pkt.getFMLPacket());
+	}
+
+	public static void sendToAllTrackingBlock(TargetPoint targetPoint, PacketMF pkt) {
+		INSTANCE.channel.sendToAllTracking(pkt.getFMLPacket(), targetPoint);
 	}
 
 	public static void sendToAllTrackingChunk(World world, int cx, int cz, PacketMF packet) {
