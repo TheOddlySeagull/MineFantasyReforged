@@ -183,7 +183,7 @@ public class PlayerTickHandler {
 	}
 
 	public static void wakeUp(EntityPlayer player) {
-		if (StaminaBar.isSystemActive) {
+		if (ConfigStamina.isSystemActive) {
 			StaminaBar.setStaminaValue(PlayerData.get(player), StaminaBar.getBaseMaxStamina(player));
 		}
 	}
@@ -251,12 +251,6 @@ public class PlayerTickHandler {
 			}
 
 			ArmourCalculator.updateWeights(player);
-			float weight = ArmourCalculator.getTotalWeightOfWorn(player, false);
-			if (weight > 100F) {
-				if (event.player.isInWater()) {
-					event.player.motionY -= (weight / 20000F);
-				}
-			}
 		}
 	}
 
@@ -342,9 +336,9 @@ public class PlayerTickHandler {
 			PlayerData data = PlayerData.get(player);
 			if (data != null) {
 				float fat_accumulation = ItemFoodMFR.getFatAccumulation(player);
-				float constant_max_stamina = StaminaBar.getDefaultMax(player) + StaminaBar.getBonusStamina(player);
+				float constant_max_stamina = StaminaBar.getDefaultMax() + StaminaBar.getBonusStamina(player);
 				if (fat_accumulation > ConfigStamina.fatThreshold || constant_max_stamina != StaminaBar.getTotalMaxStamina(player)) {
-					StaminaBar.setMaxStamina(data, StaminaBar.getDefaultMax(player) - (fat_accumulation / 10));
+					StaminaBar.setMaxStamina(data, StaminaBar.getDefaultMax() - (fat_accumulation / 10));
 				}
 			}
 			if (player.isRiding()) {

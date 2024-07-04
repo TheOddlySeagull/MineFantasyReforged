@@ -8,6 +8,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSyntaxException;
+import com.google.gson.stream.JsonWriter;
 import minefantasy.mfr.MineFantasyReforged;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
@@ -60,7 +61,9 @@ public class RecipeHelper {
 		}
 
 		try (FileWriter writer = new FileWriter(filePath + trimmedName + ".json")) {
-			g.toJson(tempRecipe, writer);
+			JsonWriter jsonWriter = g.newJsonWriter(writer);
+			jsonWriter.setIndent("\t");
+			g.toJson(tempRecipe, tempRecipe.getClass(),  jsonWriter);
 		}
 		catch (IOException e) {
 			System.out.println("Error during writing recipe json file:");
@@ -82,12 +85,24 @@ public class RecipeHelper {
 		return string.replaceAll(".+:", "");
 	}
 
+	public static NonNullList<Ingredient> duplicateList(NonNullList<Ingredient> list, Integer repeatAmount) {
+		if (repeatAmount == null) {
+			return NonNullList.create();
+		}
+		NonNullList<Ingredient> duplicateList = NonNullList.create();
+		for (int i = 0; i < repeatAmount; i++) {
+			duplicateList.addAll(list);
+		}
+		return duplicateList;
+	}
+
 	/**
 	 * Expands a small pattern (e.g. 3x2 size) to the given width and height by adding ItemStack.EMPTY stacks to the new, empty slots (e.g. 5x5 size)
-	 * @param stacks The original list of the ItemStacks
-	 * @param oldWidth The original width of this recipe, e.g. 3
-	 * @param oldHeight The original height of this recipe, e.g. 3
-	 * @param targetWidth The target width of this recipe, e.g. 5
+	 *
+	 * @param stacks       The original list of the ItemStacks
+	 * @param oldWidth     The original width of this recipe, e.g. 3
+	 * @param oldHeight    The original height of this recipe, e.g. 3
+	 * @param targetWidth  The target width of this recipe, e.g. 5
 	 * @param targetHeight The target height of this recipe, e.g. 4
 	 * @return A new List<ItemStack> with the original recipe aligned to the "beginning" of the list ("top-left aligned") and wrapped around with empty ItemStacks to fill the required grid size
 	 */
@@ -110,6 +125,40 @@ public class RecipeHelper {
 		if (oldHeight < targetHeight) {
 			for (int i = 0; i < (targetHeight - oldHeight) * targetWidth; i++) {
 				expandedPattern.add(ItemStack.EMPTY);
+			}
+		}
+		return expandedPattern;
+	}
+
+	/**
+	 * Expands a small pattern (e.g. 3x2 size) to the given width and height by adding ItemStack.EMPTY stacks to the new, empty slots (e.g. 5x5 size)
+	 *
+	 * @param ingredients  The original list of the Ingredients
+	 * @param oldWidth     The original width of this recipe, e.g. 3
+	 * @param oldHeight    The original height of this recipe, e.g. 3
+	 * @param targetWidth  The target width of this recipe, e.g. 5
+	 * @param targetHeight The target height of this recipe, e.g. 4
+	 * @return A new List<ItemStack> with the original recipe aligned to the "beginning" of the list ("top-left aligned") and wrapped around with empty ItemStacks to fill the required grid size
+	 */
+	public static List<Ingredient> expandPattern(NonNullList<Ingredient> ingredients, int oldWidth, int oldHeight, int targetWidth, int targetHeight) {
+		List<Ingredient> expandedPattern = new ArrayList<>();
+		int index = 0;
+
+		if (oldWidth < targetWidth) {
+			for (int i = 0; i < oldHeight; i++) {
+				for (int j = 0; j < oldWidth; j++) {
+					expandedPattern.add(ingredients.get(index++));
+				}
+				for (int j = 0; j < targetWidth - oldWidth; j++) {
+					expandedPattern.add(Ingredient.EMPTY);
+				}
+			}
+		} else {
+			expandedPattern.addAll(ingredients);
+		}
+		if (oldHeight < targetHeight) {
+			for (int i = 0; i < (targetHeight - oldHeight) * targetWidth; i++) {
+				expandedPattern.add(Ingredient.EMPTY);
 			}
 		}
 		return expandedPattern;

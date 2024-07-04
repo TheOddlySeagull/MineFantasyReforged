@@ -8,6 +8,7 @@ import minefantasy.mfr.material.CustomMaterial;
 import net.minecraft.item.EnumRarity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.translation.I18n;
 import net.minecraftforge.common.util.EnumHelper;
@@ -15,6 +16,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.oredict.OreDictionary;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class CustomToolHelper {
@@ -336,6 +338,14 @@ public class CustomToolHelper {
 		return doesMainMatchForRecipe(recipeItem, inputItem) && doesHaftMatchForRecipe(recipeItem, inputItem);
 	}
 
+	/**
+	 * Checks if two items' materials match
+	 */
+	public static boolean doesMatchForRecipe(Ingredient ingredient, ItemStack inputItem) {
+		return Arrays.stream(ingredient.getMatchingStacks())
+				.anyMatch(itemStack -> doesMainMatchForRecipe(itemStack, inputItem) && doesHaftMatchForRecipe(itemStack, inputItem));
+	}
+
 	public static boolean doesMainMatchForRecipe(ItemStack recipeItem, ItemStack inputItem) {
 		CustomMaterial recipeMat = CustomToolHelper.getCustomPrimaryMaterial(recipeItem);
 		CustomMaterial inputMat = CustomToolHelper.getCustomPrimaryMaterial(inputItem);
@@ -483,7 +493,7 @@ public class CustomToolHelper {
 		return (getCustomPrimaryMaterial(item) != null && getCustomPrimaryMaterial(item) != CustomMaterial.NONE) || (getCustomSecondaryMaterial(item) != null && getCustomSecondaryMaterial(item) != CustomMaterial.NONE);
 	}
 
-	public static ItemStack tryDeconstruct(ItemStack newitem, ItemStack mainItem) {
+	public static void tryDeconstruct(ItemStack newitem, ItemStack mainItem) {
 		String type = null;
 		if (!newitem.isEmpty() && newitem.getItem() instanceof ITieredComponent) {
 			type = ((ITieredComponent) newitem.getItem()).getMaterialType(newitem);
@@ -501,7 +511,6 @@ public class CustomToolHelper {
 				}
 			}
 		}
-		return newitem;
 	}
 
 	public static String getCustomStyle(ItemStack weapon) {

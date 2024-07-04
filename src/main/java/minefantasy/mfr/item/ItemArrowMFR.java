@@ -8,7 +8,6 @@ import minefantasy.mfr.init.MineFantasyTabs;
 import minefantasy.mfr.material.BaseMaterial;
 import minefantasy.mfr.material.CustomMaterial;
 import minefantasy.mfr.mechanics.AmmoMechanics;
-import minefantasy.mfr.mechanics.MFArrowDispenser;
 import minefantasy.mfr.proxy.IClientRegister;
 import minefantasy.mfr.util.CustomToolHelper;
 import minefantasy.mfr.util.ModelLoaderHelper;
@@ -16,8 +15,11 @@ import net.minecraft.block.BlockDispenser;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.dispenser.BehaviorProjectileDispense;
+import net.minecraft.dispenser.IPosition;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.IProjectile;
 import net.minecraft.entity.projectile.EntityArrow;
 import net.minecraft.item.EnumRarity;
 import net.minecraft.item.ItemArrow;
@@ -37,7 +39,6 @@ import java.util.List;
  */
 public class ItemArrowMFR extends ItemArrow implements IArrowMFR, IAmmo, IClientRegister {
 	public static final DecimalFormat decimal_format = new DecimalFormat("#.##");
-	public static final MFArrowDispenser dispenser = new MFArrowDispenser();
 	protected float damage;
 	protected String arrowName;
 	protected ArrowType design;
@@ -69,7 +70,25 @@ public class ItemArrowMFR extends ItemArrow implements IArrowMFR, IAmmo, IClient
 
 		setCreativeTab(MineFantasyTabs.tabOldTools);
 		AmmoMechanics.addArrow(new ItemStack(this));
-		BlockDispenser.DISPENSE_BEHAVIOR_REGISTRY.putObject(this, dispenser);
+		BlockDispenser.DISPENSE_BEHAVIOR_REGISTRY.putObject(this, new BehaviorProjectileDispense() {
+			@Override
+			protected IProjectile getProjectileEntity(World world, IPosition position, ItemStack stack) {
+				EntityArrowMFR arrow = new EntityArrowMFR(world, position);
+
+				if (stack.getItem() instanceof ItemArrowMFR) {
+					ItemArrowMFR arrowItem = (ItemArrowMFR) stack.getItem();
+					arrow.modifyVelocity(arrowItem.getDesign().velocity);
+					arrow.setArrow(stack).setArrowTex(arrowItem.getArrowName());
+					if (stack.getItem() instanceof ItemExplodingArrow
+							|| stack.getItem() instanceof ItemExplodingBolt) {
+						arrow.setBombStats(ItemBomb.getPowder(stack), ItemBomb.getFilling(stack));
+					}
+				}
+				arrow.pickupStatus = EntityArrowMFR.PickupStatus.ALLOWED;
+
+				return arrow;
+			}
+		});
 
 		MineFantasyReforged.PROXY.addClientRegister(this);
 	}
@@ -151,6 +170,14 @@ public class ItemArrowMFR extends ItemArrow implements IArrowMFR, IAmmo, IClient
 	@Override
 	public EnumRarity getRarity(ItemStack item) {
 		return CustomToolHelper.getRarity(item, itemRarity);
+	}
+
+	public String getArrowName() {
+		return arrowName;
+	}
+
+	public ArrowType getDesign() {
+		return design;
 	}
 
 	public ItemStack construct(String main) {

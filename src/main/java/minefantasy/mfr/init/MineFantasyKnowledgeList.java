@@ -1,6 +1,5 @@
 package minefantasy.mfr.init;
 
-import minefantasy.mfr.api.refine.Alloy;
 import minefantasy.mfr.config.ConfigHardcore;
 import minefantasy.mfr.constants.Skill;
 import minefantasy.mfr.item.ItemBomb;
@@ -175,6 +174,7 @@ public class MineFantasyKnowledgeList {
 	public static InformationBase cooking_utensils;
 	public static InformationBase firepit;
 	public static InformationBase generic_meat;
+	public static InformationBase wild_meat;
 	public static InformationBase stew;
 	public static InformationBase jerky;
 	public static InformationBase sausage;
@@ -211,20 +211,6 @@ public class MineFantasyKnowledgeList {
 	public static InformationBase scrapper;
 	public static InformationBase first_aid;
 	public static InformationBase doctor;
-
-	public static Alloy[] reinforced_stone_alloy;
-	public static Alloy[] bronze_alloy;
-	public static Alloy[] steel_alloy;
-	public static Alloy[] obsidian_alloy;
-	public static Alloy[] black_steel_alloy;
-	public static Alloy[] red_steel_alloy;
-	public static Alloy[] blue_steel_alloy;
-	public static Alloy[] mithril_alloy;
-	public static Alloy[] adamantium_alloy;
-	public static Alloy[] ignotumite_alloy;
-	public static Alloy[] mithium_alloy;
-	public static Alloy[] enderforge_alloy;
-	public static Alloy[] wolframite_raw_alloy;
 	
 	public static void init() {
 		carpenter = (new InformationBase("carpenter", 0, -3, 0, MineFantasyBlocks.CARPENTER, null))
@@ -489,6 +475,8 @@ public class MineFantasyKnowledgeList {
 
 		generic_meat = (new InformationBase("generic_meat", 0, -1, 0, MineFantasyItems.GENERIC_MEAT_UNCOOKED,
 				null)).registerStat().setPage(provisioning).setUnlocked();
+		wild_meat = (new InformationBase("wild_meat", -1, -1,  0, MineFantasyItems.HORSE_RAW, null)
+				.registerStat().setPage(provisioning).setUnlocked());
 		stew = (new InformationBase("stew", 0, -3, 0, MineFantasyItems.STEW, generic_meat)).registerStat()
 				.setPage(provisioning).setUnlocked();
 		jerky = (new InformationBase("jerky", 0, -5, 1, MineFantasyItems.JERKY, stew)).registerStat().setPage(provisioning)

@@ -1,6 +1,7 @@
 package minefantasy.mfr.mixin;
 
-import minefantasy.mfr.config.ConfigWeapon;
+import minefantasy.mfr.MineFantasyReforged;
+import minefantasy.mfr.config.ConfigClient;
 import minefantasy.mfr.item.ItemHalbeard;
 import minefantasy.mfr.item.ItemHeavyWeapon;
 import minefantasy.mfr.item.ItemKatana;
@@ -50,7 +51,8 @@ public abstract class MixinLayerHeldItem implements LayerRenderer<EntityLivingBa
 				+ "Lnet/minecraft/item/ItemStack;"
 				+ "Lnet/minecraft/client/renderer/block/model/ItemCameraTransforms$TransformType;"
 				+ "Lnet/minecraft/util/EnumHandSide;)V",
-			cancellable = true)
+			cancellable = true,
+			remap = MineFantasyReforged.shouldRemap)
 	private void renderHeldItem(EntityLivingBase entityLivingBase, ItemStack stack, ItemCameraTransforms.TransformType transform, EnumHandSide handSide, CallbackInfo ci) {
 
 		if (!stack.isEmpty()) {
@@ -93,7 +95,7 @@ public abstract class MixinLayerHeldItem implements LayerRenderer<EntityLivingBa
 
 					applyTransformReverse(new ItemTransformVec3f(new Vector3f(0.0F, (leftHand ? 1 : -1) * 90.0F, (leftHand ? -1 : 1) * 55.0F), new Vector3f(0.0F, 0.25F, 0.03125F), new Vector3f(0.85F, 0.85F, 0.85F)), leftHand);
 				} else {
-					if (ConfigWeapon.shouldUseMfrCustomAnimations) {
+					if (ConfigClient.shouldUseMfrCustomAnimations) {
 						performCounterAttackAnimation((EntityPlayer) entityLivingBase, stack, leftHand);
 					}
 					GlStateManager.rotate(-90.0F, 1.0F, 0.0F, 0.0F);

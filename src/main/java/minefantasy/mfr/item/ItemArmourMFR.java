@@ -3,6 +3,7 @@ package minefantasy.mfr.item;
 import minefantasy.mfr.MineFantasyReforged;
 import minefantasy.mfr.api.armour.ArmourDesign;
 import minefantasy.mfr.api.armour.IElementalResistance;
+import minefantasy.mfr.config.ConfigArmour;
 import minefantasy.mfr.config.ConfigClient;
 import minefantasy.mfr.init.LeatherArmourListMFR;
 import minefantasy.mfr.init.MineFantasyItems;
@@ -14,7 +15,6 @@ import minefantasy.mfr.util.CustomToolHelper;
 import minefantasy.mfr.util.MFRLogUtil;
 import net.minecraft.client.model.ModelBiped;
 import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
@@ -22,11 +22,9 @@ import net.minecraft.entity.item.EntityEnderPearl;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.EnumRarity;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.NonNullList;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -129,24 +127,6 @@ public class ItemArmourMFR extends ItemArmourBaseMFR implements IElementalResist
 	@Override
 	protected boolean isUnbreakable() {
 		return baseMaterial == BaseMaterial.getMaterial("ender");
-	}
-
-	@Override
-	public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> items) {
-		if (!isInCreativeTab(tab)) {
-			return;
-		}
-		if (this != LeatherArmourListMFR.LEATHER[0]) {
-			return;
-		}
-		items.add(new ItemStack(LeatherArmourListMFR.LEATHER_APRON));
-		addSet(items, LeatherArmourListMFR.LEATHER);
-	}
-
-	private void addSet(List list, Item[] items) {
-		for (Item item : items) {
-			list.add(new ItemStack(item));
-		}
 	}
 
 	public boolean canColour() {
@@ -273,7 +253,7 @@ public class ItemArmourMFR extends ItemArmourBaseMFR implements IElementalResist
 	public float getDamageRatingValue(EntityLivingBase user, ItemStack armour, DamageSource src) {
 		float damageRating = getProtectionRatio(armour) * scalePiece();
 
-		if (ArmourCalculator.advancedDamageTypes && !user.world.isRemote) {
+		if (ConfigArmour.advancedDamageTypes && !user.world.isRemote) {
 			damageRating = ArmourCalculator.adjustArmorClassForDamage(src, damageRating, getProtectiveTrait(armour, 0),
 					getProtectiveTrait(armour, 1), getProtectiveTrait(armour, 2));
 		}

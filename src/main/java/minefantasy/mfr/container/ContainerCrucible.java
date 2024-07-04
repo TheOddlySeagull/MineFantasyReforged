@@ -14,19 +14,23 @@ import javax.annotation.Nonnull;
 
 public class ContainerCrucible extends ContainerBase {
 
-	private TileEntityCrucible tile;
+	private final TileEntityCrucible tile;
 	private int lastProgress;
 	private int lastProgressMax;
 	private int lastTemp;
 
-	public ContainerCrucible(InventoryPlayer playerInventory, TileEntityCrucible tile) {
+	public ContainerCrucible(TileEntityCrucible tile) {
+		this.tile = tile;
+	}
+
+	public ContainerCrucible(EntityPlayer player, InventoryPlayer playerInventory, TileEntityCrucible tile) {
 		super(playerInventory, tile);
 
 		this.tile = tile;
 
 		addTileSlots(3, 3, 62, 14);
 
-		this.addSlotToContainer(new SlotCrucibleOut(this.tile, this.tile.inventory.getSlots() - 1, 129, 32));
+		this.addSlotToContainer(new SlotCrucibleOut(this.tile, player, this.tile.inventory.getSlots() - 1, 129, 32));
 
 		addPlayerSlots(playerInventory, 8, 162);
 

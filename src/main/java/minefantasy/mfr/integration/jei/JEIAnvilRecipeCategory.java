@@ -9,10 +9,12 @@ import mezz.jei.api.ingredients.VanillaTypes;
 import mezz.jei.api.recipe.IRecipeCategory;
 import mezz.jei.api.recipe.IRecipeCategoryRegistration;
 import mezz.jei.api.recipe.IRecipeWrapper;
+import mezz.jei.api.recipe.IStackHelper;
 import minefantasy.mfr.MineFantasyReforged;
 import minefantasy.mfr.init.MineFantasyBlocks;
+import minefantasy.mfr.recipe.AnvilDynamicRecipe;
+import minefantasy.mfr.recipe.AnvilRecipeBase;
 import minefantasy.mfr.recipe.CraftingManagerAnvil;
-import minefantasy.mfr.recipe.ShapedAnvilRecipes;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
@@ -78,37 +80,35 @@ public class JEIAnvilRecipeCategory implements IRecipeCategory<JEIAnvilRecipe> {
 		IGuiItemStackGroup slots = recipeLayout.getItemStacks();
 
 		List<List<ItemStack>> inputs = ingredients.getInputs(VanillaTypes.ITEM);
-		List<List<ItemStack>> outputs = ingredients.getOutputs(VanillaTypes.ITEM);
+		List<List<ItemStack>> outputList = ingredients.getOutputs(VanillaTypes.ITEM);
 
 		// Init ingredient slots, 5x4 grid
 
-		int width = 6;
-		int height = 4;
-		for (int x = 0; x < width; x++) {
-			for (int y = 0; y < height; y++) {
-				int slot = y * width + x;
+		for (int x = 0; x < AnvilRecipeBase.MAX_WIDTH; x++) {
+			for (int y = 0; y < AnvilRecipeBase.MAX_HEIGHT; y++) {
+				int slot = y * AnvilRecipeBase.MAX_WIDTH + x;
 				slots.init(slot, true, 1 + x * 18, 1 + y * 18);
 			}
 		}
 
 		// Init output slot
-		slots.init(25, false, 143, 28);
+		slots.init(24, false, 143, 28);
 
 		// Assign ingredients to slots
-		for (int j = 0; j < inputs.size(); j++)
+		for (int j = 0; j < inputs.size(); j++) {
 			slots.set(j, inputs.get(j));
+		}
 		// Assign outputs to slot
-		for (int k = 0; k < outputs.size(); k++)
-			slots.set(25, outputs.get(k));
+		for (List<ItemStack> stacks : outputList) {
+			slots.set(24, stacks);
+		}
 	}
 
 	/**
 	 * Generates all the MFR anvil recipes for JEI.
 	 */
-	public static Collection<JEIAnvilRecipe> generateRecipes() {
-		List<JEIAnvilRecipe> recipes = new ArrayList<>();
-		recipes.addAll(generateRecipeCategory1());
-		return recipes;
+	public static Collection<JEIAnvilRecipe> generateRecipes(IStackHelper stackHelper) {
+		return new ArrayList<>(generateAnvilRecipes(stackHelper));
 	}
 
 	@Nullable
@@ -117,13 +117,19 @@ public class JEIAnvilRecipeCategory implements IRecipeCategory<JEIAnvilRecipe> {
 		return icon;
 	}
 
-	private static Collection<JEIAnvilRecipe> generateRecipeCategory1() {
+	public static Collection<JEIAnvilRecipe> generateAnvilRecipes(IStackHelper stackHelper) {
 
 		List<JEIAnvilRecipe> recipes = new ArrayList<>();
-		List<ShapedAnvilRecipes> anvilRecipes = CraftingManagerAnvil.getInstance().recipes;
+		Collection<AnvilRecipeBase> anvilRecipes = CraftingManagerAnvil.getRecipes();
 
-		for (ShapedAnvilRecipes anvilRecipe : anvilRecipes) {
-			recipes.add(new JEIAnvilRecipe(anvilRecipe));
+		for (AnvilRecipeBase anvilRecipe : anvilRecipes) {
+
+			if (anvilRecipe instanceof AnvilDynamicRecipe) {
+				recipes.add(new JEIAnvilDynamicRecipe((AnvilDynamicRecipe) anvilRecipe, stackHelper));
+			}
+			else {
+				recipes.add(new JEIAnvilRecipe(anvilRecipe, stackHelper));
+			}
 		}
 
 		return recipes;

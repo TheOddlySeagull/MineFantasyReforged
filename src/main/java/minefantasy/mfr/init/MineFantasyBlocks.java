@@ -26,6 +26,7 @@ import minefantasy.mfr.block.BlockFirepit;
 import minefantasy.mfr.block.BlockForge;
 import minefantasy.mfr.block.BlockFrame;
 import minefantasy.mfr.block.BlockFrameHolder;
+import minefantasy.mfr.block.BlockKitchenBench;
 import minefantasy.mfr.block.BlockLeavesMF;
 import minefantasy.mfr.block.BlockLogMF;
 import minefantasy.mfr.block.BlockMetalBarsMF;
@@ -58,6 +59,7 @@ import minefantasy.mfr.item.ItemBlockCake;
 import minefantasy.mfr.item.ItemBlockOreMFR;
 import minefantasy.mfr.item.ItemBlockRepairKit;
 import minefantasy.mfr.item.ItemBlockSalvage;
+import minefantasy.mfr.item.ItemBlockSlab;
 import minefantasy.mfr.item.ItemBlockSpecialRender;
 import minefantasy.mfr.item.ItemBlockToolRack;
 import minefantasy.mfr.item.ItemBlockTrough;
@@ -76,6 +78,7 @@ import minefantasy.mfr.tile.TileEntityCrossbowBench;
 import minefantasy.mfr.tile.TileEntityCrucible;
 import minefantasy.mfr.tile.TileEntityFirepit;
 import minefantasy.mfr.tile.TileEntityForge;
+import minefantasy.mfr.tile.TileEntityKitchenBench;
 import minefantasy.mfr.tile.TileEntityQuern;
 import minefantasy.mfr.tile.TileEntityRack;
 import minefantasy.mfr.tile.TileEntityResearchBench;
@@ -189,6 +192,9 @@ public class MineFantasyBlocks {
 	public static BlockAnvilMF ANVIL_RED_STEEL = Utils.nullValue();
 
 	public static BlockCarpenter CARPENTER = Utils.nullValue();
+	public static BlockKitchenBench KITCHEN_BENCH_GRANITE = Utils.nullValue();
+	public static BlockKitchenBench KITCHEN_BENCH_ANDESITE = Utils.nullValue();
+	public static BlockKitchenBench KITCHEN_BENCH_DIORITE = Utils.nullValue();
 	public static BlockBombBench BOMB_BENCH = Utils.nullValue();
 	public static BlockCrossbowBench CROSSBOW_BENCH = Utils.nullValue();
 
@@ -423,6 +429,9 @@ public class MineFantasyBlocks {
 		ANVIL_RED_STEEL = new BlockAnvilMF(MineFantasyMaterials.RED_STEEL);
 
 		CARPENTER = new BlockCarpenter();
+		KITCHEN_BENCH_GRANITE = new BlockKitchenBench("kitchen_bench_granite");
+		KITCHEN_BENCH_ANDESITE = new BlockKitchenBench("kitchen_bench_andesite");
+		KITCHEN_BENCH_DIORITE = new BlockKitchenBench("kitchen_bench_diorite");
 		BOMB_BENCH = new BlockBombBench();
 		CROSSBOW_BENCH = new BlockCrossbowBench();
 
@@ -754,6 +763,10 @@ public class MineFantasyBlocks {
 		registerTile(TileEntityAnvil.class, "anvil_tile");
 		registry.register(CARPENTER);
 		registerTile(TileEntityCarpenter.class, "carpenter_tile");
+		registry.register(KITCHEN_BENCH_GRANITE);
+		registry.register(KITCHEN_BENCH_ANDESITE);
+		registry.register(KITCHEN_BENCH_DIORITE);
+		registerTile(TileEntityKitchenBench.class, "kitchen_bench_tile");
 		registry.register(BOMB_BENCH);
 		registerTile(TileEntityBombBench.class, "bomb_bench_tile");
 		registry.register(CROSSBOW_BENCH);
@@ -845,16 +858,16 @@ public class MineFantasyBlocks {
 		registry.register(new ItemBlockOreMFR(COAL_RICH_ORE));
 
 		registry.register(new ItemBlockBase(MUD_BRICK));
-		registry.register(new ItemBlockBase(MUD_BRICK_SLAB));
+		registry.register(new ItemBlockSlab((BlockSlab) MUD_BRICK_SLAB));
 		registry.register(new ItemBlockBase(MUD_ROAD));
 		registry.register(new ItemBlockBase(MUD_ROAD_BLOCK));
-		registry.register(new ItemBlockBase(MUD_ROAD_BLOCK_SLAB));
+		registry.register(new ItemBlockSlab((BlockSlab) MUD_ROAD_BLOCK_SLAB));
 
 		registry.register(new ItemBlockBase(COBBLE_BRICK));
-		registry.register(new ItemBlockBase(COBBLE_BRICK_SLAB));
+		registry.register(new ItemBlockSlab((BlockSlab) COBBLE_BRICK_SLAB));
 		registry.register(new ItemBlockBase(COBBLESTONE_ROAD));
 		registry.register(new ItemBlockBase(COBBLESTONE_ROAD_BLOCK));
-		registry.register(new ItemBlockBase(COBBLESTONE_ROAD_BLOCK_SLAB));
+		registry.register(new ItemBlockSlab((BlockSlab) COBBLESTONE_ROAD_BLOCK_SLAB));
 
 		registry.register(new ItemBlockBase(WINDOW));
 		registry.register(new ItemBlockBase(FRAMED_GLASS));
@@ -862,27 +875,27 @@ public class MineFantasyBlocks {
 		registry.register(new ItemBlockBase(WINDOW_PANE));
 
 		registry.register(new ItemBlockBase(THATCH));
-		registry.register(new ItemBlockBase(THATCH_SLAB));
+		registry.register(new ItemBlockSlab((BlockSlab) THATCH_SLAB));
 		registry.register(new ItemBlockBase(THATCH_STAIR));
 
 		registry.register(new ItemBlockBase(LIMESTONE_COBBLE));
-		registry.register(new ItemBlockBase(LIMESTONE_COBBLE_SLAB));
+		registry.register(new ItemBlockSlab((BlockSlab) LIMESTONE_COBBLE_SLAB));
 		registry.register(new ItemBlockBase(LIMESTONE));
 
 		registry.register(new ItemBlockBase(LIMESTONE_BRICK));
-		registry.register(new ItemBlockBase(LIMESTONE_BRICK_SLAB));
+		registry.register(new ItemBlockSlab((BlockSlab) LIMESTONE_BRICK_SLAB));
 		registry.register(new ItemBlockBase(LIMESTONE_ROAD));
 		registry.register(new ItemBlockBase(LIMESTONE_ROAD_BLOCK));
-		registry.register(new ItemBlockBase(LIMESTONE_ROAD_BLOCK_SLAB));
+		registry.register(new ItemBlockSlab((BlockSlab) LIMESTONE_ROAD_BLOCK_SLAB));
 
 		registry.register(new ItemBlockBase(LIMESTONE_STAIRS));
 		registry.register(new ItemBlockBase(LIMESTONE_COBBLE_STAIRS));
 		registry.register(new ItemBlockBase(LIMESTONE_BRICK_STAIRS));
 
 		registry.register(new ItemBlockBase(FIREBRICKS));
-		registry.register(new ItemBlockBase(FIREBRICKS_SLAB));
+		registry.register(new ItemBlockSlab((BlockSlab) FIREBRICKS_SLAB));
 		registry.register(new ItemBlockBase(CLAY_WALL));
-		registry.register(new ItemBlockBase(CLAY_WALL_SLAB));
+		registry.register(new ItemBlockSlab((BlockSlab) CLAY_WALL_SLAB));
 		registry.register(new ItemBlockBase(CLAY_WALL_CROSS));
 		registry.register(new ItemBlockBase(CLAY_WALL_RIGHT_DIAGONAL));
 		registry.register(new ItemBlockBase(CLAY_WALL_LEFT_DIAGONAL));
@@ -918,6 +931,9 @@ public class MineFantasyBlocks {
 		registry.register(new ItemBlockAnvil(ANVIL_RED_STEEL));
 
 		registry.register(new ItemBlockBase(CARPENTER));
+		registry.register(new ItemBlockBase(KITCHEN_BENCH_GRANITE));
+		registry.register(new ItemBlockBase(KITCHEN_BENCH_ANDESITE));
+		registry.register(new ItemBlockBase(KITCHEN_BENCH_DIORITE));
 		registry.register(new ItemBlockBase(BOMB_BENCH));
 		registry.register(new ItemBlockBase(CROSSBOW_BENCH));
 
@@ -964,25 +980,25 @@ public class MineFantasyBlocks {
 		registry.register(new ItemBlockSpecialRender(BELLOWS));
 
 		registry.register(new ItemBlockBase(REFINED_PLANKS));
-		registry.register(new ItemBlockBase(REFINED_PLANKS_SLAB));
+		registry.register(new ItemBlockSlab((BlockSlab) REFINED_PLANKS_SLAB));
 		registry.register(new ItemBlockBase(NAILED_PLANKS));
-		registry.register(new ItemBlockBase(NAILED_PLANKS_SLAB));
+		registry.register(new ItemBlockSlab((BlockSlab) NAILED_PLANKS_SLAB));
 		registry.register(new ItemBlockBase(REFINED_PLANKS_STAIR));
 		registry.register(new ItemBlockBase(NAILED_PLANKS_STAIR));
 
 		registry.register(new ItemBlockBase(REINFORCED_STONE));
-		registry.register(new ItemBlockBase(REINFORCED_STONE_SLAB));
+		registry.register(new ItemBlockSlab((BlockSlab) REINFORCED_STONE_SLAB));
 		registry.register(new ItemBlockBase(REINFORCED_STONE_ENGRAVED_0));
 		registry.register(new ItemBlockBase(REINFORCED_STONE_ENGRAVED_1));
 		registry.register(new ItemBlockBase(REINFORCED_STONE_ENGRAVED_2));
 		registry.register(new ItemBlockBase(REINFORCED_STONE_ENGRAVED_3));
 
 		registry.register(new ItemBlockBase(REINFORCED_STONE_BRICKS));
-		registry.register(new ItemBlockBase(REINFORCED_STONE_BRICKS_SLAB));
+		registry.register(new ItemBlockSlab((BlockSlab) REINFORCED_STONE_BRICKS_SLAB));
 		registry.register(new ItemBlockBase(REINFORCED_STONE_BRICKS_MOSSY));
-		registry.register(new ItemBlockBase(REINFORCED_STONE_BRICKS_MOSSY_SLAB));
+		registry.register(new ItemBlockSlab((BlockSlab) REINFORCED_STONE_BRICKS_MOSSY_SLAB));
 		registry.register(new ItemBlockBase(REINFORCED_STONE_BRICKS_CRACKED));
-		registry.register(new ItemBlockBase(REINFORCED_STONE_BRICKS_CRACKED_SLAB));
+		registry.register(new ItemBlockSlab((BlockSlab) REINFORCED_STONE_BRICKS_CRACKED_SLAB));
 		registry.register(new ItemBlockBase(REINFORCED_STONE_FRAMED));
 		registry.register(new ItemBlockBase(REINFORCED_STONE_FRAMED_IRON));
 
@@ -1007,11 +1023,11 @@ public class MineFantasyBlocks {
 		registry.register(new ItemBlockBase(SAPLING_EBONY));
 
 		registry.register(new ItemBlockBase(YEW_PLANKS));
-		registry.register(new ItemBlockBase(YEW_PLANKS_SLAB));
+		registry.register(new ItemBlockSlab((BlockSlab) YEW_PLANKS_SLAB));
 		registry.register(new ItemBlockBase(IRONBARK_PLANKS));
-		registry.register(new ItemBlockBase(IRONBARK_PLANKS_SLAB));
+		registry.register(new ItemBlockSlab((BlockSlab) IRONBARK_PLANKS_SLAB));
 		registry.register(new ItemBlockBase(EBONY_PLANKS));
-		registry.register(new ItemBlockBase(EBONY_PLANKS_SLAB));
+		registry.register(new ItemBlockSlab((BlockSlab) EBONY_PLANKS_SLAB));
 
 		registry.register(new ItemBlockSpecialRender(QUERN));
 

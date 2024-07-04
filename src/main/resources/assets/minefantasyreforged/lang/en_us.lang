@@ -11,9 +11,11 @@ message.below=BELOW
 message.above=ABOVE
 info.salvage.usage=Drop a valid item on top of the Salvage Block to salvage it
 gui.no_project_set=<No Project Set>
+gui.kitchen_bench_dirty_progress=Dirtiness
 info.offBalance.message=Trying to use a heavy weapon with only one hand throws you off balance!
 info.noHeatProtection.message=Ouch! Maybe I should get some blacksmithing equipment for this...
 info.vomiting.message=*Blargh!* Eating that many %1$s that quickly can't be good for you...
+info.dragonforged.ritual.failure=The Ritual fails due to insufficient heat!
 
 attribute.kit.salvage.name=Salvage Modifier
 
@@ -266,9 +268,12 @@ tooltype.hands=Bare-Handed
 tooltype.spanner=Spanner
 tooltype.shears=Shears
 tooltype.brush=Paint Brush
+tooltype.wash=Wash
 
 tooltype.anvil=Anvil
 tooltype.carpenter=Carpenter Bench
+tooltype.kitchen_bench=Kitchen Bench
+tooltype.tanner=Tanner
 
 attribute.tool.digEfficiency.name=Dig Speed Modifier x%1$s
 
@@ -320,10 +325,63 @@ item.world_gen_placer=World Gen Placer
 # INTEGRATION
 integration.jei.category.minefantasyreforged:carpenter=Carpenter Bench
 integration.jei.category.minefantasyreforged:anvil=MineFantasy Anvil
+integration.jei.category.minefantasyreforged:big_furnace=MineFantasy Big Furnace
+integration.jei.category.minefantasyreforged:crucible=MineFantasy Crucible
+integration.jei.category.minefantasyreforged:bloomery=MineFantasy Bloomery
+integration.jei.category.minefantasyreforged:blast_furnace=MineFantasy Blast Furnace
+integration.jei.category.minefantasyreforged:quern=MineFantasy Quern
+integration.jei.category.minefantasyreforged:tanner=MineFantasy Tanner
+integration.jei.category.minefantasyreforged:oven=MineFantasy Oven
+integration.jei.category.minefantasyreforged:stovetop=MineFantasy Stove Top
+integration.jei.category.minefantasyreforged:kitchen_bench=MineFantasy Kitchen Bench
+integration.jei.category.minefantasyreforged:salvage=MineFantasy Salvage
+integration.jei.category.minefantasyreforged:transformation=MineFantasy Transformation
+integration.jei.category.minefantasyreforged:special=MineFantasy Special Anvil
 item.flux.desc_extended=Flux is an important purification agent for metalworks, primarily this is used for the treatment of metals in the forging process and some alloy creation. The best source of flux is limestone.
+
+item.bowl_water_salt.desc_extended=Salt Water is used for crafting Salt. You can gather Salt Water by right-clicking a Clay Pot on water that is in an Ocean or Deep Ocean biome.
+
+tile.cheese_wheel.desc_extended=Cheese Wheels are used for getting cheese slices, simply place the wheel on the ground and use (right-click) a knife to cut a slice.
+item.cheese_slice.desc_extended=Cheese Slices are a great food source. You can get them by slicing a Cheese Wheel block with a knife, see the Cheese Wheel entry.
+
+tile.pie_meat.desc_extended=Meat Pies are used for getting meat pie slices, simply place the pie on the ground and use (right-click) a knife to cut a slice.
+item.meatpie_slice.desc_extended=Meat Pie Slices are a great food source. You can get them by slicing a Meat Pie block with a knife, see the Meat Pie entry.
+tile.pie_apple.desc_extended=Apple Pies are used for getting apple pie slices, simply place the pie on the ground and use (right-click) a knife to cut a slice.
+item.pieslice_apple.desc_extended=Apple Pie Slices are a great food source. You can get them by slicing a Apple Pie block with a knife, see the Apple Pie entry.
+tile.pie_berry.desc_extended=Berry Pies are used for getting berry pie slices, simply place the pie on the ground and use (right-click) a knife to cut a slice.
+item.pieslice_berry.desc_extended=Berry Pie Slices are a great food source. You can get them by slicing a Berry Pie block with a knife, see the Berry Pie entry.
+tile.pie_shepards.desc_extended=Shepard's Pies are used for getting shepard's pie slices, simply place the pie on the ground and use (right-click) a knife to cut a slice.
+item.pieslice_shepards.desc_extended=Shepard's Pies Slices are a great food source. You can get them by slicing a Shepard's Pie block with a knife, see the Shepard's Pie entry.
+
+tile.cake_vanilla.desc_extended=Cakes are used for getting cake slices, simple place the cake on the ground and use (right-click) a knife to cut a slice.
+item.cake_slice.desc_extended=Cake Slices are a great food source. You can get them by slicing the cake a Cake block with a knife, see the Cake entry.
+tile.cake_carrot.desc_extended=Carrot Cakes are used for getting carrot cake slices, simple place the cake on the ground and use (right-click) a knife to cut a slice.
+item.carrotcake_slice.desc_extended=Carrot Cake Slices are a great food source. You can get them by slicing the cake a Carrot Cake block with a knife, see the Carrot Cake entry.
+tile.cake_chocolate.desc_extended=Chocolate Cakes are used for getting chocolate cake slices, simple place the cake on the ground and use (right-click) a knife to cut a slice.
+item.choccake_slice.desc_extended=Chocolate Cake Slices are a great food source. You can get them by slicing the cake a Chocolate Cake block with a knife, see the Chocolate Cake entry.
+tile.cake_bf.desc_extended=Black Forest Cakes are used for getting black forest cake slices, simple place the cake on the ground and use (right-click) a knife to cut a slice.
+item.bfcake_slice.desc_extended=Black Forest Cake Slices are a great food source. You can get them by slicing the cake a Black Forest Cake block with a knife, see the Black Forest Cake entry.
+
+item.exploding_arrow.desc_extended=This is an Exploding Arrow, it can be crafted at the Bomb Bench. See the MFR Research Book entries for more info.
+item.exploding_bolt.desc_extended=This is an Exploding Quarrel, it can be crafted at the Bomb Bench. See the MFR Research Book entries for more info.
+item.bomb_casing_arrow.desc_extended=This is an Arrow Bomb Casing, used to craft Exploding Arrows, it can be crafted at the Bomb Bench. See the MFR Research Book entries for more info.
+item.bomb_casing_bolt.desc_extended=This is an Quarrel Bomb Casing, used to craft Exploding Quarrels, it can be crafted at the Bomb Bench. See the MFR Research Book entries for more info.
+
+item.bomb_custom.desc_extended=This is a Bomb, it can be crafted at the Bomb Bench. See the MFR Research Book entries for more info.
+item.mine_custom.desc_extended=This is a Mine, it can be crafted at the Bomb Bench. See the MFR Research Book entries for more info.
+item.bomb_component.desc_extended=This is a Bomb component, it can be used at the Bomb Bench to make Bombs/Mines. See the MFR Research Book entries for more info
+
+item.crossbow_custom.desc_extended=This is a Crossbow, it can be crafted at the Crossbow Bench. See the MFR Research Book entries for more info.
+item.crossbow_component.desc_extended=This is a Crossbow component, it can be used at the Crossbow Bench to make Crossbows. See the MFR Research Book entries for more info
+
+recipe.bar.desc=Any Material Ingot to Material Bar
+recipe.ingot.desc=Any Material Bar to Material Ingot
+recipe.tier.modify.output.desc=Higher Material Tier, Higher Output
+
 key.category.mfr.general=MineFantasy Reforged
 key.mfr.reload_menu=MFR Reload Menu
 key.mfr.remove_offhand=Remove item from offhand
+
 # COMMODITY
 
 item.timber.name=Timber
@@ -653,7 +711,7 @@ tile.ebony_stairs.name=Ebony Stairs
 tile.yew_stairs.name=Yew Stairs
 
 tile.nailed_planks.name=Nailed Wood Planks
-tile.nailed_planks_slab=Nailed Wood Slab
+tile.nailed_planks_slab.name=Nailed Wood Slab
 tile.refined_planks.name=Refined Wood Planks
 tile.refined_planks_slab.name=Refined Wood Slab
 tile.nailed_planks_stairs.name=Nailed Plank Stairs
@@ -728,6 +786,9 @@ tile.bomb_bench.name=Bomb Crafting Table
 tile.crossbow_bench.name=Crossbow Assembly Table
 tile.bomb_press.name=Bomb Press
 tile.carpenter_bench.name=Carpenter Bench
+tile.kitchen_bench_granite.name=Kitchen Bench
+tile.kitchen_bench_diorite.name=Kitchen Bench
+tile.kitchen_bench_andesite.name=Kitchen Bench
 tile.research_bench.name=Research Bench
 tile.quern.name=Quern
 tile.anvil_stone.name=Stone Anvil
@@ -849,6 +910,8 @@ item.stone_waraxe.name=Stone Waraxe
 item.stone_mace.name=Stone Club
 item.stone_spear.name=Stone Spear
 
+# WASH
+item.wash_cloth_wool.name=Wool Wash Cloth
 
 # STANDARD
 languagecfg.tooltiptier=false
@@ -1244,7 +1307,9 @@ item.skillbook_combat_max.desc=Max Weaponry
 method.workbench=Crafting Table
 method.furnace=Smelting
 method.baking=Baking
+method.roasting=Roasting
 method.bloomery=Bloomery
+method.tanner=Tanner
 method.blastfurnace=Blast Furnace
 method.anvil=Anvil
 method.carpenter=Carpenter
@@ -1253,6 +1318,7 @@ method.crucibleT2=Firebrick Crucible
 method.crucibleT3=Mythic Crucible
 method.crucibleT4=Masterwork Crucible
 method.quern=Quern
+method.kitchen_bench=Kitchen Bench
 info.hasKnowledge=Can Research
 
 gui.purchase=Purchase
@@ -2103,6 +2169,10 @@ knowledge.big_box.1=For either storage or shipment of bulk material, these crate
 knowledge.generic_meat=Generic Meat
 knowledge.generic_meat.desc=Good for any recipe
 knowledge.generic_meat.1=There's a lot of meat out there. But sometimes, it shouldn't matter. Generic meat is made from a variety of meat types cooked or uncooked, used for easier storage and use in recipes.^You're better off preparing raw meat, as some can give additional output.
+
+knowledge.wild_meat=Wild Meat
+knowledge.wild_meat.desc=You Monster!
+knowledge.wild_meat.1=You may have noticed that those noble horses and cute wolves are made of meat too...^You should at least cook these meats so you can't tell what they are.
 
 knowledge.stew=Stew
 knowledge.stew.desc=Kind of bland

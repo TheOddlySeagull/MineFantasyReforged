@@ -2,19 +2,19 @@ package minefantasy.mfr.util;
 
 import minefantasy.mfr.MineFantasyReforged;
 import minefantasy.mfr.client.particle.CustomParticle;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-
 import java.util.Random;
 
 /**
  * <i>"Don't waste time spawning particles manually - let {@code ParticleBuilder} do the work for you!"</i>
  * <p></p>
- * Singleton class that builds wizardry particles. This is an alternative (and neater, I think) solution to vanilla's
+ * Singleton class that builds particles. This is an alternative (and neater, I think) solution to vanilla's
  * varargs-based system. All building methods are chainable, so particles can be created using only one line of code,
  * similar to how {@code BufferBuilder} is used for drawing vertices. This class replaces the particle spawning methods
  * in wizardry's proxies.
@@ -523,7 +523,7 @@ public final class ParticleBuilder {
 		this.target = target;
 		return this;
 	}
-	
+
 	/**
 	 * Spawns the particle that has been built and resets the particle builder.
 	 * @param world The world in which to spawn the particle
@@ -570,9 +570,8 @@ public final class ParticleBuilder {
 		particle.setEntity(entity);
 		particle.setTargetPosition(tx, ty, tz);
 		particle.setTargetEntity(target);
-		
-		net.minecraft.client.Minecraft.getMinecraft().effectRenderer.addEffect(particle);
-		
+
+		Minecraft.getMinecraft().effectRenderer.addEffect(particle);
 		reset();
 	}
 	

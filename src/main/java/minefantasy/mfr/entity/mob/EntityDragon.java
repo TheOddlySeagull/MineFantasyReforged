@@ -54,7 +54,7 @@ public class EntityDragon extends EntityMob implements IRangedAttackMob {
 	private static final String BREED_TAG = "Breed";
 	private static final String TIER_TAG = "Tier";
 
-	private static final DataParameter<Byte> CHARGING_FLAG = EntityDataManager.createKey(EntityDragon.class, DataSerializers.BYTE);
+	private static final DataParameter<Boolean> CHARGING_FLAG = EntityDataManager.createKey(EntityDragon.class, DataSerializers.BOOLEAN);
 	private static final DataParameter<Boolean> TERRESTRIAL = EntityDataManager.createKey(EntityDragon.class, DataSerializers.BOOLEAN);
 	private static final DataParameter<Integer> DISENGAGE_TIME = EntityDataManager.createKey(EntityDragon.class, DataSerializers.VARINT);
 	private static final DataParameter<String> BREED = EntityDataManager.createKey(EntityDragon.class, DataSerializers.STRING);
@@ -207,29 +207,12 @@ public class EntityDragon extends EntityMob implements IRangedAttackMob {
 		this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(256.0D);
 	}
 
-	private boolean getChargingFlag(int mask) {
-		int i = this.dataManager.get(CHARGING_FLAG);
-		return (i & mask) != 0;
-	}
-
-	private void setChargingFlag(int mask, boolean value) {
-		int i = this.dataManager.get(CHARGING_FLAG);
-
-		if (value) {
-			i = i | mask;
-		} else {
-			i = i & ~mask;
-		}
-
-		this.dataManager.set(CHARGING_FLAG, (byte) (i & 255));
-	}
-
 	public boolean isCharging() {
-		return this.getChargingFlag(1);
+		return dataManager.get(CHARGING_FLAG);
 	}
 
 	public void setCharging(boolean charging) {
-		this.setChargingFlag(1, charging);
+		dataManager.set(CHARGING_FLAG, charging);
 	}
 
 	@SideOnly(Side.CLIENT)
@@ -381,7 +364,7 @@ public class EntityDragon extends EntityMob implements IRangedAttackMob {
 		this.dataManager.register(DISENGAGE_TIME, 0);
 		this.dataManager.register(BREED, "red");
 		this.dataManager.register(TIER, 0);
-		this.dataManager.register(CHARGING_FLAG, (byte) 0);
+		this.dataManager.register(CHARGING_FLAG, false);
 		this.dataManager.register(JAW_MOVE, 0F);
 		this.dataManager.register(NECK_ANGLE, 0F);
 	}

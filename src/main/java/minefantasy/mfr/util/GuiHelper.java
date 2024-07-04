@@ -9,22 +9,36 @@ import org.lwjgl.opengl.GL11;
 public class GuiHelper {
 	private static final Minecraft mc = Minecraft.getMinecraft();
 
-	public static void renderToolIcon(Gui screen, String toolType, int tier, int x, int y, boolean available) {
-		renderToolIcon(screen, toolType, tier, x, y, false, available);
+	public static void renderToolIcon(Gui screen, String toolType, int tier, int x, int y, boolean available, boolean button) {
+		renderToolIcon(screen, toolType, tier, x, y, false, available, button);
 	}
 
 	public static void renderToolIcon(Gui screen, String toolType, int tier, int x, int y, boolean outline,
-			boolean available) {
+			boolean available, boolean button) {
 		if (!available) {
 			GL11.glColor3f(1.0F, 0.3F, 0.3F);
 		}
 		mc.getTextureManager().bindTexture(TextureHelperMFR.getResource("textures/gui/icons.png"));
 		int[] icon = getToolTypeIcon(toolType);
-		screen.drawTexturedModalRect(x, y, outline ? 20 : 0, 0, 20, 20);
+		if (button) {
+			screen.drawTexturedModalRect(x, y, outline ? 20 : 0, 0, 20, 20);
+		}
 		screen.drawTexturedModalRect(x, y, icon[0], icon[1] + 20, 20, 20);
 		if (tier > -1)
 			mc.fontRenderer.drawStringWithShadow("" + tier, x + 4, y + 10, 16777215);
 		GL11.glColor3f(1F, 1F, 1F);
+	}
+
+	/**
+	 * Test if the 2D point is in a rectangle (relative to the GUI). Args : rectX, rectY, rectWidth, rectHeight, pointX,
+	 * pointY
+	 */
+	public static boolean isPointInRegion(int rectX, int rectY, int rectWidth, int rectHeight, int pointX, int pointY, int guiLeft, int guiTop) {
+		int i = guiLeft;
+		int j = guiTop;
+		pointX = pointX - i;
+		pointY = pointY - j;
+		return pointX >= rectX - 1 && pointX < rectX + rectWidth + 1 && pointY >= rectY - 1 && pointY < rectY + rectHeight + 1;
 	}
 
 	public static int[] getToolTypeIcon(String s) {
@@ -69,6 +83,13 @@ public class GuiHelper {
 		}
 		if (s.equalsIgnoreCase("carpenter")) {
 			return new int[] {width * 1, height * 2};
+		}
+		if (s.equalsIgnoreCase("tanner")) {
+			return new int[] {width * 2, height * 2};
+		}
+
+		if (s.equalsIgnoreCase("kitchen_bench")) {
+			return new int[] {width * 3, height * 2};
 		}
 		return new int[] {0, 0};
 	}

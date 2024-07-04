@@ -10,10 +10,12 @@ import net.minecraft.block.state.BlockFaceShape;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.client.renderer.block.statemap.StateMapperBase;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -27,7 +29,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import java.util.Random;
 
 public class BlockSlab extends Block implements IClientRegister {
-	public static final PropertyEnum<SlabType> TYPE = PropertyEnum.create("type", SlabType.class);;
+	public static final PropertyEnum<SlabType> TYPE = PropertyEnum.create("type", SlabType.class);
 	protected static final AxisAlignedBB BOTTOM_AABB = new AxisAlignedBB(0.0D, 0.0D, 0.0D, 1.0D, 0.5D, 1.0D);
 	protected static final AxisAlignedBB TOP_AABB = new AxisAlignedBB(0.0D, 0.5D, 0.0D, 1.0D, 1.0D, 1.0D);
 
@@ -103,11 +105,11 @@ public class BlockSlab extends Block implements IClientRegister {
 		return super.canPlaceBlockAt(worldIn, pos) || block == this && !state.getValue(TYPE).equals(SlabType.DOUBLE);
 	}
 
-	@Override
-	public boolean isReplaceable(IBlockAccess world, BlockPos pos) {
-		IBlockState state = world.getBlockState(pos);
-		return !state.getValue(TYPE).equals(SlabType.DOUBLE);
-	}
+//	@Override
+//	public boolean isReplaceable(IBlockAccess world, BlockPos pos) {
+//		IBlockState state = world.getBlockState(pos);
+//		return !state.getValue(TYPE).equals(SlabType.DOUBLE);
+//	}
 
 	/**
 	 * Handles how many slab ItemBlocks should be dropped based on BlockState, 2 for a DOUBLE Slab, 1 for either TOP or BOTTOM
@@ -120,11 +122,11 @@ public class BlockSlab extends Block implements IClientRegister {
 
 		/**
 		 * Handles how slabs have different AABBs based on their relative position:
-		 *
+		 * <p>
 		 * BOTTOM, where the slab is the bottom half of a full block
-		 *
+		 * <p>
 		 * TOP, where the slab is the upper half of a full block
-		 *
+		 * <p>
 		 * DOUBLE, where the slab(s?) is a full block
 		 * @return the AABB dependent on block state
 		 */
@@ -254,11 +256,37 @@ public class BlockSlab extends Block implements IClientRegister {
 	}
 
 	/**
-	 * pretty sure this handles rendering the itemblock based on variants?
+	 * This handles rendering the itemblock based on variants
 	 */
 	@Override
 	@SideOnly(Side.CLIENT)
 	public void registerClient() {
-		ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(this), 0, new ModelResourceLocation(getRegistryName(), "normal"));
+		ModelLoader.setCustomStateMapper(this, new StateMapperBase() {
+			@Override
+			@SideOnly(Side.CLIENT)
+			protected ModelResourceLocation getModelResourceLocation(IBlockState state) {
+				return new ModelResourceLocation(getRegistryName(), getPropertyString(state.getProperties()));
+			}
+		});
+
+		ModelResourceLocation modelTopSlab = new ModelResourceLocation(getRegistryName(), "type=top");
+		ModelResourceLocation modelBottomSlab = new ModelResourceLocation(getRegistryName(), "type=bottom");
+		ModelResourceLocation modelDoubleSlab = new ModelResourceLocation(getRegistryName(), "type=double");
+
+		ModelLoader.setCustomMeshDefinition(Item.getItemFromBlock(this), stack -> {
+			NBTTagCompound tagCompound = stack.getTagCompound();
+			if (tagCompound != null) {
+				NBTTagCompound properties = tagCompound.getCompoundTag("Properties");
+				if (!properties.isEmpty()) {
+					if (properties.getString("type").equals(SlabType.DOUBLE.name)) {
+						return modelDoubleSlab;
+					}
+				}
+			}
+			return modelBottomSlab;
+		});
+
+
+		ModelLoader.registerItemVariants(Item.getItemFromBlock(this), modelTopSlab, modelBottomSlab, modelDoubleSlab);
 	}
 }
