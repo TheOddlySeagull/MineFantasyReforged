@@ -5,11 +5,13 @@ import minefantasy.mfr.api.archery.IAmmo;
 import minefantasy.mfr.api.crafting.ISpecialSalvage;
 import minefantasy.mfr.entity.EntityBomb;
 import minefantasy.mfr.init.MineFantasyTabs;
-import minefantasy.mfr.mechanics.BombDispenser;
 import net.minecraft.block.BlockDispenser;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.dispenser.BehaviorDefaultDispenseItem;
+import net.minecraft.dispenser.IBlockSource;
+import net.minecraft.dispenser.IPosition;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.SoundEvents;
@@ -21,6 +23,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
@@ -44,7 +47,16 @@ public class ItemBomb extends ItemBaseMFR implements ISpecialSalvage, IAmmo {
 		this.maxStackSize = 16;
 
 		this.setCreativeTab(MineFantasyTabs.tabGadget);
-		BlockDispenser.DISPENSE_BEHAVIOR_REGISTRY.putObject(this, new BombDispenser());
+		BlockDispenser.DISPENSE_BEHAVIOR_REGISTRY.putObject(this, new BehaviorDefaultDispenseItem() {
+			@Override
+			protected ItemStack dispenseStack(IBlockSource source, ItemStack stack) {
+				EnumFacing facing = source.getBlockState().getValue(BlockDispenser.FACING);
+				IPosition iposition = BlockDispenser.getDispensePosition(source);
+				ItemStack itemstack = stack.splitStack(1);
+				ItemBomb.doDispense(source.getWorld(), itemstack, 6, facing, iposition);
+				return stack;
+			}
+		});
 
 		this.addPropertyOverride(new ResourceLocation("casing"), new IItemPropertyGetter() {
 			@SideOnly(Side.CLIENT)
@@ -79,6 +91,25 @@ public class ItemBomb extends ItemBaseMFR implements ISpecialSalvage, IAmmo {
 				return 0;
 			}
 		});
+	}
+
+	public static void doDispense(World world, ItemStack stack, int speed, EnumFacing facing, IPosition position) {
+		double posX = position.getX() + (facing.getXOffset() / 2F);
+		double posY = position.getY() + (facing.getYOffset() / 2F);
+		double posZ = position.getZ() + (facing.getZOffset() / 2F);
+
+		double xVelocity = facing.getXOffset();
+		double yVelocity = facing.getYOffset();
+		double zVelocity = facing.getZOffset();
+
+		EntityBomb bomb = new EntityBomb(world).setType(ItemBomb.getFilling(stack), ItemBomb.getCasing(stack),
+				ItemBomb.getFuse(stack), ItemBomb.getPowder(stack));
+		bomb.setPosition(posX, posY, posZ);
+		bomb.setThrowableHeading(xVelocity, yVelocity, zVelocity, 1.0F, (float) speed);
+		if (stack.hasTagCompound() && stack.getTagCompound().hasKey("stickyBomb")) {
+			bomb.getEntityData().setBoolean("stickyBomb", true);
+		}
+		world.spawnEntity(bomb);
 	}
 
 	public static void setSticky(ItemStack item) {

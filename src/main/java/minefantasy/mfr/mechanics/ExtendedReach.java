@@ -28,7 +28,9 @@ public class ExtendedReach {
 		// ensure custom MouseHelper is active
 		Minecraft mc = Minecraft.getMinecraft();
 
-		if (event.getButton() == 0 && event.isButtonstate()) {
+		int attackKeybinding = Minecraft.getMinecraft().gameSettings.keyBindAttack.getKeyCode() + 100;
+
+		if (event.getButton() == attackKeybinding && event.isButtonstate()) {
 			EntityPlayer player = mc.player;
 			if (player != null) {
 				ItemStack itemstack = player.getHeldItemMainhand();

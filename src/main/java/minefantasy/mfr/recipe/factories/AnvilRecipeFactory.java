@@ -52,11 +52,12 @@ public class AnvilRecipeFactory {
 		int skillXp = JsonUtils.getInt(json, "skill_xp", 0);
 		float vanillaXp = JsonUtils.getFloat(json, "vanilla_xp", 0);
 		boolean modifyOutput = JsonUtils.getBoolean(json, "modify_output", false);
+		boolean shouldModifyTiers = JsonUtils.getBoolean(json, "should_modify_tiers", true);
 
 		return new AnvilDynamicRecipe(recipe.getIngredients(), recipe.getRecipeOutput(),
 				tool_type, recipe_time, recipe_hammer, anvil_tier, output_hot, research, skill,
-				skillXp, vanillaXp,
-				modifyOutput, recipe.getRecipeWidth(), recipe.getRecipeHeight());
+				skillXp, vanillaXp, modifyOutput, shouldModifyTiers,
+				recipe.getRecipeWidth(), recipe.getRecipeHeight());
 	}
 
 	private AnvilRecipeBase parseShapelessCustomMaterial(JsonContext context, JsonObject json) {

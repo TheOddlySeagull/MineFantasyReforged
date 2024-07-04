@@ -19,17 +19,19 @@ public class AnvilDynamicRecipe extends AnvilRecipeBase {
 	protected int width;
 	protected int height;
 	public boolean modifyOutput;
+	protected boolean shouldModifyTiers;
 
 	public AnvilDynamicRecipe(NonNullList<Ingredient> inputs, ItemStack output,
 			String toolType, int craftTime, int hammerTier, int anvilTier, boolean hotOutput,
 			String requiredResearch, Skill requiredSkill,
-			int skillXp, float vanillaXp,
-			boolean modifyOutput,int width, int height) {
+			int skillXp, float vanillaXp, boolean modifyOutput, boolean shouldModifyTiers,
+			int width, int height) {
 		super(inputs, output, toolType, craftTime, hammerTier, anvilTier, hotOutput,
 				requiredResearch, requiredSkill, skillXp, vanillaXp);
 		this.width = width;
 		this.height = height;
 		this.modifyOutput = modifyOutput;
+		this.shouldModifyTiers = shouldModifyTiers;
 	}
 
 	/**
@@ -140,7 +142,7 @@ public class AnvilDynamicRecipe extends AnvilRecipeBase {
 				}
 			}
 		}
-		if (!modifyTiers(matrix, metal, true)) {
+		if (shouldModifyTiers && !modifyTiers(matrix, metal, true)) {
 			modifyTiers(matrix, wood, false);
 		}
 
@@ -307,7 +309,7 @@ public class AnvilDynamicRecipe extends AnvilRecipeBase {
 
 	@Override
 	public boolean useCustomTiers() {
-		return true;
+		return shouldModifyTiers;
 	}
 
 	public int getWidth() {

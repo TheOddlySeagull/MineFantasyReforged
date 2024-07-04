@@ -10,6 +10,7 @@
     "vanilla_xp": 0,
     "output_hot": true,
     "modify_output": false,
+    "should_modify_tiers": false,
     "pattern": [
         "I"
     ],
