@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.3.1] - 2024-07-07
+### :bug: Bug Fixes
+- [`0533e5d`](https://github.com/TeamMFR/MineFantasyReforged/commit/0533e5da4aa9eaa044790a01238539929929c2ab) - Crash with Quern due to empty researches in the recipe JSONs *(commit by [@ThatPolishKid99](https://github.com/ThatPolishKid99))*
+
+
 ## [v0.3.0] - 2024-07-04
 ### :bug: Bug Fixes
 - [`3271d1a`](https://github.com/TeamMFR/MineFantasyReforged/commit/3271d1a9ad23e766361b88bba13afe1852d67ca4) - Fixed roads not rendering properly *(commit by [@ThatPolishKid99](https://github.com/ThatPolishKid99))*
@@ -50,3 +55,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [v0.2.6]: https://github.com/TeamMFR/MineFantasyReforged/compare/v0.2.5...v0.2.6
 [v0.2.7]: https://github.com/TeamMFR/MineFantasyReforged/compare/v0.2.6...v0.2.7
 [v0.3.0]: https://github.com/TeamMFR/MineFantasyReforged/compare/v0.2.8...v0.3.0
+[v0.3.1]: https://github.com/TeamMFR/MineFantasyReforged/compare/v0.3.0...v0.3.1
