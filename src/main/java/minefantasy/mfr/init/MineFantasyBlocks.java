@@ -362,7 +362,7 @@ public class MineFantasyBlocks {
 		MUD_ROAD_BLOCK_SLAB = new BlockSlab("mud_road_block_slab", Material.GROUND, SoundType.GROUND).setHardness(0.5F);
 
 		COBBLE_BRICK = new BasicBlockMF("cobble_brick", Material.ROCK).setBlockSoundType(SoundType.STONE).setHardness(2.5F).setResistance(12.0F);
-		COBBLE_BRICK_SLAB = new BlockSlab("cobble_brick_slab", Material.GROUND, SoundType.GROUND).setHardness(2.5F).setResistance(12.0F);
+		COBBLE_BRICK_SLAB = new BlockSlab("cobble_brick_slab", Material.ROCK, SoundType.STONE).setHardness(2.5F).setResistance(12.0F);
 		COBBLESTONE_ROAD = new BlockRoad("cobblestone_road", Material.ROCK, SoundType.STONE).setHardness(2.0F).setResistance(10.0F);
 		COBBLESTONE_ROAD_BLOCK = new BasicBlockMF("cobblestone_road_block", Material.ROCK).setHardness(2.0F).setResistance(10.0F);
 		COBBLESTONE_ROAD_BLOCK_SLAB = new BlockSlab("cobblestone_road_block_slab", Material.ROCK, SoundType.STONE).setHardness(2.0F).setResistance(10.0F);
