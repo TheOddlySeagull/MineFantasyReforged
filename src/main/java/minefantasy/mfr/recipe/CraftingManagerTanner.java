@@ -152,7 +152,7 @@ public class CraftingManagerTanner {
 
 		for (TannerRecipeBase rec : getRecipes()) {
 			if (rec.matches(input)) {
-				if (StringUtils.isEmpty(rec.getRequiredResearch())
+				if (rec.getRequiredResearch().equals("none")
 						|| knownResearches.contains(rec.getRequiredResearch())) {
 					return rec;
 				}

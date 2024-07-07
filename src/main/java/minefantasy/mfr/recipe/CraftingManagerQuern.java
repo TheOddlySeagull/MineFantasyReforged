@@ -168,7 +168,7 @@ public class CraftingManagerQuern {
 	public static boolean findMatchingInputs(ItemStack input, Set<String> knownResearches) {
 		for (QuernRecipeBase rec : getRecipes()) {
 			if (rec.inputMatches(input)) {
-				if (StringUtils.isEmpty(rec.getRequiredResearch())
+				if (rec.getRequiredResearch().equals("none")
 						|| knownResearches.contains(rec.getRequiredResearch())) {
 					return true;
 				}
@@ -180,7 +180,7 @@ public class CraftingManagerQuern {
 	public static boolean findMatchingPotInputs(ItemStack potInputs, Set<String> knownResearches) {
 		for (QuernRecipeBase rec : getRecipes()) {
 			if (rec.inputPotMatches(potInputs)) {
-				if (StringUtils.isEmpty(rec.getRequiredResearch())
+				if (rec.getRequiredResearch().equals("none")
 						|| knownResearches.contains(rec.getRequiredResearch())) {
 					return true;
 				}
