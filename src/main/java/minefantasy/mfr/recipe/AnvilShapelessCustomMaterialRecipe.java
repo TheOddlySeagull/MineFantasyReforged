@@ -117,23 +117,25 @@ public class AnvilShapelessCustomMaterialRecipe extends AnvilRecipeBase {
 		String metal = null;
 		for (int i = 0; i < matrix.getSizeInventory(); i++) {
 			ItemStack inputItem = matrix.getStackInSlot(i);
-			String component_wood = CustomToolHelper.getComponentMaterial(inputItem, "wood");
-			String component_metal = CustomToolHelper.getComponentMaterial(inputItem, "metal");
+			if (!inputItem.isEmpty()) {
+				String component_wood = CustomToolHelper.getComponentMaterial(inputItem, "wood");
+				String component_metal = CustomToolHelper.getComponentMaterial(inputItem, "metal");
 
-			for (CustomMaterial material : CustomMaterial.getList("metal")){
-				NonNullList<ItemStack> materialOreDictStacks = OreDictionary.getOres(((MetalMaterial)material).oreDictList);
-				for (ItemStack materialOreDictStack : materialOreDictStacks){
-					if (OreDictionary.itemMatches(ItemHeated.getStack(inputItem), materialOreDictStack, true)){
-						component_metal = material.name;
+				for (CustomMaterial material : CustomMaterial.getList("metal")){
+					NonNullList<ItemStack> materialOreDictStacks = OreDictionary.getOres(((MetalMaterial)material).oreDictList);
+					for (ItemStack materialOreDictStack : materialOreDictStacks){
+						if (OreDictionary.itemMatches(ItemHeated.getStack(inputItem), materialOreDictStack, true)){
+							component_metal = material.name;
+						}
 					}
 				}
-			}
 
-			if (wood == null && component_wood != null) {
-				wood = component_wood;
-			}
-			if (metal == null && component_metal != null) {
-				metal = component_metal;
+				if (wood == null && component_wood != null) {
+					wood = component_wood;
+				}
+				if (metal == null && component_metal != null) {
+					metal = component_metal;
+				}
 			}
 		}
 		if (metal != null && !tierModifyOutputCount) {

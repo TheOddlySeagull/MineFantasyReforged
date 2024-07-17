@@ -4,6 +4,7 @@ import minefantasy.mfr.MineFantasyReforged;
 import minefantasy.mfr.api.armour.ArmourDesign;
 import minefantasy.mfr.init.MineFantasyItems;
 import minefantasy.mfr.init.MineFantasyMaterials;
+import minefantasy.mfr.init.MineFantasyTabs;
 import minefantasy.mfr.material.CustomMaterial;
 import minefantasy.mfr.mechanics.CombatMechanics;
 import minefantasy.mfr.util.ArmourCalculator;
@@ -91,7 +92,20 @@ public class ItemCustomArmour extends ItemArmourMFR {
 		if (items.stream().noneMatch(stack -> stack.getItem() instanceof ItemCustomArmour)) {
 			for (CustomMaterial customMat : metal) {
 				if (MineFantasyReforged.isDebug() || !customMat.getItemStack().isEmpty()) {
-					addSuits(items, customMat.name);
+					if (tab == MineFantasyTabs.tabArmour) {
+						addSuits(items, customMat.name);
+					}
+					if (tab == MineFantasyTabs.tabDragonforged) {
+						addDragonforgedSuits(items, customMat.name);
+					}
+					if (tab == MineFantasyTabs.tabOrnate) {
+						addOrnateSuits(items, customMat.name);
+					}
+					if (tab == CreativeTabs.SEARCH) {
+						addSuits(items, customMat.name);
+						addDragonforgedSuits(items, customMat.name);
+						addOrnateSuits(items, customMat.name);
+					}
 				}
 			}
 		}
@@ -117,6 +131,50 @@ public class ItemCustomArmour extends ItemArmourMFR {
 		list.add((MineFantasyItems.STANDARD_PLATE_CHESTPLATE).construct(material));
 		list.add((MineFantasyItems.STANDARD_PLATE_LEGGINGS).construct(material));
 		list.add((MineFantasyItems.STANDARD_PLATE_BOOTS).construct(material));
+	}
+
+	public static void addDragonforgedSuits(List<ItemStack> list, String material) {
+		list.add(MineFantasyItems.DRAGONFORGED_CHAIN_HELMET.construct(material));
+		list.add(MineFantasyItems.DRAGONFORGED_CHAIN_CHESTPLATE.construct(material));
+		list.add(MineFantasyItems.DRAGONFORGED_CHAIN_LEGGINGS.construct(material));
+		list.add(MineFantasyItems.DRAGONFORGED_CHAIN_BOOTS.construct(material));
+
+		list.add(MineFantasyItems.DRAGONFORGED_SCALE_HELMET.construct(material));
+		list.add(MineFantasyItems.DRAGONFORGED_SCALE_CHESTPLATE.construct(material));
+		list.add(MineFantasyItems.DRAGONFORGED_SCALE_LEGGINGS.construct(material));
+		list.add((MineFantasyItems.DRAGONFORGED_SCALE_BOOTS).construct(material));
+
+		list.add((MineFantasyItems.DRAGONFORGED_SPLINT_HELMET).construct(material));
+		list.add((MineFantasyItems.DRAGONFORGED_SPLINT_CHESTPLATE).construct(material));
+		list.add((MineFantasyItems.DRAGONFORGED_SPLINT_LEGGINGS).construct(material));
+		list.add((MineFantasyItems.DRAGONFORGED_SPLINT_BOOTS).construct(material));
+
+		list.add((MineFantasyItems.DRAGONFORGED_PLATE_HELMET).construct(material));
+		list.add((MineFantasyItems.DRAGONFORGED_PLATE_CHESTPLATE).construct(material));
+		list.add((MineFantasyItems.DRAGONFORGED_PLATE_LEGGINGS).construct(material));
+		list.add((MineFantasyItems.DRAGONFORGED_PLATE_BOOTS).construct(material));
+	}
+
+	public static void addOrnateSuits(List<ItemStack> list, String material) {
+		list.add(MineFantasyItems.ORNATE_CHAIN_HELMET.construct(material));
+		list.add(MineFantasyItems.ORNATE_CHAIN_CHESTPLATE.construct(material));
+		list.add(MineFantasyItems.ORNATE_CHAIN_LEGGINGS.construct(material));
+		list.add(MineFantasyItems.ORNATE_CHAIN_BOOTS.construct(material));
+
+		list.add(MineFantasyItems.ORNATE_SCALE_HELMET.construct(material));
+		list.add(MineFantasyItems.ORNATE_SCALE_CHESTPLATE.construct(material));
+		list.add(MineFantasyItems.ORNATE_SCALE_LEGGINGS.construct(material));
+		list.add((MineFantasyItems.ORNATE_SCALE_BOOTS).construct(material));
+
+		list.add((MineFantasyItems.ORNATE_SPLINT_HELMET).construct(material));
+		list.add((MineFantasyItems.ORNATE_SPLINT_CHESTPLATE).construct(material));
+		list.add((MineFantasyItems.ORNATE_SPLINT_LEGGINGS).construct(material));
+		list.add((MineFantasyItems.ORNATE_SPLINT_BOOTS).construct(material));
+
+		list.add((MineFantasyItems.ORNATE_PLATE_HELMET).construct(material));
+		list.add((MineFantasyItems.ORNATE_PLATE_CHESTPLATE).construct(material));
+		list.add((MineFantasyItems.ORNATE_PLATE_LEGGINGS).construct(material));
+		list.add((MineFantasyItems.ORNATE_PLATE_BOOTS).construct(material));
 	}
 
 

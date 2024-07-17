@@ -6,6 +6,7 @@ import minefantasy.mfr.block.BlockRoast;
 import minefantasy.mfr.config.ConfigHardcore;
 import minefantasy.mfr.container.ContainerBase;
 import minefantasy.mfr.init.MineFantasyBlocks;
+import minefantasy.mfr.item.ItemBurntFood;
 import minefantasy.mfr.recipe.CraftingManagerRoast;
 import minefantasy.mfr.recipe.RoastRecipeBase;
 import net.minecraft.block.Block;
@@ -184,16 +185,20 @@ public class TileEntityRoast extends TileEntityBase implements IHeatUser, ITicka
 	}
 
 	public void updateRecipe() {
-		RoastRecipeBase roastRecipe = CraftingManagerRoast.findMatchingRecipe(getInventory().getStackInSlot(0), isOven(), knownResearches);
-		setRecipe(roastRecipe);
+		ItemStack stack = getInventory().getStackInSlot(0);
+		if (stack.isEmpty() || stack.getItem() instanceof ItemBurntFood) {
+			setRecipe(null);
+			lastRecipe = null;
+			progress = 0;
+			return;
+		}
+
+		RoastRecipeBase roastRecipe = CraftingManagerRoast.findMatchingRecipe(stack, isOven(), knownResearches);
 
 		if (roastRecipe != null) {
 			maxProgress = roastRecipe.getCookTime();
-			lastRecipe = roastRecipe;
-		}
-		if (getInventory().getStackInSlot(0).isEmpty()) {
-			lastRecipe = null;
-			progress = 0;
+			lastRecipe = (RoastRecipeBase) getRecipe();
+			setRecipe(roastRecipe);
 		}
 	}
 

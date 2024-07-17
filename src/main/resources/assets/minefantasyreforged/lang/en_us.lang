@@ -1587,8 +1587,8 @@ knowledge.craft_ornate.1=With the proper materials and time, it is possible to c
 knowledge.smelt_dragonforged=Dragonforge Style
 knowledge.smelt_dragonforged.desc=Crude and powerful
 
-knowledge.smelt_dragonforged.1=Dragons are tough creatures, and hunting them takes preparation and experience. Through your efforts, it is possible to use their own powers against them, Dragonforge weapons are more effective against damaging dragons.^To create dragonforge: Start by making any standard melee weapon. Just before finishing however: throw (right-click) a dragon heart into a nearby forge, then quickly finish the craft.^If all goes well you will have a dragonforge item.
-knowledge.smelt_dragonforged.2=Unlike other designs; dragonforged items require this ritual take place for the craft to work.
+knowledge.smelt_dragonforged.1=Dragons are tough creatures, and hunting them takes preparation and experience. Through your efforts, it is possible to use their own powers against them, Dragonforge weapons are more effective against damaging dragons.^To create dragonforge: Start by making any standard melee weapon with a dragon heart in the output slot. Just before finishing however: increase the temperature of three Forges around the anvil to be extremely hot, using their combined heat to raise the heat massively, then quickly finish the craft.
+knowledge.smelt_dragonforged.2=If all goes well you will have a dragonforge item.^Unlike other designs; dragonforged items require this ritual take place for the craft to work.
 
 knowledge.smelt_blue_steel=Blue Steel Smithing
 knowledge.smelt_blue_steel.desc=Tier %1$s, Common material
@@ -2265,6 +2265,11 @@ knowledge.cheese.1=Cheese is made from refining milk. It has use in some recipes
 knowledge.cheese_roll=Cheese Roll
 knowledge.cheese_roll.desc=Easy snack
 knowledge.cheese_roll.1=Cheese goes well with bread. Put some cheese in a roll to give it some flavour.
+
+knowledge.kitchen_bench=Kitchen Bench
+knowledge.kitchen_bench.desc=Kitchen crafting
+knowledge.kitchen_bench.1=The Kitchen Bench is a dedicated space for mixing, cutting, rolling, and prepping your foodstuffs.^It is essential for any aspiring chef, so make sure to make this in your favorite stone-top style!^It is used similarly to the Carpenter Bench, simply set your recipe up and use tools, like knives, spoons, and your fists, to craft your culinary masterpieces.
+knowledge.kitchen_bench.2=The Kitchen Bench is going to get filthy with all that dough rolling and meat chopping!^If you're not careful, the level of mess will make it impossible to keep cooking.^Make sure to clean it up with a wash cloth! Simply repeatedly right click your kitchen bench with the wash cloth to clean it, and clean off your wash cloth by repeatedly right clicking water.
 
 knowledge.firepit=Firepit and Stoves
 knowledge.firepit.desc=Basic cooking

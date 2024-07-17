@@ -45,9 +45,9 @@ import java.util.Set;
 
 public class TileEntityCrucible extends TileEntityBase implements IHeatUser, ITickable {
 	private int ticksExisted;
-	private float progress = 0;
-	private float progressMax = 400;
-	private float temperature;
+	private int progress = 0;
+	private int progressMax = 400;
+	private int temperature;
 	private final Random rand = new Random();
 
 	private final int OUT_SLOT = 9;
@@ -255,9 +255,9 @@ public class TileEntityCrucible extends TileEntityBase implements IHeatUser, ITi
 		return false;
 	}
 
-	public float getTemperature() {
+	public int getTemperature() {
 		if (this.getTier() >= 1 && !isCoated()) {
-			return 0F;
+			return 0;
 		}
 		if (getTier() >= 2) {
 			return 500;
@@ -265,35 +265,35 @@ public class TileEntityCrucible extends TileEntityBase implements IHeatUser, ITi
 		IBlockState under = world.getBlockState(pos.add(0, -1, 0));
 
 		if (under.getMaterial() == Material.FIRE) {
-			return 10F;
+			return 10;
 		}
 		if (under.getMaterial() == Material.LAVA) {
-			return 50F;
+			return 50;
 		}
 		TileEntity tile = world.getTileEntity(pos.add(0, -1, 0));
 		if (tile instanceof TileEntityForge) {
-			return ((TileEntityForge) tile).getBlockTemperature();
+			return Math.round(((TileEntityForge) tile).getBlockTemperature());
 		}
-		return 0F;
+		return 0;
 	}
 
-	public float getProgress() {
+	public int getProgress() {
 		return progress;
 	}
 
-	public float getProgressMax() {
+	public int getProgressMax() {
 		return progressMax;
 	}
 
-	public void setProgress(float progress) {
+	public void setProgress(int progress) {
 		this.progress = progress;
 	}
 
-	public void setProgressMax(float progressMax) {
+	public void setProgressMax(int progressMax) {
 		this.progressMax = progressMax;
 	}
 
-	public void setTemperature(float temperature) {
+	public void setTemperature(int temperature) {
 		this.temperature = temperature;
 	}
 
@@ -352,8 +352,8 @@ public class TileEntityCrucible extends TileEntityBase implements IHeatUser, ITi
 	public void readFromNBT(NBTTagCompound nbt) {
 		super.readFromNBT(nbt);
 
-		progress = nbt.getFloat("progress");
-		progressMax = nbt.getFloat("progressMax");
+		progress = nbt.getInteger("progress");
+		progressMax = nbt.getInteger("progressMax");
 
 		inventory.deserializeNBT(nbt.getCompoundTag("inventory"));
 
@@ -368,8 +368,8 @@ public class TileEntityCrucible extends TileEntityBase implements IHeatUser, ITi
 	public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
 		super.writeToNBT(nbt);
 
-		nbt.setFloat("progress", progress);
-		nbt.setFloat("progressMax", progressMax);
+		nbt.setInteger("progress", progress);
+		nbt.setInteger("progressMax", progressMax);
 
 		nbt.setTag("inventory", inventory.serializeNBT());
 

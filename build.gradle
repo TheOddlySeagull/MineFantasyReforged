@@ -377,13 +377,12 @@ if (System.getenv('USE_ALPHAS').equals('true')) {
 processResources {
     // this will ensure that this task is redone when the versions change.
     inputs.property "version", version.toString()
+    inputs.property "mod_version", project.mod_version
     inputs.property "mc_version", project.mc_version.toString()
 
 
     // replace tokens in mcmod.info, and pack.mcmeta
-    from(sourceSets.main.resources.srcDirs) {
-        include 'pack.mcmeta'
-        include 'mcmod.info'
+    filesMatching('mcmod.info') {
         // replace tokens in mcmod.info
         expand 'version': version.toString(),
                 'mc_version': project.mc_version.toString(),
@@ -393,8 +392,6 @@ processResources {
                 'url': project.url,
                 'update_url': project.update_url
     }
-
-    duplicatesStrategy = 'include'
 }
 
 // replace @TOKENS@ in main file

@@ -124,13 +124,15 @@ public class CarpenterShapedCustomMaterialRecipe extends CarpenterRecipeBase {
 		String metal = null;
 		for (int i = 0; i < matrix.getSizeInventory(); i++) {
 			ItemStack item = matrix.getStackInSlot(i);
-			String component_wood = CustomToolHelper.getComponentMaterial(item, "wood");
-			String component_metal = CustomToolHelper.getComponentMaterial(item, "metal");
-			if (wood == null && component_wood != null) {
-				wood = component_wood;
-			}
-			if (metal == null && component_metal != null) {
-				metal = component_metal;
+			if (!item.isEmpty()) {
+				String component_wood = CustomToolHelper.getComponentMaterial(item, "wood");
+				String component_metal = CustomToolHelper.getComponentMaterial(item, "metal");
+				if (wood == null && component_wood != null) {
+					wood = component_wood;
+				}
+				if (metal == null && component_metal != null) {
+					metal = component_metal;
+				}
 			}
 		}
 		if (metal != null) {

@@ -19,6 +19,7 @@
     ],
     "result": {
         "item": "minefantasyreforged:bar",
-        "nbt": "{mf_custom_materials:{main_material:\"adamantium\"}}"
+        "nbt": "{mf_custom_materials:{main_material:\"adamantium\"}}",
+        "count": 2
     }
 }

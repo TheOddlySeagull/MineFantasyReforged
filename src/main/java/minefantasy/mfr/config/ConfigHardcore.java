@@ -49,7 +49,7 @@ public class ConfigHardcore extends ConfigurationBaseMF {
 		Heatable.HCCquenchRuin = Boolean.parseBoolean(config.get(CATEGORY_CRAFTING, "Hardcore Quench", true,
 				"Hot items can be damaged if a trough is not used.").getString());
 		HCCWeakItems = Boolean.parseBoolean(config.get(CATEGORY_CRAFTING, "Weaken Basic items", true,
-				"This will significantly reduce the durability of basic items (made on basic crafting table), they can still be crafted but are practically useless.").getString());
+				"This will significantly reduce the durability of vanilla items, they can still be crafted but are practically useless.").getString());
 		HCCallowRocks = Boolean.parseBoolean(config.get(CATEGORY_CRAFTING, "Allow Stone-Age", true,
 				"Allows punching stone for sharp rocks, and using them on leaves for sticks/vines: These make primitive stone tools").getString());
 		HCCRemoveCraftBread = Boolean.parseBoolean(config.get(CATEGORY_CRAFTING, "Remove Bread Recipes", true,

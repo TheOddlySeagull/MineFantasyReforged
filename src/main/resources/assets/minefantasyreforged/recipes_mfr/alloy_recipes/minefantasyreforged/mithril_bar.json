@@ -19,6 +19,7 @@
     ],
     "result": {
         "item": "minefantasyreforged:bar",
-        "nbt": "{mf_custom_materials:{main_material:\"mithril\"}}"
+        "nbt": "{mf_custom_materials:{main_material:\"mithril\"}}",
+        "count": 2
     }
 }

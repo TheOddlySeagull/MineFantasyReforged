@@ -21,7 +21,7 @@ public abstract class DataLoader {
 		loadRegistryFiles(new File(configDirectory), "", type);
 
 		MineFantasyReforged.LOG.info("Loading default " + type + " registry entries");
-		loadRegistryFiles(Loader.instance().activeModContainer().getSource(), defaultDirectory, type);
+		Loader.instance().getActiveModList().forEach(m -> loadRegistryFiles(m.getSource(), defaultDirectory, type));
 	}
 
 	protected void createCustomDataDirectory(String directory) {

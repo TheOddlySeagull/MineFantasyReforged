@@ -298,11 +298,11 @@ public class TileEntityCarpenter extends TileEntityBase implements ICarpenter {
 	}
 
 	public String getResultName() {
-		if (!(getRecipe() instanceof CarpenterRecipeBase)) {
+		if (!(getResult() instanceof CarpenterRecipeBase)) {
 			return I18n.format("gui.no_project_set");
 		}
 		else {
-			CarpenterRecipeBase carpenterRecipe = (CarpenterRecipeBase) getRecipe();
+			CarpenterRecipeBase carpenterRecipe = getResult();
 			return carpenterRecipe.getCraftingResult(craftMatrix).getDisplayName();
 		}
 	}

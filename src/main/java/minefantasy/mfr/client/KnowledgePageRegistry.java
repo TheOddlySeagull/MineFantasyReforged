@@ -964,6 +964,16 @@ public class KnowledgePageRegistry {
 				new EntryPageText("knowledge.smelt_ender.1"),
 				new EntryPageCrucible(CraftingManagerAlloy.getRecipeByName("ender_bar", false)));
 
+		MineFantasyKnowledgeList.kitchen_bench.addPages(
+				new EntryPageText("knowledge.kitchen_bench.1"),
+				new EntryPageRecipeCarpenter(CraftingManagerCarpenter.getRecipesByName(
+						"kitchen_bench_andesite",
+						"kitchen_bench_diorite",
+						"kitchen_bench_granite")),
+				new EntryPageText("knowledge.kitchen_bench.2"),
+				new EntryPageRecipeCarpenter(CraftingManagerCarpenter.getRecipeByName("wash_cloth_wool", false))
+		);
+
 		MineFantasyKnowledgeList.firepit.addPages(
 				new EntryPageText("knowledge.firepit.1"),
 				new EntryPageRecipeBase(MineFantasyKnowledgeList.FIREPIT_RECIPE),

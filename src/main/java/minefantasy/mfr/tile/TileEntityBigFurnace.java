@@ -56,8 +56,8 @@ public class TileEntityBigFurnace extends TileEntityBase implements IBellowsUsea
 	private float doorAngle = 0;
 	private float prevDoorAngle = 0;
 	// HEATER
-	public float heat;
-	public float maxHeat;
+	public int heat;
+	public int maxHeat;
 	public int justShared;
 	// FURNACE
 	public int progress;
@@ -149,7 +149,7 @@ public class TileEntityBigFurnace extends TileEntityBase implements IBellowsUsea
 			if (fuel > 0) {
 				int max = (int) (maxHeat * 1.5F);
 				if (heat < max) {
-					heat += 50 * powerLevel;
+					heat += (int) (50 * powerLevel);
 				}
 
 				for (int a = 0; a < 10; a++) {
@@ -343,7 +343,7 @@ public class TileEntityBigFurnace extends TileEntityBase implements IBellowsUsea
 		}
 	}
 
-	private float getItemHeat(ItemStack itemStack) {
+	private int getItemHeat(ItemStack itemStack) {
 		return ForgeItemHandler.getForgeHeat(itemStack);
 	}
 
@@ -583,8 +583,8 @@ public class TileEntityBigFurnace extends TileEntityBase implements IBellowsUsea
 		fuel = nbt.getInteger("fuel");
 		maxFuel = nbt.getInteger("MaxFuel");
 
-		heat = nbt.getFloat("heat");
-		maxHeat = nbt.getFloat("maxHeat");
+		heat = nbt.getInteger("heat");
+		maxHeat = nbt.getInteger("maxHeat");
 
 		progress = nbt.getInteger("progress");
 		aboveType = nbt.getInteger("Level");
@@ -602,8 +602,8 @@ public class TileEntityBigFurnace extends TileEntityBase implements IBellowsUsea
 		nbt.setInteger("fuel", fuel);
 		nbt.setInteger("maxFuel", maxFuel);
 
-		nbt.setFloat("heat", heat);
-		nbt.setFloat("maxHeat", maxHeat);
+		nbt.setInteger("heat", heat);
+		nbt.setInteger("maxHeat", maxHeat);
 
 		nbt.setInteger("progress", progress);
 

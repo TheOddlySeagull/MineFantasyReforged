@@ -133,7 +133,7 @@ public class JEIAlloyRecipeCategory implements IRecipeCategory<JEIAlloyRecipe> {
 									alloyRecipe.getWidth(), alloyRecipe.getHeight(),
 									AlloyRecipeBase.MAX_WIDTH, AlloyRecipeBase.MAX_HEIGHT));
 					ItemStack outputCopy = alloyRecipe.getAlloyRecipeOutput().copy();
-					outputCopy.setCount(currentRepeatAmount);
+					outputCopy.setCount(outputCopy.getCount() * currentRepeatAmount);
 					recipes.add(new JEIAlloyRatioRecipe((AlloyRatioRecipe) alloyRecipe, ingredients, outputCopy, stackHelper));
 				}
 

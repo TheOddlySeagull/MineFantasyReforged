@@ -51,7 +51,7 @@ public abstract class CarpenterRecipeBase extends IForgeRegistryEntry.Impl<Carpe
 
 	protected boolean modifyTiers(CarpenterCraftMatrix matrix, String tier) {
 		CustomMaterial material = CustomMaterial.getMaterial(tier);
-		if (material != null) {
+		if (material != CustomMaterial.NONE && toolType.hasTiers()) {
 			int newTier = toolTier < 0 ? material.crafterTier : toolTier;
 			matrix.modifyTier(newTier, (int) (craftTime * material.craftTimeModifier));
 			return true;
