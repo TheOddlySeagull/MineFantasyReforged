@@ -127,7 +127,7 @@ public class TileEntityCrucible extends TileEntityBase implements IHeatUser, ITi
 		 */
 
 		if (isHot && canSmelt()) {
-			progress += (temperature / 600F);
+			progress += Math.max(1, Math.round(temperature / 600F));
 			if (progress >= progressMax) {
 				progress = 0;
 				smeltItem();
