@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.3.3] - 2024-07-22
+### :bug: Bug Fixes
+- [`3f557d0`](https://github.com/TeamMFR/MineFantasyReforged/commit/3f557d03d88ba6c239e5686cda512a5f7f9855aa) - fix mythic crucible smelting *(commit by [@ThatPolishKid99](https://github.com/ThatPolishKid99))*
+
+
 ## [v0.3.2] - 2024-07-17
 ### :sparkles: New Features
 - [`87981c6`](https://github.com/TeamMFR/MineFantasyReforged/commit/87981c6b5a19fd4f37e21978cfcc62047664f02c) - Added researh book entries for the kitchen bench *(commit by [@ThatPolishKid99](https://github.com/ThatPolishKid99))*
@@ -65,3 +70,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [v0.3.0]: https://github.com/TeamMFR/MineFantasyReforged/compare/v0.2.8...v0.3.0
 [v0.3.1]: https://github.com/TeamMFR/MineFantasyReforged/compare/v0.3.0...v0.3.1
 [v0.3.2]: https://github.com/TeamMFR/MineFantasyReforged/compare/v0.3.1...v0.3.2
+[v0.3.3]: https://github.com/TeamMFR/MineFantasyReforged/compare/v0.3.2...v0.3.3
