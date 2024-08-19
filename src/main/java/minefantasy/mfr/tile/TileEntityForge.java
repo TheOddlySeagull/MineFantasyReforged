@@ -179,6 +179,10 @@ public class TileEntityForge extends TileEntityBase implements IBasicMetre, IHea
 		maxFuel = getTier() == 1 ? 12000 : 6000;
 	}
 
+	public float getFuel() {
+		return fuel;
+	}
+
 	public boolean isOutside() {
 		for (int x = -1; x <= 1; x++) {
 			for (int y = -1; y <= 1; y++) {
@@ -316,15 +320,8 @@ public class TileEntityForge extends TileEntityBase implements IBasicMetre, IHea
 	}
 
 	/**
-	 * Fires the forge up
+	 * The principle "fire up the forge" function has been moved to the BlockForge class ~Lenvill
 	 */
-	public void fireUpForge() {
-		if (getTier() == 1) {
-			return;
-		}
-		setIsLit(true);
-		BlockForge.setActiveState(true, getFuelCount(), hasBlockAbove(), world, pos);
-	}
 
 	public float getBellowsEffect() {
 		return getTier() == 1 ? 2.0F : 1.5F;
@@ -354,7 +351,10 @@ public class TileEntityForge extends TileEntityBase implements IBasicMetre, IHea
 			fuel = Math.min(fuel + stats.duration, maxFuel);// Fill as much as can fit
 		}
 		if (stats.doesLight && !getIsLit()) {
-			fireUpForge();
+			if (!(getTier() == 1)) {
+				Block block = world.getBlockState(pos).getBlock();
+				((BlockForge) block).fireItUp(world, pos, world.getBlockState(pos));
+			}
 			hasUsed = true;
 		}
 		if (hasUsed) {
