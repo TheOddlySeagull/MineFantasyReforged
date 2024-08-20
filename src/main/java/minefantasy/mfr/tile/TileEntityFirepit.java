@@ -179,7 +179,7 @@ public class TileEntityFirepit extends TileEntityBase implements ITickable, IBas
 	private void tryLight() {
 		if (isFire(-1, 0, 0) || isFire(1, 0, 0) || isFire(0, 0, -1) || isFire(0, 0, 1) || isFire(0, -1, 0) || isFire(0, 1, 0)) {
 			Block block = world.getBlockState(pos).getBlock();
-			((BlockFirepit) block).fireItUp(world, pos, world.getBlockState(pos));
+			((BlockFirepit) block).igniteBlock(world, pos, world.getBlockState(pos));
 		}
 	}
 

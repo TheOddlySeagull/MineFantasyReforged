@@ -104,7 +104,7 @@ public class BlockBloomery extends BlockTileEntity<TileEntityBloomery> implement
 	public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
 		TileEntityBloomery tile = (TileEntityBloomery) getTile(world, pos);
 		if (tile != null) {
-			/// Handle Researches
+			// Handle Researches
 			Set<String> playerResearches = new HashSet<>();
 			for (String bloomeryResearch : CraftingManagerBloomery.getBloomeryResearches()) {
 				if (ResearchLogic.getResearchCheck(player, ResearchLogic.getResearch(bloomeryResearch))) {
@@ -115,26 +115,26 @@ public class BlockBloomery extends BlockTileEntity<TileEntityBloomery> implement
 
 			ItemStack held = player.getHeldItem(hand);
 
-			/// Hammer
+			// Hammer
 			if (!player.isSwingInProgress && tile.tryHammer(player)) {
 				return true;
 			}
-			/// Ignition
+			// Ignition
 			if (held.getItem() instanceof ItemFlintAndSteel || held.getItem() instanceof ILighter) {
 				if (!tile.getIsActive() && tile.getResult() != ItemStack.EMPTY) {
+					// 1 for ignition, -1 for a failed attempt, 0 for a null input or for an item that needs to bypass normal ignition
 					int uses = ItemLighter.tryUse(held, player);
-					if (uses != 0) // 1 for ignition, -1 for a failed attempt, 0 for a null input or for an item that needs to bypass normal ignition
-					{
+					if (uses != 0) {
 						player.playSound(SoundEvents.ITEM_FLINTANDSTEEL_USE, 1.0F, 1.0F);
 						if (uses == 1 && !world.isRemote) {
 							held.damageItem(1, player);
-							fireItUp(world, pos, state);
+							igniteBlock(world, pos, state);
 						}
 					}
 					return true;
 				}
 			}
-			/// GUI
+			// GUI
 			if (!world.isRemote && !tile.getIsActive() && !tile.hasBloom()) {
 				final TileEntityBloomery tileEntity = (TileEntityBloomery) getTile(world, pos);
 				if (tileEntity != null) {
@@ -152,7 +152,7 @@ public class BlockBloomery extends BlockTileEntity<TileEntityBloomery> implement
 	 * @param state IBlockState
 	 */
 	@Override
-	public void fireItUp(World world, BlockPos pos, IBlockState state) {
+	public void igniteBlock(World world, BlockPos pos, IBlockState state) {
 		TileEntityBloomery bloomery = (TileEntityBloomery) getTile(world, pos);
 		if (bloomery != null) {
 			boolean sky = world.canBlockSeeSky(pos.add(0, 1, 0));

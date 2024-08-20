@@ -174,7 +174,7 @@ public class BlockForge extends BlockTileEntity<TileEntityForge> implements IIgn
 		ItemStack held = player.getHeldItemMainhand();
 		TileEntityForge forge = (TileEntityForge) getTile(world, pos);
 		if (forge != null) {
-			/// Burn unprotected players
+			// Burn unprotected players
 			if (forge.getIsLit() && !ItemApron.isUserProtected(player)) {
 				player.setFire(5);
 				player.attackEntityFrom(DamageSource.ON_FIRE, player.isWet() ? 3 : 1);
@@ -183,26 +183,26 @@ public class BlockForge extends BlockTileEntity<TileEntityForge> implements IIgn
 				}
 			}
 			if (!held.isEmpty()) {
-				/// Tong use
+				// Tong use
 				if (facing == EnumFacing.UP && held.getItem() instanceof ItemTongs && onUsedTongs(player, held, forge)) {
 					return true;
 				}
-				/// Ignition
+				// Ignition
 				if (held.getItem() instanceof ItemFlintAndSteel || held.getItem() instanceof ILighter) {
 					if (!forge.getIsLit() && forge.getFuel() > 0 && forge.getTier() != 1) {
+						// 1 for ignition, -1 for a failed attempt, 0 for a null input or for an item that needs to bypass normal ignition
 						int uses = ItemLighter.tryUse(held, player);
-						if (uses != 0) // 1 for ignition, -1 for a failed attempt, 0 for a null input or for an item that needs to bypass normal ignition
-						{
+						if (uses != 0) {
 							player.playSound(SoundEvents.ITEM_FLINTANDSTEEL_USE, 1.0F, 1.0F);
 							if (uses == 1 && !world.isRemote) {
 								held.damageItem(1, player);
-								fireItUp(world, pos, state);
+								igniteBlock(world, pos, state);
 							}
 						}
 						return true;
 					}
 				}
-				/// Adding heatable items
+				// Adding heatable items
 				if (Heatable.canHeatItem(held) && forge.tryAddHeatable(held)) {
 					held.shrink(1);
 					if (held.getCount() <= 0) {
@@ -211,7 +211,7 @@ public class BlockForge extends BlockTileEntity<TileEntityForge> implements IIgn
 					return true;
 				}
 
-				/// Adding fuel
+				// Adding fuel
 				ForgeFuel stats = ForgeItemHandler.getStats(held);
 				if (stats != null && forge.addFuel(stats, true)) {
 					if (player.capabilities.isCreativeMode) {
@@ -237,7 +237,7 @@ public class BlockForge extends BlockTileEntity<TileEntityForge> implements IIgn
 					return true;
 				}
 			}
-			/// Open GUI
+			// Open GUI
 			if (!world.isRemote && !forge.hasBlockAbove()) {
 				TileEntityForge tileEntity = (TileEntityForge) getTile(world, pos);
 				if (tileEntity != null) {
@@ -255,7 +255,7 @@ public class BlockForge extends BlockTileEntity<TileEntityForge> implements IIgn
 	 * @param state IBlockState
 	 */
 	@Override
-	public void fireItUp(World world, BlockPos pos, IBlockState state) {
+	public void igniteBlock(World world, BlockPos pos, IBlockState state) {
 		TileEntityForge forge = (TileEntityForge) getTile(world, pos);
 		if (forge != null) {
 			if (world.isRainingAt(pos.add(0, 1, 0)) && forge.getFuel() > 0) {
@@ -319,7 +319,7 @@ public class BlockForge extends BlockTileEntity<TileEntityForge> implements IIgn
 				tile.setIsLit(false);
 				world.playSound(null, pos, SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.AMBIENT, 0.5F, 1.0F);
 			} else if (!tile.getIsLit() && world.isBlockPowered(pos)) {
-				fireItUp(world, pos, state);
+				igniteBlock(world, pos, state);
 				world.playSound(null, pos, SoundEvents.ITEM_FLINTANDSTEEL_USE, SoundCategory.AMBIENT, 1.0F, 1.0F);
 			}
 		}

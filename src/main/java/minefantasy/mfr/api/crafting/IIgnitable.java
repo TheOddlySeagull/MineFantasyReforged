@@ -16,7 +16,7 @@ public interface IIgnitable {
      * @param pos BlockPos
      * @param state IBlockState
      */
-    void fireItUp(World world, BlockPos pos, IBlockState state);
+    void igniteBlock(World world, BlockPos pos, IBlockState state);
 
     static void playIgnitionSound (World world, BlockPos pos) {
         Random rand = new Random();

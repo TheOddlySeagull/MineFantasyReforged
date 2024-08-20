@@ -353,7 +353,7 @@ public class TileEntityForge extends TileEntityBase implements IBasicMetre, IHea
 		if (stats.doesLight && !getIsLit()) {
 			if (!(getTier() == 1)) {
 				Block block = world.getBlockState(pos).getBlock();
-				((BlockForge) block).fireItUp(world, pos, world.getBlockState(pos));
+				((BlockForge) block).igniteBlock(world, pos, world.getBlockState(pos));
 			}
 			hasUsed = true;
 		}

@@ -125,7 +125,7 @@ public class BlockFirepit extends BlockTileEntity<TileEntityFirepit> implements 
 			boolean burning = firepit.isBurning();
 
 			if (!held.isEmpty()) {
-				/// Adding fuel
+				// Adding fuel
 				if (firepit.addFuel(held) && !player.capabilities.isCreativeMode) {
 					if (!world.isRemote) {
 						if (held.getCount() == 1) {
@@ -146,7 +146,7 @@ public class BlockFirepit extends BlockTileEntity<TileEntityFirepit> implements 
 					return true;
 				}
 
-				/// Cooking
+				// Cooking
 				if (burning) {
 					if (firepit.tryCook(player, held) && !player.capabilities.isCreativeMode) {
 						ItemStack contain = held.getItem().getContainerItem(held);
@@ -161,17 +161,17 @@ public class BlockFirepit extends BlockTileEntity<TileEntityFirepit> implements 
 						}
 					}
 					return true;
-				/// Ignition
+				// Ignition
 				} else {
 					if (held.getItem() instanceof ItemFlintAndSteel || held.getItem() instanceof ILighter) {
 						int uses = ItemLighter.tryUse(held, player);
-						if (uses != 0 && firepit.fuel > 0) // 1 for ignition, -1 for a failed attempt, 0 for a null input or for an item that needs to bypass normal ignition
-						{
+						// 1 for ignition, -1 for a failed attempt, 0 for a null input or for an item that needs to bypass normal ignition
+						if (uses != 0 && firepit.fuel > 0) {
 							player.playSound(SoundEvents.ITEM_FLINTANDSTEEL_USE, 1.0F, 1.0F);
 							world.spawnParticle(EnumParticleTypes.FLAME, pos.getX() + 0.5D, pos.getY() - 0.5D, pos.getZ() + 0.5D, 0F, 0F, 0F);
 							if (uses == 1 && !world.isRemote) {
 								held.damageItem(1, player);
-								fireItUp(world, pos, state);
+								igniteBlock(world, pos, state);
 							}
 						}
 						return true;
@@ -189,7 +189,7 @@ public class BlockFirepit extends BlockTileEntity<TileEntityFirepit> implements 
 	 * @param state IBlockState
 	 */
 	@Override
-	public void fireItUp(World world, BlockPos pos, IBlockState state) {
+	public void igniteBlock(World world, BlockPos pos, IBlockState state) {
 		TileEntityFirepit firepit = (TileEntityFirepit) getTile(world, pos);
 		if (firepit != null) {
 			if (firepit.isWet()  && firepit.fuel > 0) {
