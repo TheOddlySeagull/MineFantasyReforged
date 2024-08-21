@@ -7,11 +7,9 @@ import minefantasy.mfr.constants.Tool;
 import minefantasy.mfr.container.ContainerBase;
 import minefantasy.mfr.container.ContainerBloomery;
 import minefantasy.mfr.entity.EntityItemHeated;
-import minefantasy.mfr.init.MineFantasyKnowledgeList;
 import minefantasy.mfr.init.MineFantasySounds;
 import minefantasy.mfr.item.ItemHeated;
 import minefantasy.mfr.mechanics.RPGElements;
-import minefantasy.mfr.mechanics.knowledge.ResearchLogic;
 import minefantasy.mfr.network.NetworkHandler;
 import minefantasy.mfr.recipe.BloomeryRecipeBase;
 import minefantasy.mfr.recipe.CraftingManagerBloomery;
@@ -23,8 +21,6 @@ import minefantasy.mfr.util.Utils;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Items;
-import net.minecraft.init.SoundEvents;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
@@ -89,6 +85,27 @@ public class TileEntityBloomery extends TileEntityBase implements ITickable {
 		return oldState.getBlock() != newState.getBlock();
 	}
 
+	public boolean isActive() {
+		return isActive;
+	}
+
+	public void setIsActive(boolean active) {
+		isActive = active;
+	}
+
+	public void setProgressMax(float newMax) {
+		progressMax = newMax;
+	}
+
+	public float getSmeltTime() {
+		float smeltTime = getInventory().getStackInSlot(0).getCount() * getTime(getInventory().getStackInSlot(0));// 15s per item
+		return smeltTime;
+	}
+
+	private int getTime(ItemStack itemStack) {
+		return 300;
+	}
+
 	public boolean isInput(ItemStack input) {
 		return !getResult(input).isEmpty();
 	}
@@ -112,7 +129,6 @@ public class TileEntityBloomery extends TileEntityBase implements ITickable {
 			return ItemStack.EMPTY;// Cannot smelt if a bloom exists
 		if (input.isEmpty() || coal.isEmpty())
 			return ItemStack.EMPTY;// Needs input
-
 		if (!hasEnoughCarbon(input, coal)) {
 			return ItemStack.EMPTY;
 		}
@@ -153,33 +169,9 @@ public class TileEntityBloomery extends TileEntityBase implements ITickable {
 					sendUpdates();
 				}
 			}
+		} else if (isActive) {
+			isActive = false;
 		}
-	}
-
-	/**
-	 * Light the bloomery, starting the process.
-	 *
-	 * @return true if it can smelt
-	 */
-	public boolean light(EntityPlayer user) {
-		ItemStack res = getResult();
-		if (world.canBlockSeeSky(pos.add(0, 1, 0)) && res != null && !isActive) {
-			if (!world.isRemote) {
-				if (res.getItem() == Items.IRON_INGOT && !ResearchLogic.getResearchCheck(user, MineFantasyKnowledgeList.smelt_iron)) {
-					return false;
-				}
-				isActive = true;
-				progressMax = getInventory().getStackInSlot(0).getCount() * getTime(getInventory().getStackInSlot(0));// 15s per item
-				world.playSound(user, pos.add(0.5D, 0.5D, +0.5D), SoundEvents.ITEM_FLINTANDSTEEL_USE, SoundCategory.AMBIENT, 1.0F, 1.0F);
-			}
-
-			return true;
-		}
-		return false;
-	}
-
-	private int getTime(ItemStack itemStack) {
-		return 300;
 	}
 
 	/**
@@ -259,10 +251,6 @@ public class TileEntityBloomery extends TileEntityBase implements ITickable {
 
 	public void setKnownResearches(Set<String> knownResearches) {
 		this.knownResearches = knownResearches;
-	}
-
-	public boolean isActive() {
-		return isActive;
 	}
 
 	public boolean hasBloom() {
