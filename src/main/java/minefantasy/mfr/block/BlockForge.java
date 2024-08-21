@@ -77,7 +77,7 @@ public class BlockForge extends BlockTileEntity<TileEntityForge> implements IIgn
 	@Override
 	public IBlockState getActualState(IBlockState state, IBlockAccess world, BlockPos pos) {
 		TileEntityForge tile = (TileEntityForge) getTile(world, pos);
-		return state.withProperty(BURNING, tile.getIsLit()).withProperty(FUEL_COUNT, tile.getFuelCount()).withProperty(UNDER, tile.hasBlockAbove());
+		return state.withProperty(BURNING, tile.isLit()).withProperty(FUEL_COUNT, tile.getFuelCount()).withProperty(UNDER, tile.hasBlockAbove());
 	}
 
 	@Override
@@ -166,16 +166,16 @@ public class BlockForge extends BlockTileEntity<TileEntityForge> implements IIgn
 	@Override
 	public boolean isBurning(IBlockAccess world, BlockPos pos) {
 		TileEntityForge tile = (TileEntityForge) getTile(world, pos);
-		return tile != null && tile.getIsLit();
+		return tile != null && tile.isLit();
 	}
 
 	@Override
 	public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
 		ItemStack held = player.getHeldItemMainhand();
-		TileEntityForge forge = (TileEntityForge) getTile(world, pos);
+		TileEntityForge forge = (TileEntityForge) world.getTileEntity(pos);
 		if (forge != null) {
 			// Burn unprotected players
-			if (forge.getIsLit() && !ItemApron.isUserProtected(player)) {
+			if (forge.isLit() && !ItemApron.isUserProtected(player)) {
 				player.setFire(5);
 				player.attackEntityFrom(DamageSource.ON_FIRE, player.isWet() ? 3 : 1);
 				if (!player.world.isRemote) {
@@ -189,7 +189,7 @@ public class BlockForge extends BlockTileEntity<TileEntityForge> implements IIgn
 				}
 				// Ignition
 				if (held.getItem() instanceof ItemFlintAndSteel || held.getItem() instanceof ILighter) {
-					if (!forge.getIsLit() && forge.getFuel() > 0 && forge.getTier() != 1) {
+					if (!forge.isLit() && forge.getFuel() > 0 && forge.getTier() != 1) {
 						// 1 for ignition, -1 for a failed attempt, 0 for a null input or for an item that needs to bypass normal ignition
 						int uses = ItemLighter.tryUse(held, player);
 						if (uses != 0) {
@@ -314,11 +314,11 @@ public class BlockForge extends BlockTileEntity<TileEntityForge> implements IIgn
 	public void neighborChanged(IBlockState state, World world, BlockPos pos, Block blockIn, BlockPos fromPos) {
 		TileEntityForge tile = (TileEntityForge) getTile(world, pos);
 		if (tier == 1 && !world.isRemote) {
-			if (tile.getIsLit() && !world.isBlockPowered(pos)) {
+			if (tile.isLit() && !world.isBlockPowered(pos)) {
 				setActiveState(false, tile.getFuelCount(), tile.hasBlockAbove(), world, pos);
 				tile.setIsLit(false);
 				world.playSound(null, pos, SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.AMBIENT, 0.5F, 1.0F);
-			} else if (!tile.getIsLit() && world.isBlockPowered(pos)) {
+			} else if (!tile.isLit() && world.isBlockPowered(pos)) {
 				igniteBlock(world, pos, state);
 				world.playSound(null, pos, SoundEvents.ITEM_FLINTANDSTEEL_USE, SoundCategory.AMBIENT, 1.0F, 1.0F);
 			}
@@ -331,8 +331,8 @@ public class BlockForge extends BlockTileEntity<TileEntityForge> implements IIgn
 	@Override
 	public void updateTick(World world, BlockPos pos, IBlockState state, Random rand) {
 		TileEntityForge tile = (TileEntityForge) getTile(world, pos);
-		if (tier == 1 && !world.isRemote && tile.getIsLit() && !world.isBlockPowered(pos)) {
-			setActiveState(tile.getIsLit(), tile.getFuelCount(), tile.hasBlockAbove(), world, pos);
+		if (tier == 1 && !world.isRemote && tile.isLit() && !world.isBlockPowered(pos)) {
+			setActiveState(tile.isLit(), tile.getFuelCount(), tile.hasBlockAbove(), world, pos);
 		}
 	}
 }

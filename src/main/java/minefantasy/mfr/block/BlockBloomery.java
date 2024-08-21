@@ -121,7 +121,7 @@ public class BlockBloomery extends BlockTileEntity<TileEntityBloomery> implement
 			}
 			// Ignition
 			if (held.getItem() instanceof ItemFlintAndSteel || held.getItem() instanceof ILighter) {
-				if (!tile.getIsActive() && tile.getResult() != ItemStack.EMPTY) {
+				if (!tile.isActive() && tile.getResult() != ItemStack.EMPTY) {
 					// 1 for ignition, -1 for a failed attempt, 0 for a null input or for an item that needs to bypass normal ignition
 					int uses = ItemLighter.tryUse(held, player);
 					if (uses != 0) {
@@ -135,7 +135,7 @@ public class BlockBloomery extends BlockTileEntity<TileEntityBloomery> implement
 				}
 			}
 			// GUI
-			if (!world.isRemote && !tile.getIsActive() && !tile.hasBloom()) {
+			if (!world.isRemote && !tile.isActive() && !tile.hasBloom()) {
 				final TileEntityBloomery tileEntity = (TileEntityBloomery) getTile(world, pos);
 				if (tileEntity != null) {
 					tileEntity.openGUI(world, player);
@@ -157,7 +157,7 @@ public class BlockBloomery extends BlockTileEntity<TileEntityBloomery> implement
 		if (bloomery != null) {
 			boolean sky = world.canBlockSeeSky(pos.add(0, 1, 0));
 			ItemStack result = bloomery.getResult();
-			if (!bloomery.getIsActive() && sky && !state.getValue(BLOOM) && result != ItemStack.EMPTY) {
+			if (!bloomery.isActive() && sky && !state.getValue(BLOOM) && result != ItemStack.EMPTY) {
 				IIgnitable.playIgnitionSound(world, pos);
 				bloomery.setIsActive(true);
 				bloomery.setProgressMax(bloomery.getSmeltTime());

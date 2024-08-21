@@ -144,7 +144,7 @@ public class TileEntityForge extends TileEntityBase implements IBasicMetre, IHea
 			sendUpdates();
 		}
 
-		if (!getIsLit() && !world.isRemote) {
+		if (!isLit() && !world.isRemote) {
 			if (temperature > 0 && ticksExisted % 5 == 0) {
 				temperature = 0;
 			}
@@ -156,7 +156,7 @@ public class TileEntityForge extends TileEntityBase implements IBasicMetre, IHea
 			return;
 		}
 		boolean isBurning = isBurning();// Check if it's burning
-		float maxTemp = getIsLit() ? (fuelTemperature + getUnderTemperature()) : 0;
+		float maxTemp = isLit() ? (fuelTemperature + getUnderTemperature()) : 0;
 
 		if (temperature < maxTemp) {
 			float amount = 2.0F;
@@ -300,7 +300,7 @@ public class TileEntityForge extends TileEntityBase implements IBasicMetre, IHea
 		return stats != null;
 	}
 
-	public boolean getIsLit(){
+	public boolean isLit(){
 		return isLit;
 	}
 
@@ -350,7 +350,7 @@ public class TileEntityForge extends TileEntityBase implements IBasicMetre, IHea
 			hasUsed = true;
 			fuel = Math.min(fuel + stats.duration, maxFuel);// Fill as much as can fit
 		}
-		if (stats.doesLight && !getIsLit()) {
+		if (stats.doesLight && !isLit()) {
 			if (!(getTier() == 1)) {
 				Block block = world.getBlockState(pos).getBlock();
 				((BlockForge) block).igniteBlock(world, pos, world.getBlockState(pos));
@@ -360,7 +360,7 @@ public class TileEntityForge extends TileEntityBase implements IBasicMetre, IHea
 		if (hasUsed) {
 			fuelTemperature = stats.baseHeat;
 		}
-		BlockForge.setActiveState(getIsLit(), getFuelCount(), hasBlockAbove(), world, pos);
+		BlockForge.setActiveState(isLit(), getFuelCount(), hasBlockAbove(), world, pos);
 		return hasUsed;
 	}
 
@@ -438,7 +438,7 @@ public class TileEntityForge extends TileEntityBase implements IBasicMetre, IHea
 	}
 
 	public float getBlockTemperature() {
-		if (this.getIsLit()) {
+		if (this.isLit()) {
 			return temperature;
 		}
 		return 0;
@@ -502,7 +502,7 @@ public class TileEntityForge extends TileEntityBase implements IBasicMetre, IHea
 	@SideOnly(Side.CLIENT)
 	public String getTextureName() {
 		BlockForge forge = (BlockForge) world.getBlockState(pos).getBlock();
-		return "forge_" + forge.type + (getIsLit() ? "_active" : "");
+		return "forge_" + forge.type + (isLit() ? "_active" : "");
 	}
 
 	@Override

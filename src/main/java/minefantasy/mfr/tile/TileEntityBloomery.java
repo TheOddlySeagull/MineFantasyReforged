@@ -85,7 +85,7 @@ public class TileEntityBloomery extends TileEntityBase implements ITickable {
 		return oldState.getBlock() != newState.getBlock();
 	}
 
-	public boolean getIsActive() {
+	public boolean isActive() {
 		return isActive;
 	}
 
