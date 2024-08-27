@@ -64,8 +64,8 @@ public abstract class CarpenterRecipeBase extends IForgeRegistryEntry.Impl<Carpe
 	}
 
 	@Override
-	public String getName() {
-		return CraftingManagerCarpenter.getRecipeName(this);
+	public String getResourceLocation() {
+		return this.getRegistryName() != null ? this.getRegistryName().toString() : "";
 	}
 
 	/**

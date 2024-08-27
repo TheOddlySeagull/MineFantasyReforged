@@ -71,7 +71,7 @@ public abstract class TransformationRecipeBase extends IForgeRegistryEntry.Impl<
 	abstract boolean matches(ItemStack tool, ItemStack input, IBlockState state);
 
 	@Override
-	public String getName() {
+	public String getResourceLocation() {
 		return this.getRegistryName().toString();
 	}
 

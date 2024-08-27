@@ -30,6 +30,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -357,9 +358,7 @@ public class TileEntityCrucible extends TileEntityBase implements IHeatUser, ITi
 
 		inventory.deserializeNBT(nbt.getCompoundTag("inventory"));
 
-		if (!nbt.getString(RECIPE_NAME_TAG).isEmpty()) {
-			this.setRecipe(getRecipeName(nbt));
-		}
+		this.setRecipe(getRecipeByResourceLocation(nbt));
 		knownResearches = Utils.deserializeList(nbt.getString(KNOWN_RESEARCHES_TAG));
 	}
 
@@ -374,20 +373,23 @@ public class TileEntityCrucible extends TileEntityBase implements IHeatUser, ITi
 		nbt.setTag("inventory", inventory.serializeNBT());
 
 		if (getRecipe() != null) {
-			nbt.setString(RECIPE_NAME_TAG, getRecipe().getName());
+			nbt.setString(RECIPE_RESOURCE_LOCATION_TAG, getRecipe().getResourceLocation());
+		}
+		else {
+			nbt.setString(RECIPE_RESOURCE_LOCATION_TAG, "");
 		}
 		nbt.setString(KNOWN_RESEARCHES_TAG, Utils.serializeList(knownResearches));
 
 		return nbt;
 	}
 
-	private static IRecipeMFR getRecipeName(NBTTagCompound nbt) {
-		String recipeName = nbt.getString(RECIPE_NAME_TAG);
+	private static IRecipeMFR getRecipeByResourceLocation(NBTTagCompound nbt) {
+		ResourceLocation recipeResourceLocation = new ResourceLocation(nbt.getString(RECIPE_RESOURCE_LOCATION_TAG));
 		IRecipeMFR recipe;
 
-		recipe = CraftingManagerAlloy.getRecipeByName(recipeName, true);
+		recipe = CraftingManagerAlloy.getRecipeByResourceLocation(recipeResourceLocation);
 		if (recipe == null) {
-			recipe = CraftingManagerBlastFurnace.getRecipeByName(recipeName, true);
+			recipe = CraftingManagerBlastFurnace.getRecipeByResourceLocation(recipeResourceLocation);
 		}
 
 		return recipe;

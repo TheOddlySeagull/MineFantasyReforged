@@ -34,7 +34,7 @@ import java.util.List;
 
 public class CraftingManagerSpecial {
 
-	public static final String RECIPE_FOLDER_PATH = "/recipes_mfr/special_recipes/";
+	public static final String RECIPE_FOLDER_PATH = Constants.ASSET_DIRECTORY + "/recipes_mfr/special_recipes/";
 
 	public static final String CONFIG_RECIPE_DIRECTORY = "config/" + Constants.CONFIG_DIRECTORY + "/custom/recipes/special_recipes/";
 
@@ -58,11 +58,11 @@ public class CraftingManagerSpecial {
 
 		FileUtils.createCustomDataDirectory(CONFIG_RECIPE_DIRECTORY);
 		Loader.instance().getActiveModList().forEach(m -> CraftingHelper
-				.loadFactories(m,"assets/" + m.getModId() + RECIPE_FOLDER_PATH, CraftingHelper.CONDITIONS));
+				.loadFactories(m, String.format(RECIPE_FOLDER_PATH, m.getModId()), CraftingHelper.CONDITIONS));
 		//noinspection ConstantConditions
 		loadRecipes(modContainer, new File(CONFIG_RECIPE_DIRECTORY), "");
 		Loader.instance().getActiveModList().forEach(m ->
-				loadRecipes(m, m.getSource(), "assets/" + m.getModId() + RECIPE_FOLDER_PATH));
+				loadRecipes(m, m.getSource(), String.format(RECIPE_FOLDER_PATH, m.getModId())));
 
 		Loader.instance().setActiveModContainer(modContainer);
 	}
@@ -151,19 +151,23 @@ public class CraftingManagerSpecial {
 		return null;
 	}
 
-	public static SpecialRecipeBase getRecipeByName(String name) {
-		ResourceLocation resourceLocation = new ResourceLocation(MineFantasyReforged.MOD_ID + ":" + name);
+	public static SpecialRecipeBase getRecipeByName(String modId, String name) {
+		ResourceLocation resourceLocation = new ResourceLocation(modId, name);
 		if (!SPECIAL_RECIPES.containsKey(resourceLocation)) {
 			MineFantasyReforged.LOG.error("Special Recipe Registry does not contain recipe: {}", name);
 		}
 		return SPECIAL_RECIPES.getValue(resourceLocation);
 	}
 
-	public static List<SpecialRecipeBase> getRecipesByName(String... names) {
+	public static List<SpecialRecipeBase> getRecipesByName(String modId, String... names) {
 		List<SpecialRecipeBase> recipes = new ArrayList<>();
 		for (String name : names) {
-			recipes.add(getRecipeByName(name));
+			recipes.add(getRecipeByName(modId, name));
 		}
 		return recipes;
+	}
+
+	public static SpecialRecipeBase getRecipeByResourceLocation(ResourceLocation resourceLocation) {
+		return SPECIAL_RECIPES.getValue(resourceLocation);
 	}
 }

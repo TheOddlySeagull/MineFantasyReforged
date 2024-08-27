@@ -78,8 +78,8 @@ public abstract class AnvilRecipeBase extends IForgeRegistryEntry.Impl<AnvilReci
 	}
 
 	@Override
-	public String getName() {
-		return CraftingManagerAnvil.getRecipeName(this);
+	public String getResourceLocation() {
+		return this.getRegistryName() != null ? this.getRegistryName().toString() : "";
 	}
 
 	public ItemStack getCraftingResult(AnvilCraftMatrix var1) {

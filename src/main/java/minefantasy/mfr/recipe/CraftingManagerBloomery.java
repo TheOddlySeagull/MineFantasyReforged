@@ -29,13 +29,15 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class CraftingManagerBloomery {
 
-	public static final String RECIPE_FOLDER_PATH = "/recipes_mfr/bloomery_recipes/";
+	public static final String RECIPE_FOLDER_PATH = Constants.ASSET_DIRECTORY + "/recipes_mfr/bloomery_recipes/";
 
 	public static final String CONFIG_RECIPE_DIRECTORY = "config/" + Constants.CONFIG_DIRECTORY + "/custom/recipes/bloomery_recipes/";
 
@@ -61,11 +63,11 @@ public class CraftingManagerBloomery {
 
 		FileUtils.createCustomDataDirectory(CONFIG_RECIPE_DIRECTORY);
 		Loader.instance().getActiveModList().forEach(m -> CraftingHelper
-				.loadFactories(m,"assets/" + m.getModId() + RECIPE_FOLDER_PATH, CraftingHelper.CONDITIONS));
+				.loadFactories(m, String.format(RECIPE_FOLDER_PATH, m.getModId()), CraftingHelper.CONDITIONS));
 		//noinspection ConstantConditions
 		loadRecipes(modContainer, new File(CONFIG_RECIPE_DIRECTORY), "");
 		Loader.instance().getActiveModList().forEach(m ->
-				loadRecipes(m, m.getSource(), "assets/" + m.getModId() + RECIPE_FOLDER_PATH));
+				loadRecipes(m, m.getSource(), String.format(RECIPE_FOLDER_PATH, m.getModId())));
 
 		Loader.instance().setActiveModContainer(modContainer);
 	}
@@ -170,20 +172,24 @@ public class CraftingManagerBloomery {
 		return null;
 	}
 
-	public static BloomeryRecipeBase getRecipeByName(String name, boolean isNullable) {
-		ResourceLocation resourceLocation = new ResourceLocation(MineFantasyReforged.MOD_ID + ":" + name);
-		if (!BLOOMERY_RECIPES.containsKey(resourceLocation) && !isNullable) {
+	public static BloomeryRecipeBase getRecipeByName(String modId, String name) {
+		ResourceLocation resourceLocation = new ResourceLocation(modId, name);
+		if (!BLOOMERY_RECIPES.containsKey(resourceLocation)) {
 			MineFantasyReforged.LOG.error("Bloomery Recipe Registry does not contain recipe: {}", name);
 		}
 		return BLOOMERY_RECIPES.getValue(resourceLocation);
 	}
 
-	public static String getRecipeName(BloomeryRecipeBase recipe) {
-		ResourceLocation recipeLocation = BLOOMERY_RECIPES.getKey(recipe);
-		if (recipeLocation != null) {
-			return recipeLocation.getPath();
+	public static List<BloomeryRecipeBase> getRecipesByName(String modId, String... names) {
+		List<BloomeryRecipeBase> recipes = new ArrayList<>();
+		for (String name : names) {
+			recipes.add(getRecipeByName(modId, name));
 		}
-		return "";
+		return recipes;
+	}
+
+	public static BloomeryRecipeBase getRecipeByResourceLocation(ResourceLocation resourceLocation) {
+		return BLOOMERY_RECIPES.getValue(resourceLocation);
 	}
 
 	public static Set<String> getBloomeryResearches() {

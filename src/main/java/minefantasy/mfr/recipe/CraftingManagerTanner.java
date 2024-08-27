@@ -23,7 +23,6 @@ import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.RegistryBuilder;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -38,7 +37,7 @@ import java.util.Set;
 
 public class CraftingManagerTanner {
 
-	public static final String RECIPE_FOLDER_PATH = "/recipes_mfr/tanner_recipes/";
+	public static final String RECIPE_FOLDER_PATH = Constants.ASSET_DIRECTORY +  "/recipes_mfr/tanner_recipes/";
 
 	public static final String CONFIG_RECIPE_DIRECTORY = "config/" + Constants.CONFIG_DIRECTORY + "/custom/recipes/tanner_recipes/";
 
@@ -64,11 +63,11 @@ public class CraftingManagerTanner {
 
 		FileUtils.createCustomDataDirectory(CONFIG_RECIPE_DIRECTORY);
 		Loader.instance().getActiveModList().forEach(m -> CraftingHelper
-				.loadFactories(m,"assets/" + m.getModId() + RECIPE_FOLDER_PATH, CraftingHelper.CONDITIONS));
+				.loadFactories(m, String.format(RECIPE_FOLDER_PATH, m.getModId()), CraftingHelper.CONDITIONS));
 		//noinspection ConstantConditions
 		loadRecipes(modContainer, new File(CONFIG_RECIPE_DIRECTORY), "");
 		Loader.instance().getActiveModList().forEach(m ->
-				loadRecipes(m, m.getSource(), "assets/" + m.getModId() + RECIPE_FOLDER_PATH));
+				loadRecipes(m, m.getSource(), String.format(RECIPE_FOLDER_PATH, m.getModId())));
 
 		Loader.instance().setActiveModContainer(modContainer);
 	}
@@ -170,28 +169,24 @@ public class CraftingManagerTanner {
 		return null;
 	}
 
-	public static TannerRecipeBase getRecipeByName(String name, boolean isNullable) {
-		ResourceLocation resourceLocation = new ResourceLocation(MineFantasyReforged.MOD_ID + ":" + name);
-		if (!TANNER_RECIPES.containsKey(resourceLocation) && !isNullable) {
+	public static TannerRecipeBase getRecipeByName(String modId, String name) {
+		ResourceLocation resourceLocation = new ResourceLocation(modId, name);
+		if (!TANNER_RECIPES.containsKey(resourceLocation)) {
 			MineFantasyReforged.LOG.error("Tanner Recipe Registry does not contain recipe: {}", name);
 		}
 		return TANNER_RECIPES.getValue(resourceLocation);
 	}
 
-	public static List<TannerRecipeBase> getRecipesByName(String... names) {
+	public static List<TannerRecipeBase> getRecipesByName(String modId, String... names) {
 		List<TannerRecipeBase> recipes = new ArrayList<>();
 		for (String name : names) {
-			recipes.add(getRecipeByName(name, false));
+			recipes.add(getRecipeByName(modId, name));
 		}
 		return recipes;
 	}
 
-	public static String getRecipeName(TannerRecipeBase recipe) {
-		ResourceLocation recipeLocation = TANNER_RECIPES.getKey(recipe);
-		if (recipeLocation != null) {
-			return recipeLocation.getPath();
-		}
-		return "";
+	public static TannerRecipeBase getRecipeByResourceLocation(ResourceLocation resourceLocation) {
+		return TANNER_RECIPES.getValue(resourceLocation);
 	}
 
 	public static Set<String> getTannerResearches() {

@@ -36,7 +36,7 @@ import java.util.List;
 
 public class CraftingManagerCarpenter {
 
-	public static final String RECIPE_FOLDER_PATH = "/recipes_mfr/carpenter_recipes/";
+	public static final String RECIPE_FOLDER_PATH = Constants.ASSET_DIRECTORY + "/recipes_mfr/carpenter_recipes/";
 
 	public static final String CONFIG_RECIPE_DIRECTORY = "config/" + Constants.CONFIG_DIRECTORY + "/custom/recipes/carpenter_recipes/";
 
@@ -61,11 +61,11 @@ public class CraftingManagerCarpenter {
 		FileUtils.createCustomDataDirectory(CONFIG_RECIPE_DIRECTORY);
 
 		Loader.instance().getActiveModList().forEach(m -> CraftingHelper
-				.loadFactories(m,"assets/" + m.getModId() + RECIPE_FOLDER_PATH, CraftingHelper.CONDITIONS));
+				.loadFactories(m, String.format(RECIPE_FOLDER_PATH, m.getModId()), CraftingHelper.CONDITIONS));
 		//noinspection ConstantConditions
 		loadRecipes(modContainer, new File(CONFIG_RECIPE_DIRECTORY), "");
 		Loader.instance().getActiveModList().forEach(m ->
-				loadRecipes(m, m.getSource(), "assets/" + m.getModId() + RECIPE_FOLDER_PATH));
+				loadRecipes(m, m.getSource(), String.format(RECIPE_FOLDER_PATH, m.getModId())));
 
 		Loader.instance().setActiveModContainer(modContainer);
 	}
@@ -176,27 +176,23 @@ public class CraftingManagerCarpenter {
 		return null;
 	}
 
-	public static CarpenterRecipeBase getRecipeByName(String name, boolean isNullable) {
-		ResourceLocation resourceLocation = new ResourceLocation(MineFantasyReforged.MOD_ID + ":" + name);
-		if (!CARPENTER_RECIPES.containsKey(resourceLocation) && !isNullable) {
+	public static CarpenterRecipeBase getRecipeByName(String modId, String name) {
+		ResourceLocation resourceLocation = new ResourceLocation(modId, name);
+		if (!CARPENTER_RECIPES.containsKey(resourceLocation)) {
 			MineFantasyReforged.LOG.error("Carpenter Recipe Registry does not contain recipe: {}", name);
 		}
 		return CARPENTER_RECIPES.getValue(resourceLocation);
 	}
 
-	public static List<CarpenterRecipeBase> getRecipesByName(String... names) {
+	public static List<CarpenterRecipeBase> getRecipesByName(String modId, String... names) {
 		List<CarpenterRecipeBase> recipes = new ArrayList<>();
 		for (String name : names) {
-			recipes.add(getRecipeByName(name, false));
+			recipes.add(getRecipeByName(modId, name));
 		}
 		return recipes;
 	}
 
-	public static String getRecipeName(CarpenterRecipeBase recipe) {
-		ResourceLocation recipeLocation = CARPENTER_RECIPES.getKey(recipe);
-		if (recipeLocation != null) {
-			return recipeLocation.getPath();
-		}
-		return "";
+	public static CarpenterRecipeBase getRecipeByResourceLocation(ResourceLocation resourceLocation) {
+		return CARPENTER_RECIPES.getValue(resourceLocation);
 	}
 }

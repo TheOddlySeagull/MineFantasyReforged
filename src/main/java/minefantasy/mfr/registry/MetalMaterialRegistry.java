@@ -3,6 +3,7 @@ package minefantasy.mfr.registry;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import minefantasy.mfr.MineFantasyReforged;
 import minefantasy.mfr.constants.Constants;
 import minefantasy.mfr.material.CustomMaterial;
 import minefantasy.mfr.material.MetalMaterial;
@@ -20,7 +21,7 @@ public class MetalMaterialRegistry extends DataLoader {
 	public static final MetalMaterialRegistry INSTANCE = new MetalMaterialRegistry();
 
 	private static final String TYPE = "metal material";
-	private static final String DEFAULT_RECIPE_DIRECTORY = "assets/" + Constants.ASSET_DIRECTORY +"/registry";
+	private static final String DEFAULT_RECIPE_DIRECTORY = Constants.ASSET_DIRECTORY + "/materials_mfr";
 	private static final String CUSTOM_RECIPE_DIRECTORY = "config/" + Constants.CONFIG_DIRECTORY +"/custom/registry";
 
 	public void preInit() {

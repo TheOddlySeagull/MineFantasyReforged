@@ -536,6 +536,9 @@ public class TileEntityBigFurnace extends TileEntityBase implements IBellowsUsea
 		}
 
 		IBlockState state = world.getBlockState(pos);
+		if (!(world.getTileEntity(pos) instanceof TileEntityBigFurnace)) {
+			return false;
+		}
 		EnumFacing facing = state.getValue(BlockBigFurnace.FACING);
 		if (isSolid(facing)) {
 			return false;
@@ -569,9 +572,8 @@ public class TileEntityBigFurnace extends TileEntityBase implements IBellowsUsea
 
 		inventory.deserializeNBT(nbt.getCompoundTag("inventory"));
 
-		if (!nbt.getString(RECIPE_NAME_TAG).isEmpty()) {
-			this.setRecipe(CraftingManagerBigFurnace.getRecipeByName(nbt.getString(RECIPE_NAME_TAG), true));
-		}
+		ResourceLocation resourceLocation = new ResourceLocation(nbt.getString(RECIPE_RESOURCE_LOCATION_TAG));
+		this.setRecipe(CraftingManagerBigFurnace.getRecipeByResourceLocation(resourceLocation));
 
 		knownResearches = Utils.deserializeList(nbt.getString(KNOWN_RESEARCHES_TAG));
 
@@ -610,7 +612,10 @@ public class TileEntityBigFurnace extends TileEntityBase implements IBellowsUsea
 		nbt.setTag("inventory", inventory.serializeNBT());
 
 		if (getRecipe() != null) {
-			nbt.setString(RECIPE_NAME_TAG, getRecipe().getName());
+			nbt.setString(RECIPE_RESOURCE_LOCATION_TAG, getRecipe().getResourceLocation());
+		}
+		else {
+			nbt.setString(RECIPE_RESOURCE_LOCATION_TAG, "");
 		}
 
 		nbt.setString(KNOWN_RESEARCHES_TAG, Utils.serializeList(knownResearches));

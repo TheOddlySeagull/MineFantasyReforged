@@ -38,7 +38,7 @@ import java.util.List;
 
 public class CraftingManagerAnvil {
 
-	public static final String RECIPE_FOLDER_PATH = "/recipes_mfr/anvil_recipes/";
+	public static final String RECIPE_FOLDER_PATH = Constants.ASSET_DIRECTORY + "/recipes_mfr/anvil_recipes/";
 
 	public static final String CONFIG_RECIPE_DIRECTORY = "config/" + Constants.CONFIG_DIRECTORY + "/custom/recipes/anvil_recipes/";
 
@@ -62,11 +62,11 @@ public class CraftingManagerAnvil {
 
 		FileUtils.createCustomDataDirectory(CONFIG_RECIPE_DIRECTORY);
 		Loader.instance().getActiveModList().forEach(m -> CraftingHelper
-				.loadFactories(m,"assets/" + m.getModId() + RECIPE_FOLDER_PATH, CraftingHelper.CONDITIONS));
+				.loadFactories(m, String.format(RECIPE_FOLDER_PATH, m.getModId()), CraftingHelper.CONDITIONS));
 		//noinspection ConstantConditions
 		loadRecipes(modContainer, new File(CONFIG_RECIPE_DIRECTORY), "");
 		Loader.instance().getActiveModList().forEach(m ->
-				loadRecipes(m, m.getSource(), "assets/" + m.getModId() + RECIPE_FOLDER_PATH));
+				loadRecipes(m, m.getSource(), String.format(RECIPE_FOLDER_PATH, m.getModId())));
 
 		Loader.instance().setActiveModContainer(modContainer);
 	}
@@ -191,20 +191,24 @@ public class CraftingManagerAnvil {
 		return null;
 	}
 
-	public static AnvilRecipeBase getRecipeByName(String name, boolean isNullable) {
-		ResourceLocation resourceLocation = new ResourceLocation(MineFantasyReforged.MOD_ID + ":" + name);
-		if (!ANVIL_RECIPES.containsKey(resourceLocation) && !isNullable) {
+	public static AnvilRecipeBase getRecipeByName(String modId, String name) {
+		ResourceLocation resourceLocation = new ResourceLocation(modId, name);
+		if (!ANVIL_RECIPES.containsKey(resourceLocation)) {
 			MineFantasyReforged.LOG.error("Anvil Recipe Registry does not contain recipe: {}", name);
 		}
 		return ANVIL_RECIPES.getValue(resourceLocation);
 	}
 
-	public static List<AnvilRecipeBase> getRecipesByName(String... names) {
+	public static List<AnvilRecipeBase> getRecipesByName(String modId, String... names) {
 		List<AnvilRecipeBase> recipes = new ArrayList<>();
 		for (String name : names) {
-			recipes.add(getRecipeByName(name, false));
+			recipes.add(getRecipeByName(modId, name));
 		}
 		return recipes;
+	}
+
+	public static AnvilRecipeBase getRecipeByResourceLocation(ResourceLocation resourceLocation) {
+		return ANVIL_RECIPES.getValue(resourceLocation);
 	}
 
 	public static String getRecipeName(AnvilRecipeBase recipe) {

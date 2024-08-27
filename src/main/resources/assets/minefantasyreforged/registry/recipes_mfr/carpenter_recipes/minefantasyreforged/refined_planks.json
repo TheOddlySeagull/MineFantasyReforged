@@ -8,7 +8,7 @@
   "tool_tier": 1,
   "skill_xp": 1,
   "vanilla_xp": 0.1,
-  "sound": "minecraft:block.cloth.step",
+  "sound": "minefantasyreforged:block.hammercarpenter",
   "pattern": [
     "N ",
     "PP",

@@ -23,6 +23,7 @@ import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraftforge.common.capabilities.Capability;
@@ -381,7 +382,8 @@ public class TileEntityCarpenter extends TileEntityBase implements ICarpenter {
 		progress = nbt.getFloat(PROGRESS_TAG);
 		progressMax = nbt.getFloat(PROGRESS_MAX_TAG);
 		requiredToolTier = nbt.getInteger(TOOL_TIER_REQUIRED_TAG);
-		this.setRecipe(CraftingManagerCarpenter.getRecipeByName(nbt.getString(RECIPE_NAME_TAG), true));
+		ResourceLocation resourceLocation = new ResourceLocation(nbt.getString(RECIPE_RESOURCE_LOCATION_TAG));
+		this.setRecipe(CraftingManagerCarpenter.getRecipeByResourceLocation(resourceLocation));
 	}
 
 	@Override
@@ -393,7 +395,10 @@ public class TileEntityCarpenter extends TileEntityBase implements ICarpenter {
 		nbt.setFloat(PROGRESS_MAX_TAG, progressMax);
 		nbt.setInteger(TOOL_TIER_REQUIRED_TAG, requiredToolTier);
 		if (getRecipe() != null) {
-			nbt.setString(RECIPE_NAME_TAG, getRecipe().getName());
+			nbt.setString(RECIPE_RESOURCE_LOCATION_TAG, getRecipe().getResourceLocation());
+		}
+		else {
+			nbt.setString(RECIPE_RESOURCE_LOCATION_TAG, "");
 		}
 		return nbt;
 	}

@@ -29,13 +29,15 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class CraftingManagerBlastFurnace {
 
-	public static final String RECIPE_FOLDER_PATH = "/recipes_mfr/blast_furnace_recipes/";
+	public static final String RECIPE_FOLDER_PATH = Constants.ASSET_DIRECTORY + "/recipes_mfr/blast_furnace_recipes/";
 
 	public static final String CONFIG_RECIPE_DIRECTORY = "config/" + Constants.CONFIG_DIRECTORY + "/custom/recipes/blast_furnace_recipes/";
 
@@ -61,11 +63,11 @@ public class CraftingManagerBlastFurnace {
 
 		FileUtils.createCustomDataDirectory(CONFIG_RECIPE_DIRECTORY);
 		Loader.instance().getActiveModList().forEach(m -> CraftingHelper
-				.loadFactories(m,"assets/" + m.getModId() + RECIPE_FOLDER_PATH, CraftingHelper.CONDITIONS));
+				.loadFactories(m, String.format(RECIPE_FOLDER_PATH, m.getModId()), CraftingHelper.CONDITIONS));
 		//noinspection ConstantConditions
 		loadRecipes(modContainer, new File(CONFIG_RECIPE_DIRECTORY), "");
 		Loader.instance().getActiveModList().forEach(m ->
-				loadRecipes(m, m.getSource(), "assets/" + m.getModId() + RECIPE_FOLDER_PATH));
+				loadRecipes(m, m.getSource(), String.format(RECIPE_FOLDER_PATH, m.getModId())));
 
 		Loader.instance().setActiveModContainer(modContainer);
 	}
@@ -170,20 +172,24 @@ public class CraftingManagerBlastFurnace {
 		return null;
 	}
 
-	public static BlastFurnaceRecipeBase getRecipeByName(String name, boolean isNullable) {
-		ResourceLocation resourceLocation = new ResourceLocation(MineFantasyReforged.MOD_ID + ":" + name);
-		if (!BLAST_FURNACE_RECIPES.containsKey(resourceLocation) && !isNullable) {
+	public static BlastFurnaceRecipeBase getRecipeByName(String modId, String name) {
+		ResourceLocation resourceLocation = new ResourceLocation(modId, name);
+		if (!BLAST_FURNACE_RECIPES.containsKey(resourceLocation)) {
 			MineFantasyReforged.LOG.error("Blast Furnace Recipe Registry does not contain recipe: {}", name);
 		}
 		return BLAST_FURNACE_RECIPES.getValue(resourceLocation);
 	}
 
-	public static String getRecipeName(BlastFurnaceRecipeBase recipe) {
-		ResourceLocation recipeLocation = BLAST_FURNACE_RECIPES.getKey(recipe);
-		if (recipeLocation != null) {
-			return recipeLocation.getPath();
+	public static List<BlastFurnaceRecipeBase> getRecipesByName(String modId, String... names) {
+		List<BlastFurnaceRecipeBase> recipes = new ArrayList<>();
+		for (String name : names) {
+			recipes.add(getRecipeByName(modId, name));
 		}
-		return "";
+		return recipes;
+	}
+
+	public static BlastFurnaceRecipeBase getRecipeByResourceLocation(ResourceLocation resourceLocation) {
+		return BLAST_FURNACE_RECIPES.getValue(resourceLocation);
 	}
 
 	public static Set<String> getBlastFurnaceResearches() {

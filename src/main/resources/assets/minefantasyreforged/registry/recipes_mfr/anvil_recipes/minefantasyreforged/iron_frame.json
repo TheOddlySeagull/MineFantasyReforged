@@ -21,7 +21,8 @@
       "item": "minefantasyreforged:rivet"
     },
     "E": {
-      "item": "minefantasyreforged:engin_anvil_tools"
+      "item": "minefantasyreforged:engin_anvil_tools",
+      "data": 32767
     },
     "S": {
       "item": "#HUNK_STEEL"

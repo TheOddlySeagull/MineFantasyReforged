@@ -29,7 +29,8 @@
       "item": "minefantasyreforged:tungsten_gears"
     },
     "E": {
-      "item": "minefantasyreforged:engin_anvil_tools"
+      "item": "minefantasyreforged:engin_anvil_tools",
+      "data": 32767
     }
   },
   "result": {

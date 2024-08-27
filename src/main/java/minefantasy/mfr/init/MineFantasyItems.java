@@ -1830,7 +1830,6 @@ public class MineFantasyItems {
 		if (item.isDamageable()) {
 			item.setMaxDamage(hp);
 		}
-		item.setTranslationKey("crude_" + Utils.convertSplitCapitalizedToSnakeCase(new ItemStack(item).getDisplayName()));
 	}
 
 	public static void initEnumActions(){

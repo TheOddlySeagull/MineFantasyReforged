@@ -37,7 +37,7 @@ import java.util.Set;
 
 public class CraftingManagerBigFurnace {
 
-	public static final String RECIPE_FOLDER_PATH = "/recipes_mfr/big_furnace_recipes/";
+	public static final String RECIPE_FOLDER_PATH = Constants.ASSET_DIRECTORY + "/recipes_mfr/big_furnace_recipes/";
 
 	public static final String CONFIG_RECIPE_DIRECTORY = "config/" + Constants.CONFIG_DIRECTORY + "/custom/recipes/big_furnace_recipes/";
 
@@ -64,11 +64,11 @@ public class CraftingManagerBigFurnace {
 
 		FileUtils.createCustomDataDirectory(CONFIG_RECIPE_DIRECTORY);
 		Loader.instance().getActiveModList().forEach(m -> CraftingHelper
-				.loadFactories(m,"assets/" + m.getModId() + RECIPE_FOLDER_PATH, CraftingHelper.CONDITIONS));
+				.loadFactories(m, String.format(RECIPE_FOLDER_PATH, m.getModId()), CraftingHelper.CONDITIONS));
 		//noinspection ConstantConditions
 		loadRecipes(modContainer, new File(CONFIG_RECIPE_DIRECTORY), "");
 		Loader.instance().getActiveModList().forEach(m ->
-				loadRecipes(m, m.getSource(), "assets/" + m.getModId() + RECIPE_FOLDER_PATH));
+				loadRecipes(m, m.getSource(), String.format(RECIPE_FOLDER_PATH, m.getModId())));
 
 		Loader.instance().setActiveModContainer(modContainer);
 	}
@@ -173,29 +173,24 @@ public class CraftingManagerBigFurnace {
 		return null;
 	}
 
-	public static BigFurnaceRecipeBase getRecipeByName(String name, boolean isNullable) {
-		ResourceLocation resourceLocation = new ResourceLocation(MineFantasyReforged.MOD_ID + ":" + name);
-		if (!BIG_FURNACE_RECIPES.containsKey(resourceLocation) && !isNullable) {
+	public static BigFurnaceRecipeBase getRecipeByName(String modId, String name) {
+		ResourceLocation resourceLocation = new ResourceLocation(modId, name);
+		if (!BIG_FURNACE_RECIPES.containsKey(resourceLocation)) {
 			MineFantasyReforged.LOG.error("Big Furnace Recipe Registry does not contain recipe: {}", name);
 		}
 		return BIG_FURNACE_RECIPES.getValue(resourceLocation);
 	}
 
-	public static List<BigFurnaceRecipeBase> getRecipesByName(String... names) {
+	public static List<BigFurnaceRecipeBase> getRecipesByName(String modId, String... names) {
 		List<BigFurnaceRecipeBase> recipes = new ArrayList<>();
 		for (String name : names) {
-			recipes.add(getRecipeByName(name, false));
+			recipes.add(getRecipeByName(modId, name));
 		}
 		return recipes;
 	}
 
-
-	public static String getRecipeName(BigFurnaceRecipeBase recipe) {
-		ResourceLocation recipeLocation = BIG_FURNACE_RECIPES.getKey(recipe);
-		if (recipeLocation != null) {
-			return recipeLocation.getPath();
-		}
-		return "";
+	public static BigFurnaceRecipeBase getRecipeByResourceLocation(ResourceLocation resourceLocation) {
+		return BIG_FURNACE_RECIPES.getValue(resourceLocation);
 	}
 
 	public static Set<String> getBigFurnaceResearches() {

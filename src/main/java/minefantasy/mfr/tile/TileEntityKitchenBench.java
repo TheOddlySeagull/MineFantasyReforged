@@ -22,6 +22,7 @@ import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraftforge.common.capabilities.Capability;
@@ -371,7 +372,8 @@ public class TileEntityKitchenBench extends TileEntityBase implements IKitchenBe
 		progress = nbt.getFloat(PROGRESS_TAG);
 		progressMax = nbt.getFloat(PROGRESS_MAX_TAG);
 		dirtyProgress = nbt.getFloat(DIRTY_PROGRESS_TAG);
-		this.setRecipe(CraftingManagerKitchenBench.getRecipeByName(nbt.getString(RECIPE_NAME_TAG), true));
+		ResourceLocation resourceLocation = new ResourceLocation(nbt.getString(RECIPE_RESOURCE_LOCATION_TAG));
+		this.setRecipe(CraftingManagerKitchenBench.getRecipeByResourceLocation(resourceLocation));
 	}
 
 	@Override
@@ -383,7 +385,10 @@ public class TileEntityKitchenBench extends TileEntityBase implements IKitchenBe
 		nbt.setFloat(PROGRESS_MAX_TAG, progressMax);
 		nbt.setFloat(DIRTY_PROGRESS_TAG, dirtyProgress);
 		if (getRecipe() != null) {
-			nbt.setString(RECIPE_NAME_TAG, getRecipe().getName());
+			nbt.setString(RECIPE_RESOURCE_LOCATION_TAG, getRecipe().getResourceLocation());
+		}
+		else {
+			nbt.setString(RECIPE_RESOURCE_LOCATION_TAG, "");
 		}
 		return nbt;
 	}

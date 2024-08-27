@@ -44,7 +44,7 @@ import java.util.Set;
 
 public class CraftingManagerRoast {
 
-	public static final String RECIPE_FOLDER_PATH = "/recipes_mfr/roast_recipes/";
+	public static final String RECIPE_FOLDER_PATH = Constants.ASSET_DIRECTORY + "/recipes_mfr/roast_recipes/";
 
 	public static final String CONFIG_RECIPE_DIRECTORY = "config/" + Constants.CONFIG_DIRECTORY + "/custom/recipes/roast_recipes/";
 
@@ -71,11 +71,11 @@ public class CraftingManagerRoast {
 
 		FileUtils.createCustomDataDirectory(CONFIG_RECIPE_DIRECTORY);
 		Loader.instance().getActiveModList().forEach(m -> CraftingHelper
-				.loadFactories(m,"assets/" + m.getModId() + RECIPE_FOLDER_PATH, CraftingHelper.CONDITIONS));
+				.loadFactories(m, String.format(RECIPE_FOLDER_PATH, m.getModId()), CraftingHelper.CONDITIONS));
 		//noinspection ConstantConditions
 		loadRecipes(modContainer, new File(CONFIG_RECIPE_DIRECTORY), "");
 		Loader.instance().getActiveModList().forEach(m ->
-				loadRecipes(m, m.getSource(), "assets/" + m.getModId() + RECIPE_FOLDER_PATH));
+				loadRecipes(m, m.getSource(), String.format(RECIPE_FOLDER_PATH, m.getModId())));
 
 		Loader.instance().setActiveModContainer(modContainer);
 	}
@@ -207,28 +207,24 @@ public class CraftingManagerRoast {
 		return null;
 	}
 
-	public static RoastRecipeBase getRecipeByName(String name, boolean isNullable) {
-		ResourceLocation resourceLocation = new ResourceLocation(MineFantasyReforged.MOD_ID + ":" + name);
-		if (!ROAST_RECIPES.containsKey(resourceLocation) && !isNullable) {
+	public static RoastRecipeBase getRecipeByName(String modId, String name) {
+		ResourceLocation resourceLocation = new ResourceLocation(modId, name);
+		if (!ROAST_RECIPES.containsKey(resourceLocation)) {
 			MineFantasyReforged.LOG.error("Roast Recipe Registry does not contain recipe: {}", name);
 		}
 		return ROAST_RECIPES.getValue(resourceLocation);
 	}
 
-	public static List<RoastRecipeBase> getRecipesByName(String... names) {
+	public static List<RoastRecipeBase> getRecipesByName(String modId, String... names) {
 		List<RoastRecipeBase> recipes = new ArrayList<>();
 		for (String name : names) {
-			recipes.add(getRecipeByName(name, false));
+			recipes.add(getRecipeByName(modId, name));
 		}
 		return recipes;
 	}
 
-	public static String getRecipeName(RoastRecipeBase recipe) {
-		ResourceLocation recipeLocation = ROAST_RECIPES.getKey(recipe);
-		if (recipeLocation != null) {
-			return recipeLocation.getPath();
-		}
-		return recipe.getRegistryName().toString();
+	public static RoastRecipeBase getRecipeByResourceLocation(ResourceLocation resourceLocation) {
+		return ROAST_RECIPES.getValue(resourceLocation);
 	}
 
 	public static Set<String> getRoastResearches() {

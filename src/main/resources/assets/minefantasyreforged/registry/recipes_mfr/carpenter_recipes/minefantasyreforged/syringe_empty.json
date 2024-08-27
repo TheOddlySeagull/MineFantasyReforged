@@ -23,7 +23,8 @@
       "item": "minefantasyreforged:standard_needle"
     },
     "E": {
-      "item": "minefantasyreforged:engin_anvil_tools"
+      "item": "minefantasyreforged:engin_anvil_tools",
+      "data": 32767
     },
     "G": {
       "item": "minecraft:glass_bottle"
