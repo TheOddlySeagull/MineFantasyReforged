@@ -5,7 +5,7 @@ import minefantasy.mfr.init.MineFantasyItems;
 import minefantasy.mfr.init.MineFantasyMaterials;
 import minefantasy.mfr.item.ItemCustomArmour;
 import minefantasy.mfr.item.ItemWeaponMFR;
-import minefantasy.mfr.material.CustomMaterial;
+import minefantasy.mfr.registry.CustomMaterialRegistry;
 import minefantasy.mfr.util.XSTRandom;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
@@ -176,7 +176,7 @@ public class MonsterUpgrader {
 	 * 1=Axe.....2=Mace.....3=dagger.....4=spear.....else sword
 	 */
 	private void giveEntityWeapon(EntityLivingBase mob, String tier, int weaponType) {
-		if (CustomMaterial.getMaterial(tier) == CustomMaterial.NONE)
+		if (CustomMaterialRegistry.getMaterial(tier) == CustomMaterialRegistry.NONE)
 			return;
 
 		ItemWeaponMFR weapon = MineFantasyItems.STANDARD_SWORD;

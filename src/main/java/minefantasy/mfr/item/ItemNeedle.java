@@ -9,6 +9,8 @@ import minefantasy.mfr.constants.Tool;
 import minefantasy.mfr.init.MineFantasyTabs;
 import minefantasy.mfr.material.CustomMaterial;
 import minefantasy.mfr.proxy.IClientRegister;
+import minefantasy.mfr.registry.CustomMaterialRegistry;
+import minefantasy.mfr.registry.types.CustomMaterialType;
 import minefantasy.mfr.util.CustomToolHelper;
 import minefantasy.mfr.util.ModelLoaderHelper;
 import minefantasy.mfr.util.ToolHelper;
@@ -120,7 +122,7 @@ public class ItemNeedle extends ItemTool implements IToolMaterial, IToolMFR, ICl
 	 */
 	@Override
 	public int getItemEnchantability(ItemStack stack) {
-		return CustomToolHelper.getCustomPrimaryMaterial(stack).enchantability;
+		return CustomToolHelper.getCustomPrimaryMaterial(stack).getEnchantability();
 	}
 
 	@Override
@@ -129,10 +131,10 @@ public class ItemNeedle extends ItemTool implements IToolMaterial, IToolMFR, ICl
 			return;
 		}
 		if (isCustom) {
-			ArrayList<CustomMaterial> metal = CustomMaterial.getList("metal");
+			ArrayList<CustomMaterial> metal = CustomMaterialRegistry.getList(CustomMaterialType.METAL_MATERIAL);
 			for (CustomMaterial customMat : metal) {
 				if (MineFantasyReforged.isDebug() || !customMat.getItemStack().isEmpty()) {
-					items.add(this.construct(customMat.name));
+					items.add(this.construct(customMat.getName()));
 				}
 			}
 		} else {

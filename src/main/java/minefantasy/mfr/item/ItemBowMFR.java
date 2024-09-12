@@ -14,6 +14,8 @@ import minefantasy.mfr.material.CustomMaterial;
 import minefantasy.mfr.mechanics.AmmoMechanics;
 import minefantasy.mfr.network.NetworkHandler;
 import minefantasy.mfr.proxy.IClientRegister;
+import minefantasy.mfr.registry.CustomMaterialRegistry;
+import minefantasy.mfr.registry.types.CustomMaterialType;
 import minefantasy.mfr.tile.TileEntityRack;
 import minefantasy.mfr.util.CustomToolHelper;
 import minefantasy.mfr.util.ModelLoaderHelper;
@@ -336,10 +338,10 @@ public class ItemBowMFR extends ItemBow implements ISpecialBow, IDisplayMFRAmmo,
 			return;
 		}
 		if (isCustom) {
-			ArrayList<CustomMaterial> wood = CustomMaterial.getList("wood");
+			ArrayList<CustomMaterial> wood = CustomMaterialRegistry.getList(CustomMaterialType.WOOD_MATERIAL);
 			for (CustomMaterial customMat : wood) {
 				if (MineFantasyReforged.isDebug() || !customMat.getItemStack().isEmpty()) {
-					items.add(this.construct("iron", customMat.name));
+					items.add(this.construct("iron", customMat.getName()));
 				}
 			}
 		}
@@ -367,7 +369,7 @@ public class ItemBowMFR extends ItemBow implements ISpecialBow, IDisplayMFRAmmo,
 	 */
 	@Override
 	public int getItemEnchantability(ItemStack stack) {
-		return CustomToolHelper.getCustomPrimaryMaterial(stack).enchantability;
+		return CustomToolHelper.getCustomPrimaryMaterial(stack).getEnchantability();
 	}
 
 	// ====================================================== CUSTOM END
@@ -375,7 +377,7 @@ public class ItemBowMFR extends ItemBow implements ISpecialBow, IDisplayMFRAmmo,
 	@Override
 	public float getMaxCharge(ItemStack bow) {
 		return (((ItemBowMFR)bow.getItem()).model.chargeTime
-				+ (5 * (CustomToolHelper.getCustomPrimaryMaterial(bow).resistance / 25)));
+				+ (5 * (CustomToolHelper.getCustomPrimaryMaterial(bow).getResistance() / 25)));
 	}
 
 	@Override

@@ -3,7 +3,7 @@
         "Author: thepigemperor2"
     ],
     "mod": "twilightforest",
-    "metals": [
+    "metal_material": [
         {
             "name": "ironwood",
             "oreDictList": "ingotIronwood",

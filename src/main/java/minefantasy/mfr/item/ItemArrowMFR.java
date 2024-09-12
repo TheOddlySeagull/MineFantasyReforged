@@ -9,6 +9,8 @@ import minefantasy.mfr.material.BaseMaterial;
 import minefantasy.mfr.material.CustomMaterial;
 import minefantasy.mfr.mechanics.AmmoMechanics;
 import minefantasy.mfr.proxy.IClientRegister;
+import minefantasy.mfr.registry.CustomMaterialRegistry;
+import minefantasy.mfr.registry.types.CustomMaterialType;
 import minefantasy.mfr.util.CustomToolHelper;
 import minefantasy.mfr.util.ModelLoaderHelper;
 import net.minecraft.block.BlockDispenser;
@@ -190,10 +192,10 @@ public class ItemArrowMFR extends ItemArrow implements IArrowMFR, IAmmo, IClient
 			return;
 		}
 		if (isCustom) {
-			ArrayList<CustomMaterial> metal = CustomMaterial.getList("metal");
+			ArrayList<CustomMaterial> metal = CustomMaterialRegistry.getList(CustomMaterialType.METAL_MATERIAL);
 			for (CustomMaterial customMat : metal) {
 				if (MineFantasyReforged.isDebug() || !customMat.getItemStack().isEmpty()) {
-					items.add(this.construct(customMat.name));
+					items.add(this.construct(customMat.getName()));
 				}
 			}
 		}

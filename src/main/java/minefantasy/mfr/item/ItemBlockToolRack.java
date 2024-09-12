@@ -1,6 +1,8 @@
 package minefantasy.mfr.item;
 
 import minefantasy.mfr.material.CustomMaterial;
+import minefantasy.mfr.registry.CustomMaterialRegistry;
+import minefantasy.mfr.registry.types.CustomMaterialType;
 import minefantasy.mfr.util.CustomToolHelper;
 import net.minecraft.block.Block;
 import net.minecraft.creativetab.CreativeTabs;
@@ -19,9 +21,9 @@ public class ItemBlockToolRack extends ItemBlockBase {
 		if (!isInCreativeTab(itemIn)) {
 			return;
 		}
-		ArrayList<CustomMaterial> wood = CustomMaterial.getList("wood");
+		ArrayList<CustomMaterial> wood = CustomMaterialRegistry.getList(CustomMaterialType.WOOD_MATERIAL);
 		for (CustomMaterial customMat : wood) {
-			items.add(this.construct(customMat.name));
+			items.add(this.construct(customMat.getName()));
 		}
 	}
 

@@ -44,8 +44,7 @@ import minefantasy.mfr.recipe.CraftingManagerTransformation;
 import minefantasy.mfr.recipe.RecipeRemover;
 import minefantasy.mfr.recipe.ingredients.IngredientCount;
 import minefantasy.mfr.recipe.ingredients.IngredientOreCount;
-import minefantasy.mfr.registry.MetalMaterialRegistry;
-import minefantasy.mfr.registry.WoodMaterialRegistry;
+import minefantasy.mfr.registry.CustomMaterialRegistry;
 import minefantasy.mfr.world.gen.feature.WorldGenBiological;
 import minefantasy.mfr.world.gen.feature.WorldGenGeological;
 import minefantasy.mfr.world.gen.structure.WorldGenStructure;
@@ -153,8 +152,7 @@ public class MineFantasyReforged {
 		MineFantasyReforged.LOG.info("API Debug mode updated: " + MineFantasyReforgedAPI.isInDebugMode);
 
 		MineFantasyMaterials.initBaseMaterials();
-		WoodMaterialRegistry.INSTANCE.preInit();
-		MetalMaterialRegistry.INSTANCE.preInit();
+		CustomMaterialRegistry.INSTANCE.preInit();
 		MineFantasyMaterials.initLeatherMaterials();
 
 		MineFantasyLoot.load();

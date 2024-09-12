@@ -3,7 +3,7 @@
         "Author: Team MFR"
     ],
     "mod": "thaumcraft",
-    "metals": [
+    "metal_material": [
         {
             "name": "thaumium",
             "oreDictList": "ingotThaumium",

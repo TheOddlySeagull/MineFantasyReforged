@@ -3,7 +3,7 @@
         "Author: thepigemperor2"
     ],
     "mod": "defiledlands",
-    "metals": [
+    "metal_material": [
         {
             "name": "umbrium",
             "oreDictList": "ingotUmbrium",

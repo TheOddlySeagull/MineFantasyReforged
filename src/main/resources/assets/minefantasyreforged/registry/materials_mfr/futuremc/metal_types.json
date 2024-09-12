@@ -3,7 +3,7 @@
         "Author: Lenvill"
     ],
     "mod": "futuremc",
-    "metals": [
+    "metal_material": [
         {
             "name": "netherite",
             "oreDictList": "ingotNetherite",

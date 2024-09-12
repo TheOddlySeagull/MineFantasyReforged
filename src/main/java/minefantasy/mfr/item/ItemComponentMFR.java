@@ -4,7 +4,8 @@ import minefantasy.mfr.api.crafting.ITieredComponent;
 import minefantasy.mfr.block.BlockComponent;
 import minefantasy.mfr.constants.Constants;
 import minefantasy.mfr.init.MineFantasyTabs;
-import minefantasy.mfr.material.CustomMaterial;
+import minefantasy.mfr.registry.CustomMaterialRegistry;
+import minefantasy.mfr.registry.types.CustomMaterialType;
 import minefantasy.mfr.tile.TileEntityComponent;
 import minefantasy.mfr.util.CustomToolHelper;
 import net.minecraft.client.util.ITooltipFlag;
@@ -35,7 +36,7 @@ public class ItemComponentMFR extends ItemBaseMFR implements ITieredComponent {
 
 	private float unitCount = 1;
 	private boolean isCustom = false;
-	String materialType = CustomMaterial.NONE.name;
+	CustomMaterialType materialType = CustomMaterialRegistry.NONE.getType();
 
 	public ItemComponentMFR(String name) {
 		this(name, 0);
@@ -58,11 +59,11 @@ public class ItemComponentMFR extends ItemBaseMFR implements ITieredComponent {
 
 		super.addInformation(item, world, list, flag);
 		if (isCustom) {
-			CustomToolHelper.addComponentString(list, CustomMaterial.getMaterialFor(item, CustomToolHelper.slot_main), this.unitCount);
+			CustomToolHelper.addComponentString(list, CustomMaterialRegistry.getMaterialFor(item, CustomToolHelper.slot_main), this.unitCount);
 		}
 	}
 
-	public ItemComponentMFR setCustom(float units, String type) {
+	public ItemComponentMFR setCustom(float units, CustomMaterialType type) {
 		canRepair = false;
 		this.unitCount = units;
 		isCustom = true;
@@ -103,7 +104,7 @@ public class ItemComponentMFR extends ItemBaseMFR implements ITieredComponent {
 	}
 
 	@Override
-	public String getMaterialType(ItemStack item) {
+	public CustomMaterialType getMaterialType(ItemStack item) {
 		return materialType;
 	}
 

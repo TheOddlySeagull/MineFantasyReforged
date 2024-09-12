@@ -3,7 +3,7 @@
         "Author: -toErIpNid-"
     ],
     "mod": "pvj",
-    "woods": [
+    "wood_material": [
         {
             "name": "willow_wood",
             "inputItem": "pvj:planks_willow",

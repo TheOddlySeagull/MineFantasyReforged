@@ -30,6 +30,7 @@ import minefantasy.mfr.mechanics.knowledge.ResearchLogic;
 import minefantasy.mfr.network.DodgeCommandPacket;
 import minefantasy.mfr.network.NetworkHandler;
 import minefantasy.mfr.network.ParryPacket;
+import minefantasy.mfr.registry.CustomMaterialRegistry;
 import minefantasy.mfr.util.ArmourCalculator;
 import minefantasy.mfr.util.ArrowEffectsMF;
 import minefantasy.mfr.util.CustomToolHelper;
@@ -303,8 +304,8 @@ public class CombatMechanics {
 			}
 		}
 
-		if (material != CustomMaterial.NONE) {
-			if (isSilverishMaterial(material.name) && hit_entity instanceof EntityLivingBase) {
+		if (material != CustomMaterialRegistry.NONE) {
+			if (isSilverishMaterial(material.getName()) && hit_entity instanceof EntityLivingBase) {
 				if (hit_entity.getClass().getName().contains("Werewolf")) {
 					modifier *= specialWerewolfModifier;
 					applyUndeadBane((EntityLivingBase) hit_entity);

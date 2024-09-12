@@ -8,6 +8,7 @@ import minefantasy.mfr.client.render.item.RenderHotItem;
 import minefantasy.mfr.entity.EntityItemHeated;
 import minefantasy.mfr.init.MineFantasyItems;
 import minefantasy.mfr.material.CustomMaterial;
+import minefantasy.mfr.registry.CustomMaterialRegistry;
 import minefantasy.mfr.util.CustomToolHelper;
 import minefantasy.mfr.util.GuiHelper;
 import minefantasy.mfr.util.MFRLogUtil;
@@ -250,8 +251,8 @@ public class ItemHeated extends ItemBaseMFR implements IHotItem {
 		ItemStack held = getStack(stack);
 		if (!held.isEmpty()) {
 			int colour = -1;
-			CustomMaterial material = CustomMaterial.getMaterialFor(held, CustomToolHelper.slot_main);
-			if (material != CustomMaterial.NONE) {
+			CustomMaterial material = CustomMaterialRegistry.getMaterialFor(held, CustomToolHelper.slot_main);
+			if (material != CustomMaterialRegistry.NONE) {
 				colour = material.getColourInt();
 			}
 

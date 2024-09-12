@@ -3,7 +3,7 @@
         "Author: thepigemperor2"
     ],
     "mod": "twilightforest",
-    "woods": [
+    "wood_material": [
         {
             "name": "twilight_oak_wood",
             "inputItem": "twilightforest:twilight_oak_planks",

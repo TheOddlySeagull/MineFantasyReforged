@@ -3,7 +3,7 @@
         "Author: Lenvill"
     ],
     "mod": "witchery",
-    "woods": [
+    "wood_material": [
         {
             "name": "rowan_wood",
             "inputItem": "witchery:rowan_planks",

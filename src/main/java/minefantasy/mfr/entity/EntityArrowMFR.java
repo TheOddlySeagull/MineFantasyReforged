@@ -14,6 +14,7 @@ import minefantasy.mfr.item.EnumFillingType;
 import minefantasy.mfr.item.EnumPowderType;
 import minefantasy.mfr.material.CustomMaterial;
 import minefantasy.mfr.mechanics.CombatMechanics;
+import minefantasy.mfr.registry.CustomMaterialRegistry;
 import minefantasy.mfr.util.CustomToolHelper;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
@@ -565,6 +566,6 @@ public class EntityArrowMFR extends EntityArrow implements IProjectile, IDamageT
 
 	public boolean isMagicArrow() {
 		CustomMaterial material = CustomToolHelper.getCustomPrimaryMaterial(getArrowStack());
-		return material != CustomMaterial.NONE && material.type.equalsIgnoreCase("magic");
+		return material != CustomMaterialRegistry.NONE && material.getType().getName().equalsIgnoreCase("magic");
 	}
 }

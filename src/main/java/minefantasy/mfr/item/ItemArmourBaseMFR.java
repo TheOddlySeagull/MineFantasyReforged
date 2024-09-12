@@ -10,6 +10,7 @@ import minefantasy.mfr.constants.Constants;
 import minefantasy.mfr.material.ArmorMaterialMFR;
 import minefantasy.mfr.material.CustomMaterial;
 import minefantasy.mfr.proxy.IClientRegister;
+import minefantasy.mfr.registry.CustomMaterialRegistry;
 import minefantasy.mfr.util.ArmourCalculator;
 import minefantasy.mfr.util.CustomToolHelper;
 import minefantasy.mfr.util.ModelLoaderHelper;
@@ -34,7 +35,8 @@ import java.text.DecimalFormat;
 import java.util.List;
 
 public class ItemArmourBaseMFR extends ItemArmor implements ISpecialArmor, IArmourMFR, IArmourRating, ISpecialArmourMFR, IClientRegister {
-public static final DecimalFormat decimal_format = new DecimalFormat("#.#");
+
+	public static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("#.#");
 	public static ArmorMaterial baseMaterial = EnumHelper.addArmorMaterial("MF Armour Base", "MFR_armour_base_texture", 0, new int[] {2, 6, 5, 2}, 0, SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 0);
 	public float baseArmorRating;
 	public int enchantment;
@@ -175,12 +177,12 @@ public static final DecimalFormat decimal_format = new DecimalFormat("#.#");
 			if (getProtectionRatio(item) > ratio) {
 				float percent = (ratio / getProtectionRatio(item)) - 1F;
 				list.add(TextFormatting.RED + I18n.format(
-						"attribute.modifier.take." + 1, decimal_format.format(-percent * 100),
+						"attribute.modifier.take." + 1, DECIMAL_FORMAT.format(-percent * 100),
 						I18n.format("attribute.armour." + name)));
 			} else {
 				float percent = (ratio / getProtectionRatio(item)) - 1F;
 				list.add(TextFormatting.DARK_GREEN + I18n.format(
-						"attribute.modifier.plus." + 1, decimal_format.format(percent * 100),
+						"attribute.modifier.plus." + 1, DECIMAL_FORMAT.format(percent * 100),
 						I18n.format("attribute.armour." + name)));
 			}
 		}
@@ -223,8 +225,8 @@ public static final DecimalFormat decimal_format = new DecimalFormat("#.#");
 	@Override
 	public int getItemEnchantability(ItemStack stack) {
 		CustomMaterial customMaterial = CustomToolHelper.getCustomPrimaryMaterial(stack);
-		if (customMaterial != CustomMaterial.NONE) {
-			return customMaterial.enchantability;
+		if (customMaterial != CustomMaterialRegistry.NONE) {
+			return customMaterial.getEnchantability();
 		}
 		else {
 			return material.enchantability;

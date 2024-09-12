@@ -3,7 +3,7 @@
         "Author: TheOddlySeagull"
     ],
     "mod": "growthcraft_apples",
-    "woods": [
+    "wood_material": [
         {
             "name": "apple_wood",
             "inputItem": "growthcraft_apples:apple_planks",

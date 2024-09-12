@@ -4,6 +4,8 @@ import minefantasy.mfr.api.tool.IStorageBlock;
 import minefantasy.mfr.block.BlockAmmoBox;
 import minefantasy.mfr.block.BlockTileEntity;
 import minefantasy.mfr.material.CustomMaterial;
+import minefantasy.mfr.registry.CustomMaterialRegistry;
+import minefantasy.mfr.registry.types.CustomMaterialType;
 import minefantasy.mfr.tile.TileEntityAmmoBox;
 import minefantasy.mfr.util.CustomToolHelper;
 import net.minecraft.client.resources.I18n;
@@ -41,10 +43,10 @@ public class ItemBlockAmmoBox extends ItemBlock implements IStorageBlock {
 				tooltip.add(ammo.getDisplayName() + " x" + stock);
 			}
 		}
-		CustomMaterial material = CustomMaterial.getMaterialFor(item, CustomToolHelper.slot_main);
-		if (material != CustomMaterial.NONE) {
+		CustomMaterial material = CustomMaterialRegistry.getMaterialFor(item, CustomToolHelper.slot_main);
+		if (material != CustomMaterialRegistry.NONE) {
 			tooltip.add(I18n.format("attribute.box.capacity.name",
-					TileEntityAmmoBox.getCapacity(material.tier)));
+					TileEntityAmmoBox.getCapacity(material.getTier())));
 		}
 	}
 
@@ -53,9 +55,9 @@ public class ItemBlockAmmoBox extends ItemBlock implements IStorageBlock {
 		if (!isInCreativeTab(itemIn)) {
 			return;
 		}
-		ArrayList<CustomMaterial> wood = CustomMaterial.getList("wood");
+		ArrayList<CustomMaterial> wood = CustomMaterialRegistry.getList(CustomMaterialType.WOOD_MATERIAL);
 		for (CustomMaterial customMat : wood) {
-			items.add(this.construct(customMat.name));
+			items.add(this.construct(customMat.getName()));
 		}
 	}
 

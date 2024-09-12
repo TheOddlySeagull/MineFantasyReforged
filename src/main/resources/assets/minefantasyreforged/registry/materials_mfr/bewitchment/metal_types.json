@@ -3,7 +3,7 @@
         "Author: -toErIpNid-"
     ],
     "mod": "bewitchment",
-    "metals": [
+    "metal_material": [
         {
             "name": "cold_iron",
             "oreDictList": "ingotColdIron",

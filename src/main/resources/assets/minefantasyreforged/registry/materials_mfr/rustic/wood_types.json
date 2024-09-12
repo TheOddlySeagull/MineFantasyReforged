@@ -3,7 +3,7 @@
         "Author: ThatPolishKid99"
     ],
     "mod": "rustic",
-    "woods": [
+    "wood_material": [
         {
             "name": "olive_wood",
             "inputItem": "rustic:planks",

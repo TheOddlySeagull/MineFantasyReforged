@@ -3,7 +3,7 @@
         "Author: thepigemperor2"
     ],
     "mod": "extrautils2",
-    "woods": [
+    "wood_material": [
         {
             "name": "raw_ferrous-Juniper",
             "inputItem": "extrautils2:ironwood_planks",

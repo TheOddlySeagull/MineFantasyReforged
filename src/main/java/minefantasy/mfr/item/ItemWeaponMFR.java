@@ -31,6 +31,8 @@ import minefantasy.mfr.mechanics.PlayerTickHandler;
 import minefantasy.mfr.mechanics.StaminaBar;
 import minefantasy.mfr.mechanics.knowledge.ResearchLogic;
 import minefantasy.mfr.proxy.IClientRegister;
+import minefantasy.mfr.registry.CustomMaterialRegistry;
+import minefantasy.mfr.registry.types.CustomMaterialType;
 import minefantasy.mfr.tile.TileEntityRack;
 import minefantasy.mfr.util.CustomToolHelper;
 import minefantasy.mfr.util.MFRLogUtil;
@@ -591,10 +593,10 @@ public abstract class ItemWeaponMFR extends ItemSword implements ISpecialDesign,
 			return;
 		}
 		if (isCustom) {
-			ArrayList<CustomMaterial> metal = CustomMaterial.getList("metal");
+			ArrayList<CustomMaterial> metal = CustomMaterialRegistry.getList(CustomMaterialType.METAL_MATERIAL);
 			for (CustomMaterial customMat : metal) {
 				if (MineFantasyReforged.isDebug() || !customMat.getItemStack().isEmpty()) {
-					items.add(this.construct(customMat.name, MineFantasyMaterials.Names.OAK_WOOD));
+					items.add(this.construct(customMat.getName(), MineFantasyMaterials.Names.OAK_WOOD));
 				}
 			}
 			return;
@@ -761,7 +763,7 @@ public abstract class ItemWeaponMFR extends ItemSword implements ISpecialDesign,
 	 */
 	@Override
 	public int getItemEnchantability(ItemStack stack) {
-		return CustomToolHelper.getCustomPrimaryMaterial(stack).enchantability;
+		return CustomToolHelper.getCustomPrimaryMaterial(stack).getEnchantability();
 	}
 
 	// ====================================================== CUSTOM END

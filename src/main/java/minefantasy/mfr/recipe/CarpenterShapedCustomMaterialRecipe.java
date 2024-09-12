@@ -1,7 +1,8 @@
 package minefantasy.mfr.recipe;
 
 import minefantasy.mfr.constants.Skill;
-import minefantasy.mfr.material.CustomMaterial;
+import minefantasy.mfr.registry.CustomMaterialRegistry;
+import minefantasy.mfr.registry.types.CustomMaterialType;
 import minefantasy.mfr.util.CustomToolHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.Ingredient;
@@ -66,8 +67,8 @@ public class CarpenterShapedCustomMaterialRecipe extends CarpenterRecipeBase {
 				ItemStack inputItem = matrix.getStackInRowAndColumn(matrixX, matrixY);
 
 				if (!inputItem.isEmpty() || !ingredient.apply(ItemStack.EMPTY)) {
-					String component_wood = CustomToolHelper.getComponentMaterial(inputItem, "wood");
-					String component_metal = CustomToolHelper.getComponentMaterial(inputItem, "metal");
+					String component_wood = CustomToolHelper.getComponentMaterial(inputItem, CustomMaterialType.WOOD_MATERIAL);
+					String component_metal = CustomToolHelper.getComponentMaterial(inputItem, CustomMaterialType.METAL_MATERIAL);
 
 					if (component_metal != null)// CHECK CUSTOM METAL
 					{
@@ -125,8 +126,8 @@ public class CarpenterShapedCustomMaterialRecipe extends CarpenterRecipeBase {
 		for (int i = 0; i < matrix.getSizeInventory(); i++) {
 			ItemStack item = matrix.getStackInSlot(i);
 			if (!item.isEmpty()) {
-				String component_wood = CustomToolHelper.getComponentMaterial(item, "wood");
-				String component_metal = CustomToolHelper.getComponentMaterial(item, "metal");
+				String component_wood = CustomToolHelper.getComponentMaterial(item, CustomMaterialType.WOOD_MATERIAL);
+				String component_metal = CustomToolHelper.getComponentMaterial(item, CustomMaterialType.METAL_MATERIAL);
 				if (wood == null && component_wood != null) {
 					wood = component_wood;
 				}
@@ -136,10 +137,10 @@ public class CarpenterShapedCustomMaterialRecipe extends CarpenterRecipeBase {
 			}
 		}
 		if (metal != null) {
-			CustomMaterial.addMaterial(result, CustomToolHelper.slot_main, metal);
+			CustomMaterialRegistry.addMaterial(result, CustomToolHelper.slot_main, metal);
 		}
 		if (wood != null) {
-			CustomMaterial.addMaterial(result, metal == null ? CustomToolHelper.slot_main : CustomToolHelper.slot_haft,
+			CustomMaterialRegistry.addMaterial(result, metal == null ? CustomToolHelper.slot_main : CustomToolHelper.slot_haft,
 					wood);
 		}
 		return result;

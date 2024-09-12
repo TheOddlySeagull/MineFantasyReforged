@@ -3,7 +3,7 @@
         "Author: thepigemperor2"
     ],
     "mod": "extraplanets",
-    "metals": [
+    "metal_material": [
         {
             "name": "carbon",
             "oreDictList": "ingotCarbon",

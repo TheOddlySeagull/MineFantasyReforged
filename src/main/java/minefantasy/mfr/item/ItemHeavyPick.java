@@ -9,6 +9,8 @@ import minefantasy.mfr.init.MineFantasyTabs;
 import minefantasy.mfr.material.CustomMaterial;
 import minefantasy.mfr.mechanics.StaminaMechanics;
 import minefantasy.mfr.proxy.IClientRegister;
+import minefantasy.mfr.registry.CustomMaterialRegistry;
+import minefantasy.mfr.registry.types.CustomMaterialType;
 import minefantasy.mfr.util.CustomToolHelper;
 import minefantasy.mfr.util.ModelLoaderHelper;
 import net.minecraft.block.state.IBlockState;
@@ -38,7 +40,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import static minefantasy.mfr.material.CustomMaterial.decimal_format;
+import static minefantasy.mfr.registry.CustomMaterialRegistry.DECIMAL_FORMAT;
 
 /**
  * @author Anonymous Productions
@@ -170,7 +172,7 @@ public class ItemHeavyPick extends ItemPickaxe implements IToolMaterial, IClient
 	@Override
 	public float getDestroySpeed(ItemStack stack, IBlockState state) {
 		CustomMaterial material = CustomToolHelper.getCustomPrimaryMaterial(stack);
-		float efficiency = material.hardness > 0 ? material.hardness : this.efficiency;
+		float efficiency = material.getHardness() > 0 ? material.getHardness() : this.efficiency;
 		return !state.getBlock().isToolEffective("pickaxe", state)
 				? super.getDestroySpeed(stack, state)
 				: CustomToolHelper.getEfficiency(stack, efficiency, efficiencyMod / 8F);
@@ -189,7 +191,7 @@ public class ItemHeavyPick extends ItemPickaxe implements IToolMaterial, IClient
 	 */
 	@Override
 	public int getItemEnchantability(ItemStack stack) {
-		return CustomToolHelper.getCustomPrimaryMaterial(stack).enchantability;
+		return CustomToolHelper.getCustomPrimaryMaterial(stack).getEnchantability();
 	}
 
 	@Override
@@ -198,10 +200,10 @@ public class ItemHeavyPick extends ItemPickaxe implements IToolMaterial, IClient
 			return;
 		}
 		if (isCustom) {
-			ArrayList<CustomMaterial> metal = CustomMaterial.getList("metal");
+			ArrayList<CustomMaterial> metal = CustomMaterialRegistry.getList(CustomMaterialType.METAL_MATERIAL);
 			for (CustomMaterial customMat : metal) {
 				if (MineFantasyReforged.isDebug() || !customMat.getItemStack().isEmpty()) {
-					items.add(this.construct(customMat.name, MineFantasyMaterials.Names.OAK_WOOD));
+					items.add(this.construct(customMat.getName(), MineFantasyMaterials.Names.OAK_WOOD));
 				}
 			}
 		} else {
@@ -216,9 +218,9 @@ public class ItemHeavyPick extends ItemPickaxe implements IToolMaterial, IClient
 		}
 
 		CustomMaterial material = CustomToolHelper.getCustomPrimaryMaterial(item);
-		float efficiency = material.hardness > 0 ? material.hardness : this.efficiency;
+		float efficiency = material.getHardness() > 0 ? material.getHardness() : this.efficiency;
 		list.add(TextFormatting.GREEN + I18n.format("attribute.tool.digEfficiency.name",
-				decimal_format.format(CustomToolHelper.getEfficiency(item, efficiency, efficiencyMod / 8F))));
+				DECIMAL_FORMAT.format(CustomToolHelper.getEfficiency(item, efficiency, efficiencyMod / 8F))));
 
 		super.addInformation(item, world, list, flag);
 	}

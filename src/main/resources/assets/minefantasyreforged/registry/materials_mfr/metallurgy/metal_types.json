@@ -3,7 +3,7 @@
         "Author: thepigemperor2"
     ],
     "mod": "metallurgy",
-    "metals": [
+    "metal_material": [
         {
             "name": "amordrine",
             "oreDictList": "ingotAmordrine",

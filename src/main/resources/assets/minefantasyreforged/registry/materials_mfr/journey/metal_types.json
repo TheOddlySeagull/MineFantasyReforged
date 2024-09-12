@@ -3,7 +3,7 @@
         "Author: thepigemperor2"
     ],
     "mod": "journey",
-    "metals": [
+    "metal_material": [
         {
             "name": "hellstone",
             "oreDictList": "ingotHellstone",

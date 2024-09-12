@@ -3,6 +3,7 @@ package minefantasy.mfr.recipe;
 import minefantasy.mfr.constants.Skill;
 import minefantasy.mfr.constants.Tool;
 import minefantasy.mfr.material.CustomMaterial;
+import minefantasy.mfr.registry.CustomMaterialRegistry;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.util.NonNullList;
@@ -50,10 +51,10 @@ public abstract class CarpenterRecipeBase extends IForgeRegistryEntry.Impl<Carpe
 	abstract boolean matches(CarpenterCraftMatrix matrix, @Nonnull World world);
 
 	protected boolean modifyTiers(CarpenterCraftMatrix matrix, String tier) {
-		CustomMaterial material = CustomMaterial.getMaterial(tier);
-		if (material != CustomMaterial.NONE && toolType.hasTiers()) {
-			int newTier = toolTier < 0 ? material.crafterTier : toolTier;
-			matrix.modifyTier(newTier, (int) (craftTime * material.craftTimeModifier));
+		CustomMaterial material = CustomMaterialRegistry.getMaterial(tier);
+		if (material != CustomMaterialRegistry.NONE && toolType.hasTiers()) {
+			int newTier = toolTier < 0 ? material.getCrafterTier() : toolTier;
+			matrix.modifyTier(newTier, (int) (craftTime * material.getCraftTimeModifier()));
 			return true;
 		}
 		return false;

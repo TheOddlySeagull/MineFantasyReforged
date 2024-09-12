@@ -1,6 +1,6 @@
 {
     "mod": "minefantasyreforged",
-    "woods": [
+    "wood_material": [
         {
             "name": "scrap_wood",
             "inputItem": "",

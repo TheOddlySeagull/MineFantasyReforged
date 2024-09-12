@@ -3,7 +3,7 @@
         "Author: Team MFR"
     ],
     "mod": "thaumcraft",
-    "woods": [
+    "wood_material": [
         {
             "name": "silverwood_wood",
             "inputItem": "thaumcraft:plank_silverwood",

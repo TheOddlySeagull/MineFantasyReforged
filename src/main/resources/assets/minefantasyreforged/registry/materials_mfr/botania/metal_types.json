@@ -3,7 +3,7 @@
         "Author: thepigemperor2"
     ],
     "mod": "botania",
-    "metals": [
+    "metal_material": [
         {
             "name": "elven_elementium",
             "oreDictList": "ingotElvenElementium",

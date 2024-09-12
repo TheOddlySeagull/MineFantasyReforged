@@ -4,12 +4,12 @@ import minefantasy.mfr.config.ConfigHardcore;
 import minefantasy.mfr.constants.Skill;
 import minefantasy.mfr.item.ItemBomb;
 import minefantasy.mfr.material.CustomMaterial;
-import minefantasy.mfr.material.MetalMaterial;
 import minefantasy.mfr.mechanics.knowledge.IArtefact;
 import minefantasy.mfr.mechanics.knowledge.InformationBase;
 import minefantasy.mfr.mechanics.knowledge.InformationList;
 import minefantasy.mfr.mechanics.knowledge.InformationPage;
 import minefantasy.mfr.mechanics.knowledge.ResearchArtefacts;
+import minefantasy.mfr.registry.CustomMaterialRegistry;
 import minefantasy.mfr.util.RecipeHelper;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
@@ -557,9 +557,9 @@ public class MineFantasyKnowledgeList {
 	}
 
 	private static Object getMetalTier(String string) {
-		CustomMaterial mat = MetalMaterial.getMaterial(string);
-		if (mat != CustomMaterial.NONE){
-			return mat.crafterTier;
+		CustomMaterial mat = CustomMaterialRegistry.getMaterial(string);
+		if (mat != CustomMaterialRegistry.NONE){
+			return mat.getCrafterTier();
 		}
 		return "?";
 	}

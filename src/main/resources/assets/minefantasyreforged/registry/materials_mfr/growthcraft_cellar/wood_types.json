@@ -3,7 +3,7 @@
         "Author: TheOddlySeagull"
     ],
     "mod": "growthcraft_cellar",
-    "woods": [
+    "wood_material": [
         {
             "name": "cork_log_wood",
             "inputItem": "growthcraft_cellar:cork_log_stripped",

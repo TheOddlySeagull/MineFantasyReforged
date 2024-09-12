@@ -1,6 +1,6 @@
 {
     "mod": "minefantasyreforged",
-    "metals": [
+    "metal_material": [
         {
             "name": "tin",
             "oreDictList": "ingotTin",

@@ -8,6 +8,8 @@ import minefantasy.mfr.init.MineFantasyMaterials;
 import minefantasy.mfr.init.MineFantasyTabs;
 import minefantasy.mfr.material.CustomMaterial;
 import minefantasy.mfr.proxy.IClientRegister;
+import minefantasy.mfr.registry.CustomMaterialRegistry;
+import minefantasy.mfr.registry.types.CustomMaterialType;
 import minefantasy.mfr.util.CustomToolHelper;
 import minefantasy.mfr.util.ModelLoaderHelper;
 import net.minecraft.block.Block;
@@ -40,7 +42,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import static minefantasy.mfr.material.CustomMaterial.decimal_format;
+import static minefantasy.mfr.registry.CustomMaterialRegistry.DECIMAL_FORMAT;
 
 /**
  * @author Anonymous Productions
@@ -82,8 +84,8 @@ public class ItemTrow extends ItemSpade implements IToolMaterial, IClientRegiste
 				for (ItemStack newdrop : specialDrops) {
 					if (!newdrop.isEmpty()) {
 						if (newdrop.getCount() > 1) {
-							if (CustomToolHelper.getCustomPrimaryMaterial(item).tier > 0) {
-								newdrop.setCount(itemRand.nextInt(CustomToolHelper.getCustomPrimaryMaterial(item).tier));
+							if (CustomToolHelper.getCustomPrimaryMaterial(item).getTier() > 0) {
+								newdrop.setCount(itemRand.nextInt(CustomToolHelper.getCustomPrimaryMaterial(item).getTier()));
 							} else {
 								newdrop.setCount(1);
 							}
@@ -182,7 +184,7 @@ public class ItemTrow extends ItemSpade implements IToolMaterial, IClientRegiste
 	@Override
 	public float getDestroySpeed(ItemStack stack, IBlockState state) {
 		CustomMaterial material = CustomToolHelper.getCustomPrimaryMaterial(stack);
-		float efficiency = material.hardness > 0 ? material.hardness : this.efficiency;
+		float efficiency = material.getHardness() > 0 ? material.getHardness() : this.efficiency;
 
 		return !state.getBlock().isToolEffective("shovel", state)
 				? super.getDestroySpeed(stack, state)
@@ -202,7 +204,7 @@ public class ItemTrow extends ItemSpade implements IToolMaterial, IClientRegiste
 	 */
 	@Override
 	public int getItemEnchantability(ItemStack stack) {
-		return CustomToolHelper.getCustomPrimaryMaterial(stack).enchantability;
+		return CustomToolHelper.getCustomPrimaryMaterial(stack).getEnchantability();
 	}
 
 	@Override
@@ -211,10 +213,10 @@ public class ItemTrow extends ItemSpade implements IToolMaterial, IClientRegiste
 			return;
 		}
 		if (isCustom) {
-			ArrayList<CustomMaterial> metal = CustomMaterial.getList("metal");
+			ArrayList<CustomMaterial> metal = CustomMaterialRegistry.getList(CustomMaterialType.METAL_MATERIAL);
 			for (CustomMaterial customMat : metal) {
 				if (MineFantasyReforged.isDebug() || !customMat.getItemStack().isEmpty()) {
-					items.add(this.construct(customMat.name, MineFantasyMaterials.Names.OAK_WOOD));
+					items.add(this.construct(customMat.getName(), MineFantasyMaterials.Names.OAK_WOOD));
 				}
 			}
 		} else {
@@ -229,9 +231,9 @@ public class ItemTrow extends ItemSpade implements IToolMaterial, IClientRegiste
 		}
 
 		CustomMaterial material = CustomToolHelper.getCustomPrimaryMaterial(item);
-		float efficiency = material.hardness > 0 ? material.hardness : this.efficiency;
+		float efficiency = material.getHardness() > 0 ? material.getHardness() : this.efficiency;
 		list.add(TextFormatting.GREEN + I18n.format("attribute.tool.digEfficiency.name",
-				decimal_format.format(CustomToolHelper.getEfficiency(item, efficiency, efficiencyMod / 4F))));
+				DECIMAL_FORMAT.format(CustomToolHelper.getEfficiency(item, efficiency, efficiencyMod / 4F))));
 
 		super.addInformation(item, world, list, flag);
 	}

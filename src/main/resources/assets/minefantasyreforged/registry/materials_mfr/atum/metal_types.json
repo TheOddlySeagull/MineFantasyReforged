@@ -3,7 +3,7 @@
         "Author: thepigemperor2"
     ],
     "mod": "atum",
-    "metals": [
+    "metal_material": [
         {
             "name": "khnumite",
             "oreDictList": "ingotKhnumite",

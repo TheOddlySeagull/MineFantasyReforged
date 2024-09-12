@@ -89,6 +89,7 @@ import minefantasy.mfr.item.ItemWeaponMFR;
 import minefantasy.mfr.item.ItemWoodComponent;
 import minefantasy.mfr.item.ItemWorldGenPlacer;
 import minefantasy.mfr.material.BaseMaterial;
+import minefantasy.mfr.registry.types.CustomMaterialType;
 import minefantasy.mfr.util.Utils;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Blocks;
@@ -1177,11 +1178,11 @@ public class MineFantasyItems {
 	}
 
 	public static void initComponent() {
-		TIMBER = new ItemWoodComponent("timber").setCustom(1, "wood")
+		TIMBER = new ItemWoodComponent("timber").setCustom(1, CustomMaterialType.WOOD_MATERIAL)
 				.setStoragePlacement(Constants.StorageTextures.PLANK, Constants.StorageTextures.PLANK);
-		TIMBER_CUT = new ItemWoodComponent("timber_cut").setCustom(1, "wood")
+		TIMBER_CUT = new ItemWoodComponent("timber_cut").setCustom(1, CustomMaterialType.WOOD_MATERIAL)
 				.setStoragePlacement(Constants.StorageTextures.PLANK, Constants.StorageTextures.PLANK_CUT);
-		TIMBER_PANE = new ItemWoodComponent("timber_pane").setCustom(6, "wood")
+		TIMBER_PANE = new ItemWoodComponent("timber_pane").setCustom(6, CustomMaterialType.WOOD_MATERIAL)
 				.setStoragePlacement(Constants.StorageTextures.SHEET, Constants.StorageTextures.WOOD_PANE);
 		PERSISTENT_COMPONENT_FLAG = new ItemPersistentComponentMarker("persistent_component_flag");
 
@@ -1206,7 +1207,7 @@ public class MineFantasyItems {
 		TUNGSTEN_INGOT = new ItemBaseMFR("tungsten_ingot").setCreativeTab(MineFantasyTabs.tabMaterials);
 		OBSIDIAN_INGOT = new ItemBaseMFR("obsidian_ingot").setCreativeTab(MineFantasyTabs.tabMaterials);
 		COMPOSITE_ALLOY_INGOT = new ItemBaseMFR("composite_alloy_ingot", Rarity.UNCOMMON).setCreativeTab(MineFantasyTabs.tabMaterials);
-		BAR = new ItemMetalComponent("bar", 1F, "metal").setStoragePlacement("bar", "bar").setCreativeTab(MineFantasyTabs.tabMaterials);
+		BAR = new ItemMetalComponent("bar", 1F, CustomMaterialType.METAL_MATERIAL).setStoragePlacement("bar", "bar").setCreativeTab(MineFantasyTabs.tabMaterials);
 
 		CLAY_POT = new ItemBowl("clay_pot").setStoragePlacement(Constants.StorageTextures.POT, Constants.StorageTextures.POT);
 		CLAY_POT_UNCOOKED = new ItemBaseMFR("clay_pot_uncooked").setCreativeTab(MineFantasyTabs.tabMaterials);
@@ -1321,17 +1322,17 @@ public class MineFantasyItems {
 		CROSSBOW_STRING_UNLOADED = new ItemCrossbowPart("crossbow_string_unloaded", "string_unloaded");
 		CROSSBOW_STRING_LOADED = new ItemCrossbowPart("crossbow_string_loaded", "string_load");
 
-		CHAIN_MESH = new ItemMetalComponent("chain_mesh", 1F, "metal").setStoragePlacement("sheet", "mail");
-		SCALE_MESH = new ItemMetalComponent("scale_mesh", 1F, "metal").setStoragePlacement("sheet", "scale");
-		SPLINT_MESH = new ItemMetalComponent("splint_mesh", 1F, "metal").setStoragePlacement("sheet", "splint");
-		PLATE = new ItemMetalComponent("plate", 2F, "metal").setStoragePlacement("sheet", "plate");
-		PLATE_HUGE = new ItemMetalComponent("plate_huge", 8F, "metal").setStoragePlacement("bigplate", "bigplate");
-		METAL_HUNK = new ItemMetalComponent("metal_hunk", 0.25F, "metal");
-		ARROWHEAD = new ItemMetalComponent("arrowhead", 1 / 4F, "metal");
-		BODKIN_HEAD = new ItemMetalComponent("bodkin_head", 1 / 4F, "metal");
-		BROAD_HEAD = new ItemMetalComponent("broad_head", 1 / 4F, "metal");
+		CHAIN_MESH = new ItemMetalComponent("chain_mesh", 1F, CustomMaterialType.METAL_MATERIAL).setStoragePlacement("sheet", "mail");
+		SCALE_MESH = new ItemMetalComponent("scale_mesh", 1F, CustomMaterialType.METAL_MATERIAL).setStoragePlacement("sheet", "scale");
+		SPLINT_MESH = new ItemMetalComponent("splint_mesh", 1F, CustomMaterialType.METAL_MATERIAL).setStoragePlacement("sheet", "splint");
+		PLATE = new ItemMetalComponent("plate", 2F, CustomMaterialType.METAL_MATERIAL).setStoragePlacement("sheet", "plate");
+		PLATE_HUGE = new ItemMetalComponent("plate_huge", 8F, CustomMaterialType.METAL_MATERIAL).setStoragePlacement("bigplate", "bigplate");
+		METAL_HUNK = new ItemMetalComponent("metal_hunk", 0.25F, CustomMaterialType.METAL_MATERIAL);
+		ARROWHEAD = new ItemMetalComponent("arrowhead", 1 / 4F, CustomMaterialType.METAL_MATERIAL);
+		BODKIN_HEAD = new ItemMetalComponent("bodkin_head", 1 / 4F, CustomMaterialType.METAL_MATERIAL);
+		BROAD_HEAD = new ItemMetalComponent("broad_head", 1 / 4F, CustomMaterialType.METAL_MATERIAL);
 
-		COGWORK_ARMOUR = new ItemMetalComponent("cogwork_armour", 30F, "metal").setCanDamage().setCreativeTab(MineFantasyTabs.tabGadget).setMaxStackSize(1);
+		COGWORK_ARMOUR = new ItemMetalComponent("cogwork_armour", 30F, CustomMaterialType.METAL_MATERIAL).setCanDamage().setCreativeTab(MineFantasyTabs.tabGadget).setMaxStackSize(1);
 
 		FLUX_POT = new ItemBaseMFR("flux_pot").setCreativeTab(MineFantasyTabs.tabMaterials).setContainerItem(CLAY_POT);
 		COAL_FLUX = new ItemBaseMFR("coal_flux").setCreativeTab(MineFantasyTabs.tabMaterials);

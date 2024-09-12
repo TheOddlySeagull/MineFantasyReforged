@@ -5,6 +5,7 @@ import minefantasy.mfr.api.heating.IHotItem;
 import minefantasy.mfr.constants.Skill;
 import minefantasy.mfr.constants.Tool;
 import minefantasy.mfr.material.CustomMaterial;
+import minefantasy.mfr.registry.CustomMaterialRegistry;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.util.NonNullList;
@@ -64,11 +65,11 @@ public abstract class AnvilRecipeBase extends IForgeRegistryEntry.Impl<AnvilReci
 	}
 
 	protected boolean modifyTiers(AnvilCraftMatrix matrix, String tier, boolean isMain) {
-		CustomMaterial material = CustomMaterial.getMaterial(tier);
-		if (material != CustomMaterial.NONE && toolType.hasTiers()) {
-			int newTier = toolTier < 0 ? material.crafterTier : toolTier;
-			int newAnvil = anvilTier < 0 ? material.crafterAnvilTier : anvilTier;
-			matrix.modifyTier(newTier, newAnvil, (int) (craftTime * material.craftTimeModifier));
+		CustomMaterial material = CustomMaterialRegistry.getMaterial(tier);
+		if (material != CustomMaterialRegistry.NONE && toolType.hasTiers()) {
+			int newTier = toolTier < 0 ? material.getCrafterTier() : toolTier;
+			int newAnvil = anvilTier < 0 ? material.getCrafterAnvilTier() : anvilTier;
+			matrix.modifyTier(newTier, newAnvil, (int) (craftTime * material.getCraftTimeModifier()));
 			if (isMain) {
 				matrix.modifyResearch("smelt_" + material.getName());
 			}

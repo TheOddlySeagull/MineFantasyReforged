@@ -3,7 +3,7 @@
         "Author: thepigemperor2"
     ],
     "mod": "atum",
-    "woods": [
+    "wood_material": [
         {
             "name": "deadwood",
             "inputItem": "atum:deadwood_planks",

@@ -3,6 +3,8 @@ package minefantasy.mfr.material;
 import com.google.common.base.CaseFormat;
 import minefantasy.mfr.api.MineFantasyReforgedAPI;
 import minefantasy.mfr.init.MineFantasyItems;
+import minefantasy.mfr.registry.CustomMaterialRegistry;
+import minefantasy.mfr.registry.types.CustomMaterialType;
 import minefantasy.mfr.util.MFRLogUtil;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
@@ -15,7 +17,7 @@ public class MetalMaterial extends CustomMaterial {
 	public String oreDictList;
 
 	public MetalMaterial(String name, int tier, float hardness, float durability, float flexibility, float sharpness, float resistance, float density, int enchantability, float[] armourProtection, int[] color, String oreDictList) {
-		super(name, "metal", tier, hardness, durability, flexibility, resistance, sharpness, density, enchantability, armourProtection, color);
+		super(name, CustomMaterialType.METAL_MATERIAL, tier, hardness, durability, flexibility, resistance, sharpness, density, enchantability, armourProtection, color);
 		this.oreDictList = oreDictList;
 		setArmourStats(1.0F, flexibility, 1F / flexibility);// Harder materials absorb blunt less but resist cutting and piercing more
 
@@ -30,13 +32,13 @@ public class MetalMaterial extends CustomMaterial {
 	}
 
 	public static void addHeatables() {
-		ArrayList<CustomMaterial> metal = CustomMaterial.getList("metal");
+		ArrayList<CustomMaterial> metal = CustomMaterialRegistry.getList(CustomMaterialType.METAL_MATERIAL);
 		for (CustomMaterial customMat : metal) {
 			int[] stats = customMat.getHeatableStats();
-			MFRLogUtil.logDebug("Set Heatable Stats for " + customMat.name + ": " + stats[0] + "," + stats[1] + "," + stats[2]);
+			MFRLogUtil.logDebug("Set Heatable Stats for " + customMat.getName() + ": " + stats[0] + "," + stats[1] + "," + stats[2]);
 
 			MineFantasyReforgedAPI.setHeatableStats(((MetalMaterial)customMat).oreDictList, stats[0], stats[1], stats[2]);
-			MineFantasyReforgedAPI.setHeatableStats("hunk" + CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, customMat.name), stats[0], stats[1], stats[2]);
+			MineFantasyReforgedAPI.setHeatableStats("hunk" + CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, customMat.getName()), stats[0], stats[1], stats[2]);
 		}
 
 		MineFantasyReforgedAPI.setHeatableStats(MineFantasyItems.RIVET, 1000, 2000, 3000);

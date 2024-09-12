@@ -1,6 +1,7 @@
 package minefantasy.mfr.api.heating;
 
 import minefantasy.mfr.material.CustomMaterial;
+import minefantasy.mfr.registry.CustomMaterialRegistry;
 import minefantasy.mfr.util.CustomToolHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -200,7 +201,7 @@ public class Heatable {
 	public int getWorkableStat(ItemStack item) {
 		if (this.minTemperature == -1) {
 			CustomMaterial material = CustomToolHelper.getCustomPrimaryMaterial(item);
-			if (material != CustomMaterial.NONE)
+			if (material != CustomMaterialRegistry.NONE)
 				return material.getHeatableStats()[0];
 		}
 		return this.minTemperature;
@@ -209,7 +210,7 @@ public class Heatable {
 	public int getUnstableStat(ItemStack item) {
 		if (this.unstableTemperature == -1) {
 			CustomMaterial material = CustomToolHelper.getCustomPrimaryMaterial(item);
-			if (material != CustomMaterial.NONE)
+			if (material != CustomMaterialRegistry.NONE)
 				return material.getHeatableStats()[1];
 		}
 		return this.unstableTemperature;

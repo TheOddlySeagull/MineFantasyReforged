@@ -36,7 +36,7 @@ import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
 
-import static minefantasy.mfr.material.CustomMaterial.decimal_format;
+import static minefantasy.mfr.registry.CustomMaterialRegistry.DECIMAL_FORMAT;
 
 public class ItemLumberAxe extends ItemAxeMFR implements IRackItem {
 	private final Random rand = new Random();
@@ -118,7 +118,7 @@ public class ItemLumberAxe extends ItemAxeMFR implements IRackItem {
 	@Override
 	public float getDestroySpeed(ItemStack stack, IBlockState state) {
 		CustomMaterial material = CustomToolHelper.getCustomPrimaryMaterial(stack);
-		float efficiency = material.hardness > 0 ? material.hardness : this.efficiency;
+		float efficiency = material.getHardness() > 0 ? material.getHardness() : this.efficiency;
 		return !state.getBlock().isToolEffective("axe", state)
 				? super.getDestroySpeed(stack, state)
 				: CustomToolHelper.getEfficiency(stack, efficiency, efficiencyMod / 8F);
@@ -132,7 +132,7 @@ public class ItemLumberAxe extends ItemAxeMFR implements IRackItem {
 	 */
 	@Override
 	public int getItemEnchantability(ItemStack stack) {
-		return CustomToolHelper.getCustomPrimaryMaterial(stack).enchantability;
+		return CustomToolHelper.getCustomPrimaryMaterial(stack).getEnchantability();
 	}
 
 	@Override
@@ -142,9 +142,9 @@ public class ItemLumberAxe extends ItemAxeMFR implements IRackItem {
 		}
 
 		CustomMaterial material = CustomToolHelper.getCustomPrimaryMaterial(item);
-		float efficiency = material.hardness > 0 ? material.hardness : this.efficiency;
+		float efficiency = material.getHardness() > 0 ? material.getHardness() : this.efficiency;
 		list.add(TextFormatting.GREEN + I18n.format("attribute.tool.digEfficiency.name",
-				decimal_format.format(CustomToolHelper.getEfficiency(item, efficiency, efficiencyMod / 8F))));
+				DECIMAL_FORMAT.format(CustomToolHelper.getEfficiency(item, efficiency, efficiencyMod / 8F))));
 	}
 
 	@Override

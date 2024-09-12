@@ -3,7 +3,7 @@
         "Author: TheOddlySeagull"
     ],
     "mod": "growthcraft_bamboo",
-    "woods": [
+    "wood_material": [
         {
             "name": "thick_bamboo_wood",
             "inputItem": "growthcraft_bamboo:bamboo_plank",

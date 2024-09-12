@@ -3,7 +3,7 @@
         "Author: TheOddlySeagull"
     ],
     "mod": "biomesoplenty",
-    "woods": [
+    "wood_material": [
         {
             "name": "sacred_oak_wood",
             "inputItem": "biomesoplenty:planks_0",

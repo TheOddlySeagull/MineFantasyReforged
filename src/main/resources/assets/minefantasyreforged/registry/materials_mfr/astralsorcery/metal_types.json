@@ -3,7 +3,7 @@
         "Author: Pelirow"
     ],
     "mod": "astralsorcery",
-    "metals": [
+    "metal_material": [
         {
             "name": "starmetal",
             "oreDictList": "ingotAstralStarmetal",

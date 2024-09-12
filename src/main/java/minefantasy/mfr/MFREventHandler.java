@@ -45,6 +45,8 @@ import minefantasy.mfr.mechanics.StaminaMechanics;
 import minefantasy.mfr.mechanics.knowledge.ResearchLogic;
 import minefantasy.mfr.network.LevelUpPacket;
 import minefantasy.mfr.network.NetworkHandler;
+import minefantasy.mfr.registry.CustomMaterialRegistry;
+import minefantasy.mfr.registry.types.CustomMaterialType;
 import minefantasy.mfr.util.ArmourCalculator;
 import minefantasy.mfr.util.ArrowEffectsMF;
 import minefantasy.mfr.util.CustomToolHelper;
@@ -290,18 +292,18 @@ public final class MFREventHandler {
 					if (s != null) {
 						if (!hasInfo && s.startsWith("ingot")) {
 							String s2 = s.substring(5, s.length());
-							CustomMaterial material = CustomMaterial.getMaterial(CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, s2));
-							if (material != CustomMaterial.NONE){
+							CustomMaterial material = CustomMaterialRegistry.getMaterial(CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, s2));
+							if (material != CustomMaterialRegistry.NONE){
 								hasInfo = true;
 							}
 							else {
 								if (!s.contains("Brick")){
-									ArrayList<CustomMaterial> metalMaterials = CustomMaterial.getList("metal");
+									ArrayList<CustomMaterial> metalMaterials = CustomMaterialRegistry.getList(CustomMaterialType.METAL_MATERIAL);
 									for (CustomMaterial metal : metalMaterials){
 										if (metal instanceof MetalMaterial) {
 											if (((MetalMaterial) metal).oreDictList.equals(s)){
 												material = metal;
-												if (material != CustomMaterial.NONE){
+												if (material != CustomMaterialRegistry.NONE){
 													break;
 												}
 											}

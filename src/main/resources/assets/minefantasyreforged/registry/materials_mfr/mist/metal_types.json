@@ -3,7 +3,7 @@
         "Author: thepigemperor2"
     ],
     "mod": "mist",
-    "metals": [
+    "metal_material": [
         {
             "name": "niobium",
             "oreDictList": "ingotNiobium",

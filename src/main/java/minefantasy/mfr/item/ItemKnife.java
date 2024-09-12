@@ -9,6 +9,8 @@ import minefantasy.mfr.constants.Tool;
 import minefantasy.mfr.constants.WeaponClass;
 import minefantasy.mfr.init.MineFantasyMaterials;
 import minefantasy.mfr.material.CustomMaterial;
+import minefantasy.mfr.registry.CustomMaterialRegistry;
+import minefantasy.mfr.registry.types.CustomMaterialType;
 import minefantasy.mfr.util.CustomToolHelper;
 import minefantasy.mfr.util.ToolHelper;
 import minefantasy.mfr.util.XSTRandom;
@@ -214,10 +216,10 @@ public class ItemKnife extends ItemWeaponMFR implements IToolMFR, IHuntingItem {
 			return;
 		}
 		if (isCustom) {
-			ArrayList<CustomMaterial> metal = CustomMaterial.getList("metal");
+			ArrayList<CustomMaterial> metal = CustomMaterialRegistry.getList(CustomMaterialType.METAL_MATERIAL);
 			for (CustomMaterial customMat : metal) {
 				if (MineFantasyReforged.isDebug() || !customMat.getItemStack().isEmpty()) {
-					items.add(this.construct(customMat.name, MineFantasyMaterials.Names.OAK_WOOD));
+					items.add(this.construct(customMat.getName(), MineFantasyMaterials.Names.OAK_WOOD));
 				}
 			}
 		} else {

@@ -3,7 +3,7 @@
         "Author: thepigemperor2"
     ],
     "mod": "abyssalcraft",
-    "woods": [
+    "wood_material": [
         {
             "name": "darklands_oak_wood",
             "inputItem": "abyssalcraft:dltplank",

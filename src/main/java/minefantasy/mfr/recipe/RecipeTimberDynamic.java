@@ -4,6 +4,8 @@ import com.google.gson.JsonObject;
 import minefantasy.mfr.constants.Constants;
 import minefantasy.mfr.material.CustomMaterial;
 import minefantasy.mfr.material.WoodMaterial;
+import minefantasy.mfr.registry.CustomMaterialRegistry;
+import minefantasy.mfr.registry.types.CustomMaterialType;
 import minefantasy.mfr.util.CustomToolHelper;
 import minefantasy.mfr.util.RecipeHelper;
 import net.minecraft.inventory.InventoryCrafting;
@@ -70,8 +72,8 @@ public class RecipeTimberDynamic extends ShapedOreRecipe {
 			}
 		}
 		ItemStack outputModified = output.copy();
-		CustomMaterial inputMaterial = CustomMaterial.NONE;
-		for (CustomMaterial material : CustomMaterial.getList("wood")) {
+		CustomMaterial inputMaterial = CustomMaterialRegistry.NONE;
+		for (CustomMaterial material : CustomMaterialRegistry.getList(CustomMaterialType.WOOD_MATERIAL)) {
 			if (material instanceof WoodMaterial) {
 				Item materialItem = ForgeRegistries.ITEMS.getValue(((WoodMaterial) material).inputItemResourceLocation);
 				if (materialItem != null) {
@@ -82,10 +84,10 @@ public class RecipeTimberDynamic extends ShapedOreRecipe {
 				}
 			}
 		}
-		if (inputMaterial == CustomMaterial.NONE) {
-			inputMaterial = CustomMaterial.getMaterial(Constants.SCRAP_WOOD_TAG);
+		if (inputMaterial == CustomMaterialRegistry.NONE) {
+			inputMaterial = CustomMaterialRegistry.getMaterial(Constants.SCRAP_WOOD_TAG);
 		}
-		CustomMaterial.addMaterial(outputModified, CustomToolHelper.slot_main, inputMaterial.name);
+		CustomMaterialRegistry.addMaterial(outputModified, CustomToolHelper.slot_main, inputMaterial.getName());
 		return outputModified;
 	}
 

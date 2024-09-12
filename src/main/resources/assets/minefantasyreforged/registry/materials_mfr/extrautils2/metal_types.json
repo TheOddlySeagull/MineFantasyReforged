@@ -3,7 +3,7 @@
         "Author: thepigemperor2"
     ],
     "mod": "extrautils2",
-    "metals": [
+    "metal_material": [
         {
             "name": "demon_metal",
             "oreDictList": "ingotDemonicMetal",

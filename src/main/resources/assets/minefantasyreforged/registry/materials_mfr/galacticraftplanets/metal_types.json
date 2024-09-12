@@ -3,7 +3,7 @@
         "Author: thepigemperor2"
     ],
     "mod": "galacticraftplanets",
-    "metals": [
+    "metal_material": [
         {
             "name": "Desh",
             "oreDictList": "ingotDesh",

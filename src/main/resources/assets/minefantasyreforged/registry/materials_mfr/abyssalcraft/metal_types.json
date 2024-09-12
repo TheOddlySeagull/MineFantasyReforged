@@ -3,7 +3,7 @@
         "Author: thepigemperor2"
     ],
     "mod": "abyssalcraft",
-    "metals": [
+    "metal_material": [
         {
             "name": "abyssalnite",
             "oreDictList": "ingotAbyssalnite",

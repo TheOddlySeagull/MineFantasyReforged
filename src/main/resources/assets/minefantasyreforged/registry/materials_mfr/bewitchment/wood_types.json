@@ -3,7 +3,7 @@
         "Author: -toErIpNid-"
     ],
     "mod": "bewitchment",
-    "woods": [
+    "wood_material": [
         {
             "name": "bewitched_cypress_wood",
             "inputItem": "bewitchment:cypress_planks",
