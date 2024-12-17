@@ -9,7 +9,10 @@ import minefantasy.mfr.constants.Tool;
 import minefantasy.mfr.constants.WeaponClass;
 import minefantasy.mfr.init.MineFantasyMaterials;
 import minefantasy.mfr.material.CustomMaterial;
+import minefantasy.mfr.registry.CustomMaterialRegistry;
+import minefantasy.mfr.registry.types.CustomMaterialType;
 import minefantasy.mfr.util.CustomToolHelper;
+import minefantasy.mfr.util.ToolHelper;
 import minefantasy.mfr.util.XSTRandom;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -28,13 +31,12 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.stats.StatList;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.IShearable;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -94,6 +96,11 @@ public class ItemKnife extends ItemWeaponMFR implements IToolMFR, IHuntingItem {
 	}
 
 	@Override
+	public EnumActionResult onItemUse(EntityPlayer user, World world, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+		return ToolHelper.performBlockTransformation(user, world, pos, hand, facing);
+	}
+
+	@Override
 	public boolean canRetrieveDrops(ItemStack item) {
 		return true;
 	}
@@ -101,11 +108,6 @@ public class ItemKnife extends ItemWeaponMFR implements IToolMFR, IHuntingItem {
 	@Override
 	public Tool getToolType(ItemStack stack) {
 		return Tool.KNIFE;
-	}
-
-	@Override
-	public boolean canBlock() {
-		return false;
 	}
 
 	/**
@@ -138,7 +140,7 @@ public class ItemKnife extends ItemWeaponMFR implements IToolMFR, IHuntingItem {
 	}
 
 	@Override
-	public float getEfficiency(ItemStack item) {
+	public float getEfficiency(ItemStack item)  	 {
 		return CustomToolHelper.getEfficiency(item, material.getEfficiency(), efficiencyMod);
 	}
 
@@ -160,7 +162,7 @@ public class ItemKnife extends ItemWeaponMFR implements IToolMFR, IHuntingItem {
 
 		Multimap<String, AttributeModifier> map = HashMultimap.create();
 		map.put(SharedMonsterAttributes.ATTACK_DAMAGE.getName(), new AttributeModifier(ATTACK_DAMAGE_MODIFIER, "Weapon modifier", getMeleeDamage(stack), 0));
-		map.put(SharedMonsterAttributes.ATTACK_SPEED.getName(), new AttributeModifier(ATTACK_SPEED_MODIFIER, "Weapon modifier", -0.5F, 0));
+		map.put(SharedMonsterAttributes.ATTACK_SPEED.getName(), new AttributeModifier(ATTACK_SPEED_MODIFIER, "Weapon modifier", -0.75F, 0));
 		return map;
 	}
 
@@ -168,7 +170,7 @@ public class ItemKnife extends ItemWeaponMFR implements IToolMFR, IHuntingItem {
 	 * Gets a stack-sensitive value for the melee dmg
 	 */
 	protected float getMeleeDamage(ItemStack item) {
-		return baseDamage + CustomToolHelper.getMeleeDamage(item, material.getAttackDamage());
+		return baseDamage + CustomToolHelper.getMeleeDamage(item, material.getAttackDamage()) * 0.25F;
 	}
 
 	protected float getWeightModifier(ItemStack stack) {
@@ -191,10 +193,10 @@ public class ItemKnife extends ItemWeaponMFR implements IToolMFR, IHuntingItem {
 
 	@Override
 	public float getDestroySpeed(ItemStack stack, IBlockState state) {
-		if (state.getBlock().isToolEffective(state.getBlock().getUnlocalizedName(), state)) {
+		if (state.getBlock().isToolEffective(state.getBlock().getTranslationKey(), state)) {
 			return this.getSwordDestroySpeed(stack, state);
 		}
-		return CustomToolHelper.getEfficiency(stack, super.getDestroySpeed(stack, state), efficiencyMod);
+		return CustomToolHelper.getEfficiency(stack, super.getDestroySpeed(stack, state), efficiencyMod) * 0.05F;
 	}
 
 	public float getSwordDestroySpeed(ItemStack stack, IBlockState state) {
@@ -214,10 +216,10 @@ public class ItemKnife extends ItemWeaponMFR implements IToolMFR, IHuntingItem {
 			return;
 		}
 		if (isCustom) {
-			ArrayList<CustomMaterial> metal = CustomMaterial.getList("metal");
+			ArrayList<CustomMaterial> metal = CustomMaterialRegistry.getList(CustomMaterialType.METAL_MATERIAL);
 			for (CustomMaterial customMat : metal) {
 				if (MineFantasyReforged.isDebug() || !customMat.getItemStack().isEmpty()) {
-					items.add(this.construct(customMat.name, MineFantasyMaterials.Names.OAK_WOOD));
+					items.add(this.construct(customMat.getName(), MineFantasyMaterials.Names.OAK_WOOD));
 				}
 			}
 		} else {
@@ -234,7 +236,6 @@ public class ItemKnife extends ItemWeaponMFR implements IToolMFR, IHuntingItem {
 	}
 
 	@Override
-	@SideOnly(Side.CLIENT)
 	public String getItemStackDisplayName(ItemStack item) {
 		String unlocalName = this.getUnlocalizedNameInefficiently(item) + ".name";
 		return CustomToolHelper.getLocalisedName(item, unlocalName);

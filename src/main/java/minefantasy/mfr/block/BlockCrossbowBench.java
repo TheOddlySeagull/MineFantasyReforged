@@ -24,7 +24,7 @@ public class BlockCrossbowBench extends BlockTileEntity<TileEntityCrossbowBench>
 		super(Material.WOOD);
 
 		setRegistryName("crossbow_bench");
-		setUnlocalizedName("crossbow_bench");
+		setTranslationKey("crossbow_bench");
 		this.setSoundType(SoundType.STONE);
 		this.setHardness(5F);
 		this.setResistance(2F);
@@ -61,8 +61,9 @@ public class BlockCrossbowBench extends BlockTileEntity<TileEntityCrossbowBench>
 	@Override
 	public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
 		if (!ResearchLogic.getResearchCheck(player, MineFantasyKnowledgeList.crossbows)) {
-			if (!world.isRemote)
+			if (!world.isRemote && hand == player.getActiveHand()) {
 				player.sendMessage(new TextComponentTranslation("knowledge.unknownUse"));
+			}
 			return false;
 		}
 		TileEntityCrossbowBench tile = (TileEntityCrossbowBench) getTile(world, pos);

@@ -1,8 +1,6 @@
 package minefantasy.mfr.tile;
 
 import minefantasy.mfr.api.crafting.IHeatUser;
-import minefantasy.mfr.api.refine.Alloy;
-import minefantasy.mfr.api.refine.AlloyRecipes;
 import minefantasy.mfr.api.refine.SmokeMechanics;
 import minefantasy.mfr.block.BlockCrucible;
 import minefantasy.mfr.config.ConfigHardcore;
@@ -10,9 +8,15 @@ import minefantasy.mfr.container.ContainerBase;
 import minefantasy.mfr.container.ContainerCrucible;
 import minefantasy.mfr.init.MineFantasyBlocks;
 import minefantasy.mfr.network.NetworkHandler;
+import minefantasy.mfr.recipe.AlloyRecipeBase;
+import minefantasy.mfr.recipe.CraftingManagerAlloy;
+import minefantasy.mfr.recipe.CraftingManagerBlastFurnace;
+import minefantasy.mfr.recipe.CrucibleCraftMatrix;
+import minefantasy.mfr.recipe.IRecipeMFR;
 import minefantasy.mfr.tile.blastfurnace.TileEntityBlastHeater;
 import minefantasy.mfr.util.CustomToolHelper;
 import minefantasy.mfr.util.InventoryUtils;
+import minefantasy.mfr.util.Utils;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockEndPortalFrame;
 import net.minecraft.block.material.Material;
@@ -26,6 +30,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -35,22 +40,47 @@ import net.minecraftforge.items.ItemStackHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
 
 public class TileEntityCrucible extends TileEntityBase implements IHeatUser, ITickable {
 	private int ticksExisted;
-	private float progress = 0;
-	private float progressMax = 400;
-	private float temperature;
+	private int progress = 0;
+	private int progressMax = 400;
+	private int temperature;
 	private final Random rand = new Random();
 
 	private final int OUT_SLOT = 9;
 
+	private ContainerCrucible syncCrucible;
+	private CrucibleCraftMatrix craftMatrix;
+
 	public final ItemStackHandler inventory = createInventory();
+
+	private Set<String> knownResearches = new HashSet<>();
+
+	public TileEntityCrucible() {
+		setContainer(new ContainerCrucible(this));
+	}
 
 	@Override
 	protected ItemStackHandler createInventory() {
-		return new ItemStackHandler(10);
+		return new ItemStackHandler(10) {
+			@Override
+			protected void onContentsChanged(int slot) {
+				if (slot == OUT_SLOT) {
+					ItemStack output = this.getStackInSlot(slot);
+					IRecipeMFR recipe = CraftingManagerAlloy.findRecipeByOutput(output);
+					if (recipe == null) {
+						recipe = CraftingManagerBlastFurnace.findRecipeByOutput(output);
+					}
+					if (recipe != null) {
+						setRecipe(recipe);
+					}
+				}
+			}
+		};
 	}
 
 	@Override
@@ -60,8 +90,12 @@ public class TileEntityCrucible extends TileEntityBase implements IHeatUser, ITi
 
 	@Override
 	public ContainerBase createContainer(final EntityPlayer player) {
+		return new ContainerCrucible(player, player.inventory, this);
+	}
 
-		return new ContainerCrucible(player.inventory, this);
+	public void setContainer(ContainerCrucible container) {
+		syncCrucible = container;
+		craftMatrix = new CrucibleCraftMatrix(syncCrucible, AlloyRecipeBase.MAX_WIDTH, AlloyRecipeBase.MAX_HEIGHT);
 	}
 
 	@Override
@@ -94,7 +128,7 @@ public class TileEntityCrucible extends TileEntityBase implements IHeatUser, ITi
 		 */
 
 		if (isHot && canSmelt()) {
-			progress += (temperature / 600F);
+			progress += Math.max(1, Math.round(temperature / 600F));
 			if (progress >= progressMax) {
 				progress = 0;
 				smeltItem();
@@ -138,7 +172,7 @@ public class TileEntityCrucible extends TileEntityBase implements IHeatUser, ITi
 			return;
 		}
 
-		ItemStack itemstack = getRecipe();
+		ItemStack itemstack = getResult();
 
 		if (inventory.getStackInSlot(OUT_SLOT).isEmpty()) {
 			inventory.setStackInSlot(OUT_SLOT, itemstack.copy());
@@ -171,7 +205,7 @@ public class TileEntityCrucible extends TileEntityBase implements IHeatUser, ITi
 			return false;
 		}
 
-		ItemStack result = getRecipe();
+		ItemStack result = getResult();
 
 		if (result.isEmpty()) {
 			return false;
@@ -183,21 +217,29 @@ public class TileEntityCrucible extends TileEntityBase implements IHeatUser, ITi
 				&& inventory.getStackInSlot(OUT_SLOT).getCount() < (inventory.getStackInSlot(OUT_SLOT).getMaxStackSize() - (result.getCount() - 1));
 	}
 
-	private ItemStack getRecipe() {
-
-		ItemStack[] input = new ItemStack[inventory.getSlots() - 1];
-		for (int a = 0; a < 9; a++) {
-			if (!inventory.getStackInSlot(a).isEmpty()) {
-				input[a] = inventory.getStackInSlot(a);
-			}
+	private ItemStack getResult() {
+		if (isBlastOutput()) {
+			return ItemStack.EMPTY;
 		}
-		Alloy alloy = AlloyRecipes.getResult(input);
-		if (alloy != null) {
-			if (alloy.getLevel() <= getTier()) {
-				return AlloyRecipes.getResult(input).getRecipeOutput();
-			}
+
+		if (syncCrucible == null || craftMatrix == null) {
+			return ItemStack.EMPTY;
+		}
+
+		for (int a = 0; a < OUT_SLOT; a++) {
+			craftMatrix.setInventorySlotContents(a, getInventory().getStackInSlot(a));
+		}
+
+		AlloyRecipeBase recipe = CraftingManagerAlloy.findMatchingRecipe(this, craftMatrix, knownResearches);
+		if (recipe != null) {
+			return recipe.getCraftingResult(craftMatrix);
 		}
 		return ItemStack.EMPTY;
+	}
+
+	@Override
+	public IRecipeMFR getRecipeByOutput(ItemStack stack) {
+		return CraftingManagerAlloy.findRecipeByOutput(stack);
 	}
 
 	public int getTier() {
@@ -214,9 +256,9 @@ public class TileEntityCrucible extends TileEntityBase implements IHeatUser, ITi
 		return false;
 	}
 
-	public float getTemperature() {
+	public int getTemperature() {
 		if (this.getTier() >= 1 && !isCoated()) {
-			return 0F;
+			return 0;
 		}
 		if (getTier() >= 2) {
 			return 500;
@@ -224,35 +266,35 @@ public class TileEntityCrucible extends TileEntityBase implements IHeatUser, ITi
 		IBlockState under = world.getBlockState(pos.add(0, -1, 0));
 
 		if (under.getMaterial() == Material.FIRE) {
-			return 10F;
+			return 10;
 		}
 		if (under.getMaterial() == Material.LAVA) {
-			return 50F;
+			return 50;
 		}
 		TileEntity tile = world.getTileEntity(pos.add(0, -1, 0));
 		if (tile instanceof TileEntityForge) {
-			return ((TileEntityForge) tile).getBlockTemperature();
+			return Math.round(((TileEntityForge) tile).getBlockTemperature());
 		}
-		return 0F;
+		return 0;
 	}
 
-	public float getProgress() {
+	public int getProgress() {
 		return progress;
 	}
 
-	public float getProgressMax() {
+	public int getProgressMax() {
 		return progressMax;
 	}
 
-	public void setProgress(float progress) {
+	public void setProgress(int progress) {
 		this.progress = progress;
 	}
 
-	public void setProgressMax(float progressMax) {
+	public void setProgressMax(int progressMax) {
 		this.progressMax = progressMax;
 	}
 
-	public void setTemperature(float temperature) {
+	public void setTemperature(int temperature) {
 		this.temperature = temperature;
 	}
 
@@ -266,7 +308,8 @@ public class TileEntityCrucible extends TileEntityBase implements IHeatUser, ITi
 	}
 
 	private boolean isFirebrick(int x, int y, int z) {
-		return world.getBlockState(pos.add(x, y, z)).getBlock() == MineFantasyBlocks.FIREBRICKS;
+		Block block = world.getBlockState(pos.add(x, y, z)).getBlock();
+		return block == MineFantasyBlocks.FIREBRICKS || block == MineFantasyBlocks.FIREBRICK_STAIRS;
 	}
 	// INVENTORY
 
@@ -277,10 +320,14 @@ public class TileEntityCrucible extends TileEntityBase implements IHeatUser, ITi
 	}
 
 	private boolean isBlastOutput() {
-		if (world == null)
+		if (world.isRemote)
 			return false;
 		TileEntity tile = world.getTileEntity(pos.add(0, 1, 0));
 		return tile instanceof TileEntityBlastHeater;
+	}
+
+	public void setKnownResearches(Set<String> knownResearches) {
+		this.knownResearches = knownResearches;
 	}
 
 	@Override
@@ -306,10 +353,13 @@ public class TileEntityCrucible extends TileEntityBase implements IHeatUser, ITi
 	public void readFromNBT(NBTTagCompound nbt) {
 		super.readFromNBT(nbt);
 
-		progress = nbt.getFloat("progress");
-		progressMax = nbt.getFloat("progressMax");
+		progress = nbt.getInteger("progress");
+		progressMax = nbt.getInteger("progressMax");
 
 		inventory.deserializeNBT(nbt.getCompoundTag("inventory"));
+
+		this.setRecipe(getRecipeByResourceLocation(nbt));
+		knownResearches = Utils.deserializeList(nbt.getString(KNOWN_RESEARCHES_TAG));
 	}
 
 	@Nonnull
@@ -317,12 +367,32 @@ public class TileEntityCrucible extends TileEntityBase implements IHeatUser, ITi
 	public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
 		super.writeToNBT(nbt);
 
-		nbt.setFloat("progress", progress);
-		nbt.setFloat("progressMax", progressMax);
+		nbt.setInteger("progress", progress);
+		nbt.setInteger("progressMax", progressMax);
 
 		nbt.setTag("inventory", inventory.serializeNBT());
 
+		if (getRecipe() != null) {
+			nbt.setString(RECIPE_RESOURCE_LOCATION_TAG, getRecipe().getResourceLocation());
+		}
+		else {
+			nbt.setString(RECIPE_RESOURCE_LOCATION_TAG, "");
+		}
+		nbt.setString(KNOWN_RESEARCHES_TAG, Utils.serializeList(knownResearches));
+
 		return nbt;
+	}
+
+	private static IRecipeMFR getRecipeByResourceLocation(NBTTagCompound nbt) {
+		ResourceLocation recipeResourceLocation = new ResourceLocation(nbt.getString(RECIPE_RESOURCE_LOCATION_TAG));
+		IRecipeMFR recipe;
+
+		recipe = CraftingManagerAlloy.getRecipeByResourceLocation(recipeResourceLocation);
+		if (recipe == null) {
+			recipe = CraftingManagerBlastFurnace.getRecipeByResourceLocation(recipeResourceLocation);
+		}
+
+		return recipe;
 	}
 
 	@Override

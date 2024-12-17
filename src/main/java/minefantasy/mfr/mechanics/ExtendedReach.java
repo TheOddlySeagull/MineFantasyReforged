@@ -28,7 +28,9 @@ public class ExtendedReach {
 		// ensure custom MouseHelper is active
 		Minecraft mc = Minecraft.getMinecraft();
 
-		if (event.getButton() == 0 && event.isButtonstate()) {
+		int attackKeybinding = Minecraft.getMinecraft().gameSettings.keyBindAttack.getKeyCode() + 100;
+
+		if (event.getButton() == attackKeybinding && event.isButtonstate()) {
 			EntityPlayer player = mc.player;
 			if (player != null) {
 				ItemStack itemstack = player.getHeldItemMainhand();
@@ -86,7 +88,7 @@ public class ExtendedReach {
 			}
 
 			Vec3d lookvec = theRenderViewEntity.getLook(0);
-			Vec3d var8 = pos.addVector(lookvec.x * var2, lookvec.y * var2, lookvec.z * var2);
+			Vec3d var8 = pos.add(lookvec.x * var2, lookvec.y * var2, lookvec.z * var2);
 			Entity pointedEntity = null;
 			float var9 = 1.0F;
 			List<Entity> list = mc.world.getEntitiesWithinAABBExcludingEntity(theRenderViewEntity,

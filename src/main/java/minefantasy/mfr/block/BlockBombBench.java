@@ -24,7 +24,7 @@ public class BlockBombBench extends BlockTileEntity<TileEntityBombBench> {
 		super(Material.WOOD);
 
 		setRegistryName("bomb_bench");
-		setUnlocalizedName("bomb_bench");
+		setTranslationKey("bomb_bench");
 		this.setSoundType(SoundType.STONE);
 		this.setHardness(5F);
 		this.setResistance(2F);
@@ -61,12 +61,13 @@ public class BlockBombBench extends BlockTileEntity<TileEntityBombBench> {
 	@Override
 	public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
 		if (!ResearchLogic.getResearchCheck(player, MineFantasyKnowledgeList.bombs)) {
-			if (world.isRemote)
+			if (!world.isRemote && hand == player.getActiveHand()) {
 				player.sendMessage(new TextComponentTranslation("knowledge.unknownUse"));
+			}
 			return false;
 		}
 		TileEntityBombBench tile = (TileEntityBombBench) getTile(world, pos);
-		if (tile != null && !world.isSideSolid(pos.add(0, 1, 0), EnumFacing.DOWN)) {
+		if (tile != null) {
 			if (facing != EnumFacing.UP || !tile.tryCraft(player, false) && !world.isRemote) {
 				tile.openGUI(world, player);
 			}

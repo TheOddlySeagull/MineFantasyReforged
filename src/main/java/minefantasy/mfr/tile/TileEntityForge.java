@@ -4,6 +4,7 @@ import minefantasy.mfr.api.crafting.IBasicMetre;
 import minefantasy.mfr.api.crafting.IHeatSource;
 import minefantasy.mfr.api.crafting.IHeatUser;
 import minefantasy.mfr.api.heating.ForgeFuel;
+import minefantasy.mfr.api.heating.ForgeItemHandler;
 import minefantasy.mfr.api.heating.Heatable;
 import minefantasy.mfr.api.refine.IBellowsUseable;
 import minefantasy.mfr.api.refine.SmokeMechanics;
@@ -13,6 +14,7 @@ import minefantasy.mfr.container.ContainerForge;
 import minefantasy.mfr.item.ItemHeated;
 import minefantasy.mfr.network.NetworkHandler;
 import minefantasy.mfr.util.Functions;
+import minefantasy.mfr.util.InventoryUtils;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
@@ -43,7 +45,6 @@ public class TileEntityForge extends TileEntityBase implements IBasicMetre, IHea
 	public float maxFuel = 6000;// 5m
 	public float temperature;
 	public float fuelTemperature;
-	public float dragonHeartPower = 0F;
 	public int workableState = 0;
 	public int exactTemperature;
 	int justShared;
@@ -52,10 +53,45 @@ public class TileEntityForge extends TileEntityBase implements IBasicMetre, IHea
 	private int ticksExisted;
 
 	public final ItemStackHandler inventory = createInventory();
+	public final ItemStackHandler fuelInventory = createFuelInventory();
 
 	@Override
 	protected ItemStackHandler createInventory() {
 		return new ItemStackHandler(1);
+	}
+
+	protected ItemStackHandler createFuelInventory() {
+		return new ItemStackHandler(1) {
+
+			@Nonnull
+			@Override
+			public ItemStack insertItem(int slot, @Nonnull ItemStack stack, boolean simulate) {
+				if (isItemValidForSlot(slot, stack)) {
+					return super.insertItem(slot, stack, simulate);
+				}
+				else {
+					return stack;
+				}
+			}
+
+			@Override
+			protected void onContentsChanged(int slot) {
+				ItemStack fuelStack = getStackInSlot(slot);
+				ForgeFuel stats = ForgeItemHandler.getStats(fuelStack);
+				if (stats != null) {
+					if (addFuel(stats, false)) {
+						if (fuelStack != ItemStack.EMPTY) {
+							setStackInSlot(0, ItemStack.EMPTY);
+						}
+					}
+				}
+			}
+
+			@Override
+			public int getSlotLimit(int slot) {
+				return 1;
+			}
+		};
 	}
 
 	@Override
@@ -82,22 +118,34 @@ public class TileEntityForge extends TileEntityBase implements IBasicMetre, IHea
 	public void update() {
 		++ticksExisted;
 
+		if (justShared > 0) {
+			--justShared;
+		}
+
 		if (world.isRemote){
 			return;
 		}
-
-		if (justShared > 0)
-			--justShared;
 
 		if (ticksExisted % 20 == 0) {
 			ItemStack item = getInventory().getStackInSlot(0);
 			if (!item.isEmpty() && !world.isRemote) {
 				modifyItem(item);
 			}
+			ItemStack fuelItem = fuelInventory.getStackInSlot(0);
+			if (!fuelItem.isEmpty() && !world.isRemote) {
+				ForgeFuel stats = ForgeItemHandler.getStats(fuelItem);
+				if (stats != null) {
+					if (addFuel(stats, false)) {
+						if (fuelItem != ItemStack.EMPTY) {
+							fuelInventory.setStackInSlot(0, ItemStack.EMPTY);
+						}
+					}
+				}
+			}
 			sendUpdates();
 		}
 
-		if (!getIsLit() && !world.isRemote) {
+		if (!isLit() && !world.isRemote) {
 			if (temperature > 0 && ticksExisted % 5 == 0) {
 				temperature = 0;
 			}
@@ -109,7 +157,7 @@ public class TileEntityForge extends TileEntityBase implements IBasicMetre, IHea
 			return;
 		}
 		boolean isBurning = isBurning();// Check if it's burning
-		float maxTemp = getIsLit() ? (fuelTemperature + getUnderTemperature()) : 0;
+		float maxTemp = isLit() ? (fuelTemperature + getUnderTemperature()) : 0;
 
 		if (temperature < maxTemp) {
 			float amount = 2.0F;
@@ -130,6 +178,10 @@ public class TileEntityForge extends TileEntityBase implements IBasicMetre, IHea
 			}
 		}
 		maxFuel = getTier() == 1 ? 12000 : 6000;
+	}
+
+	public float getFuel() {
+		return fuel;
 	}
 
 	public boolean isOutside() {
@@ -245,10 +297,11 @@ public class TileEntityForge extends TileEntityBase implements IBasicMetre, IHea
 
 	@Override
 	public boolean isItemValidForSlot(int slot, ItemStack item) {
-		return true;
+		ForgeFuel stats = ForgeItemHandler.getStats(item);
+		return stats != null;
 	}
 
-	public boolean getIsLit(){
+	public boolean isLit(){
 		return isLit;
 	}
 
@@ -268,15 +321,8 @@ public class TileEntityForge extends TileEntityBase implements IBasicMetre, IHea
 	}
 
 	/**
-	 * Fires the forge up
+	 * The principle "fire up the forge" function has been moved to the BlockForge class ~Lenvill
 	 */
-	public void fireUpForge() {
-		if (getTier() == 1) {
-			return;
-		}
-		setIsLit(true);
-		BlockForge.setActiveState(true, getFuelCount(), hasBlockAbove(), world, pos);
-	}
 
 	public float getBellowsEffect() {
 		return getTier() == 1 ? 2.0F : 1.5F;
@@ -290,8 +336,8 @@ public class TileEntityForge extends TileEntityBase implements IBasicMetre, IHea
 		return (int) maxTemperature;
 	}
 
-	public boolean addFuel(ForgeFuel stats, boolean hand, int tier) {
-		maxFuel = tier == 1 ? 12000 : 6000;
+	public boolean addFuel(ForgeFuel stats, boolean hand) {
+		maxFuel = getTier() == 1 ? 12000 : 6000;
 
 		boolean hasUsed = stats.baseHeat > this.fuelTemperature;
 
@@ -305,14 +351,17 @@ public class TileEntityForge extends TileEntityBase implements IBasicMetre, IHea
 			hasUsed = true;
 			fuel = Math.min(fuel + stats.duration, maxFuel);// Fill as much as can fit
 		}
-		if (stats.doesLight && !getIsLit()) {
-			fireUpForge();
+		if (stats.doesLight && !isLit()) {
+			if (!(getTier() == 1)) {
+				Block block = world.getBlockState(pos).getBlock();
+				((BlockForge) block).igniteBlock(world, pos, world.getBlockState(pos));
+			}
 			hasUsed = true;
 		}
 		if (hasUsed) {
 			fuelTemperature = stats.baseHeat;
 		}
-		BlockForge.setActiveState(getIsLit(), getFuelCount(), hasBlockAbove(), world, pos);
+		BlockForge.setActiveState(isLit(), getFuelCount(), hasBlockAbove(), world, pos);
 		return hasUsed;
 	}
 
@@ -390,7 +439,7 @@ public class TileEntityForge extends TileEntityBase implements IBasicMetre, IHea
 	}
 
 	public float getBlockTemperature() {
-		if (this.getIsLit()) {
+		if (this.isLit()) {
 			return temperature;
 		}
 		return 0;
@@ -454,7 +503,15 @@ public class TileEntityForge extends TileEntityBase implements IBasicMetre, IHea
 	@SideOnly(Side.CLIENT)
 	public String getTextureName() {
 		BlockForge forge = (BlockForge) world.getBlockState(pos).getBlock();
-		return "forge_" + forge.type + (getIsLit() ? "_active" : "");
+		return "forge_" + forge.type + (isLit() ? "_active" : "");
+	}
+
+	@Override
+	public void onBlockBreak() {
+		if (!fuelInventory.getStackInSlot(0).isEmpty()) {
+			fuelInventory.setStackInSlot(0, ItemStack.EMPTY);
+		}
+		InventoryUtils.dropItemsInWorld(world, getInventory(), pos);
 	}
 
 	@Nonnull
@@ -464,13 +521,13 @@ public class TileEntityForge extends TileEntityBase implements IBasicMetre, IHea
 
 		nbt.setFloat("temperature", temperature);
 		nbt.setFloat("fuelTemperature", fuelTemperature);
-		nbt.setFloat("dragonHeartPower", dragonHeartPower);
 		nbt.setFloat("fuel", fuel);
 		nbt.setFloat("maxFuel", maxFuel);
 		nbt.setInteger("workableState", getWorkableState());
 		nbt.setBoolean("isLit", isLit);
 
 		nbt.setTag("inventory", inventory.serializeNBT());
+		nbt.setTag("fuelInventory", fuelInventory.serializeNBT());
 
 		return nbt;
 	}
@@ -481,13 +538,13 @@ public class TileEntityForge extends TileEntityBase implements IBasicMetre, IHea
 
 		temperature = nbt.getFloat("temperature");
 		fuelTemperature = nbt.getFloat("fuelTemperature");
-		dragonHeartPower = nbt.getFloat("dragonHeartPower");
 		fuel = nbt.getFloat("fuel");
 		maxFuel = nbt.getFloat("maxFuel");
 		workableState = nbt.getInteger("workableState");
 		isLit = nbt.getBoolean("isLit");
 
 		inventory.deserializeNBT(nbt.getCompoundTag("inventory"));
+		fuelInventory.deserializeNBT(nbt.getCompoundTag("fuelInventory"));
 	}
 
 	@Override
@@ -499,7 +556,12 @@ public class TileEntityForge extends TileEntityBase implements IBasicMetre, IHea
 	@Override
 	public <T> T getCapability(@Nonnull Capability<T> capability, @Nullable EnumFacing facing) {
 		if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
-			return CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.cast(getInventory());
+			if (facing == EnumFacing.UP) {
+				return CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.cast(fuelInventory);
+			}
+			else {
+				return CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.cast(inventory);
+			}
 		}
 		return super.getCapability(capability, facing);
 	}

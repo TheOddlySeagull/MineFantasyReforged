@@ -77,7 +77,8 @@ public class BlockFrame extends BasicBlockMF {
 	}
 
 	@SideOnly(Side.CLIENT)
-	public BlockRenderLayer getBlockLayer() {
+	@Override
+	public BlockRenderLayer getRenderLayer() {
 		return BlockRenderLayer.CUTOUT;
 	}
 
@@ -110,6 +111,10 @@ public class BlockFrame extends BasicBlockMF {
 	public boolean canFrameConnectTo(IBlockAccess world, BlockPos pos, EnumFacing dir) {
 		BlockPos other = pos.offset(dir);
 		IBlockState state = world.getBlockState(other);
+		if (state.getBlock().hasTileEntity(state)) {
+			//Fixes potentially weird blockFace issues with a Shulker in particular
+			return false;
+		}
 		return state.getBlock().canBeConnectedTo(world, other, dir.getOpposite()) || attachesTo(world, state, pos, dir);
 	}
 

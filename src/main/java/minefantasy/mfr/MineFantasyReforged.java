@@ -2,8 +2,6 @@ package minefantasy.mfr;
 
 import codechicken.lib.CodeChickenLib;
 import minefantasy.mfr.api.MineFantasyReforgedAPI;
-import minefantasy.mfr.api.armour.ArmourDesign;
-import minefantasy.mfr.api.armour.CustomArmourEntry;
 import minefantasy.mfr.commands.CommandMFR;
 import minefantasy.mfr.config.ConfigArmour;
 import minefantasy.mfr.config.ConfigClient;
@@ -20,6 +18,7 @@ import minefantasy.mfr.config.ConfigWeapon;
 import minefantasy.mfr.config.ConfigWorldGen;
 import minefantasy.mfr.data.PlayerData;
 import minefantasy.mfr.init.LeatherArmourListMFR;
+import minefantasy.mfr.init.MineFantasyArmorCustomEntries;
 import minefantasy.mfr.init.MineFantasyBlocks;
 import minefantasy.mfr.init.MineFantasyItems;
 import minefantasy.mfr.init.MineFantasyKnowledgeList;
@@ -29,19 +28,34 @@ import minefantasy.mfr.init.MineFantasyOreDict;
 import minefantasy.mfr.material.MetalMaterial;
 import minefantasy.mfr.network.NetworkHandler;
 import minefantasy.mfr.proxy.CommonProxy;
-import minefantasy.mfr.recipe.AnvilRecipeLoader;
-import minefantasy.mfr.recipe.BasicRecipesMF;
-import minefantasy.mfr.recipe.CarpenterRecipeLoader;
-import minefantasy.mfr.registry.MetalMaterialRegistry;
-import minefantasy.mfr.registry.WoodMaterialRegistry;
+import minefantasy.mfr.recipe.CraftingManagerAlloy;
+import minefantasy.mfr.recipe.CraftingManagerAnvil;
+import minefantasy.mfr.recipe.CraftingManagerBigFurnace;
+import minefantasy.mfr.recipe.CraftingManagerBlastFurnace;
+import minefantasy.mfr.recipe.CraftingManagerBloomery;
+import minefantasy.mfr.recipe.CraftingManagerCarpenter;
+import minefantasy.mfr.recipe.CraftingManagerKitchenBench;
+import minefantasy.mfr.recipe.CraftingManagerQuern;
+import minefantasy.mfr.recipe.CraftingManagerRoast;
+import minefantasy.mfr.recipe.CraftingManagerSalvage;
+import minefantasy.mfr.recipe.CraftingManagerSpecial;
+import minefantasy.mfr.recipe.CraftingManagerTanner;
+import minefantasy.mfr.recipe.CraftingManagerTransformation;
+import minefantasy.mfr.recipe.RecipeRemover;
+import minefantasy.mfr.recipe.ingredients.IngredientCount;
+import minefantasy.mfr.recipe.ingredients.IngredientOreCount;
+import minefantasy.mfr.registry.CustomMaterialRegistry;
 import minefantasy.mfr.world.gen.feature.WorldGenBiological;
 import minefantasy.mfr.world.gen.feature.WorldGenGeological;
 import minefantasy.mfr.world.gen.structure.WorldGenStructure;
-import net.minecraft.init.Items;
+import net.minecraft.util.JsonUtils;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.config.Configuration;
-import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.common.crafting.CraftingHelper;
+import net.minecraftforge.common.crafting.IIngredientFactory;
+import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.fml.client.event.ConfigChangedEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.SidedProxy;
@@ -50,15 +64,16 @@ import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartedEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.File;
-
-@Mod(modid = MineFantasyReforged.MOD_ID, name = MineFantasyReforged.NAME, version = "@VERSION@", dependencies = "required:forge@[0.000.000.001,);" + CodeChickenLib.MOD_VERSION_DEP)
+@Mod(modid = MineFantasyReforged.MOD_ID, name = MineFantasyReforged.NAME, version = "@VERSION@", dependencies = "required:forge@[0.000.000.001,);" + CodeChickenLib.MOD_VERSION_DEP + "required-after:mixinbooter;")
 public class MineFantasyReforged {
+	public static final boolean shouldRemap = true;//DO NOT COMMIT AS FALSE
 	public static final String MOD_ID = "minefantasyreforged";
 	public static final String NAME = "MineFantasy Reforged";
 
@@ -68,11 +83,36 @@ public class MineFantasyReforged {
 	@Mod.Instance
 	public static MineFantasyReforged INSTANCE;
 
-	public static final Logger LOG = LogManager.getLogger(MOD_ID);
+	public static final CraftingManagerAnvil CRAFTING_MANAGER_ANVIL = new CraftingManagerAnvil();
+	public static final CraftingManagerCarpenter CRAFTING_MANAGER_CARPENTER = new CraftingManagerCarpenter();
+	public static final CraftingManagerBigFurnace CRAFTING_MANAGER_BIG_FURNACE = new CraftingManagerBigFurnace();
+	public static final CraftingManagerAlloy CRAFTING_MANAGER_ALLOY = new CraftingManagerAlloy();
+	public static final CraftingManagerBloomery CRAFTING_MANAGER_BLOOMERY = new CraftingManagerBloomery();
+	public static final CraftingManagerBlastFurnace CRAFTING_MANAGER_BLAST_FURNACE = new CraftingManagerBlastFurnace();
+	public static final CraftingManagerQuern CRAFTING_MANAGER_QUERN = new CraftingManagerQuern();
+	public static final CraftingManagerTanner CRAFTING_MANAGER_TANNER = new CraftingManagerTanner();
+	public static final CraftingManagerRoast CRAFTING_MANAGER_ROAST = new CraftingManagerRoast();
+	public static final CraftingManagerKitchenBench CRAFTING_MANAGER_KITCHEN_BENCH = new CraftingManagerKitchenBench();
+	public static final CraftingManagerSalvage CRAFTING_MANAGER_SALVAGE = new CraftingManagerSalvage();
+	public static final CraftingManagerTransformation CRAFTING_MANAGER_TRANSFORMATION = new CraftingManagerTransformation();
+	public static final CraftingManagerSpecial CRAFTING_MANAGER_SPECIAL = new CraftingManagerSpecial();
 
-	private static Configuration getCfg(FMLPreInitializationEvent event, String name) {
-		return new Configuration(new File(event.getModConfigurationDirectory(), "MineFantasyReforged/" + name + ".cfg"));
-	}
+	@SideOnly(Side.CLIENT)
+	private static ConfigClient configClient;
+	private static ConfigArmour configArmour;
+	private static ConfigSpecials configSpecials;
+	private static ConfigHardcore configHardcore;
+	private static ConfigIntegration configIntegration;
+	private static ConfigTools configTools;
+	private static ConfigWeapon configWeapon;
+	private static ConfigStamina configStamina;
+	private static ConfigItemRegistry configItemRegistry;
+	private static ConfigFarming configFarming;
+	private static ConfigWorldGen configWorldGen;
+	public static ConfigCrafting configCrafting;
+	private static ConfigMobs configMobs;
+
+	public static final Logger LOG = LogManager.getLogger(MOD_ID);
 
 	public static boolean isDebug() {
 		return ConfigSpecials.debug.equals("AU32-Db42-Acf6-Ggh9-9E8d");
@@ -89,34 +129,30 @@ public class MineFantasyReforged {
 	public void preInit(FMLPreInitializationEvent preEvent) {
 		NetworkHandler.INSTANCE.registerNetwork();
 
-		if (FMLCommonHandler.instance().getSide() == Side.CLIENT) {
-			new ConfigClient().setConfig(getCfg(preEvent, "Client"));
+		if (preEvent.getSide() == Side.CLIENT) {
+			configClient = new ConfigClient("Client");
 		}
-		new ConfigArmour().setConfig(getCfg(preEvent, "Armours"));
-		new ConfigSpecials().setConfig(getCfg(preEvent, "Specials"));
-		new ConfigHardcore().setConfig(getCfg(preEvent, "Hardcore"));
-		new ConfigIntegration().setConfig(getCfg(preEvent, "Integration"));
-		new ConfigTools().setConfig(getCfg(preEvent, "Tools"));
-		new ConfigWeapon().setConfig(getCfg(preEvent, "Weapons"));
-		new ConfigStamina().setConfig(getCfg(preEvent, "Stamina_System"));
-		new ConfigItemRegistry().setConfig(getCfg(preEvent, "Item_Registry"));
-		new ConfigFarming().setConfig(getCfg(preEvent, "Farming"));
-		new ConfigWorldGen().setConfig(getCfg(preEvent, "WorldGen"));
-		new ConfigCrafting().setConfig(getCfg(preEvent, "Crafting"));
-		new ConfigMobs().setConfig(getCfg(preEvent, "Mobs"));
+		configArmour = new ConfigArmour("Armours");
+		configSpecials = new ConfigSpecials("Specials");
+		configHardcore = new ConfigHardcore("Hardcore");
+		configIntegration = new ConfigIntegration("Integration");
+		configTools = new ConfigTools("Tools");
+		configWeapon = new ConfigWeapon("Weapons");
+		configStamina = new ConfigStamina("Stamina_System");
+		configItemRegistry = new ConfigItemRegistry("Item_Registry");
+		configFarming = new ConfigFarming("Farming");
+		configWorldGen = new ConfigWorldGen("WorldGen");
+		configCrafting = new ConfigCrafting("Crafting");
+		configMobs = new ConfigMobs("Mobs");
 
 		PlayerData.register();
 		MineFantasyItems.initEnumActions();
-
-		//		CarpenterRecipeManager.INSTANCE.initializeAndExportDefaults();
-		//		CarpenterRecipeManager.INSTANCE.preInit();
 
 		MineFantasyReforgedAPI.isInDebugMode = isDebug();
 		MineFantasyReforged.LOG.info("API Debug mode updated: " + MineFantasyReforgedAPI.isInDebugMode);
 
 		MineFantasyMaterials.initBaseMaterials();
-		WoodMaterialRegistry.INSTANCE.preInit();
-		MetalMaterialRegistry.INSTANCE.preInit();
+		CustomMaterialRegistry.INSTANCE.preInit();
 		MineFantasyMaterials.initLeatherMaterials();
 
 		MineFantasyLoot.load();
@@ -134,7 +170,6 @@ public class MineFantasyReforged {
 		MineFantasyBlocks.load();
 		MineFantasyItems.loadComponent();
 		MineFantasyItems.loadTool();
-		MineFantasyItems.loadSpecialFood();
 
 		PROXY.registerTickHandlers();
 
@@ -151,41 +186,30 @@ public class MineFantasyReforged {
 		GameRegistry.registerWorldGenerator(new WorldGenGeological(), 5);
 		GameRegistry.registerWorldGenerator(new WorldGenStructure(), 5);
 
-		//		AnvilRecipeManager.loadRecipesFromSource(Loader.instance().activeModContainer().getSource(), AnvilRecipeManager.DEFAULT_RECIPE_DIRECTORY);
+		registerIngredients();
+
+		CRAFTING_MANAGER_ANVIL.loadRecipes();
+		CRAFTING_MANAGER_CARPENTER.loadRecipes();
+		CRAFTING_MANAGER_BIG_FURNACE.loadRecipes();
+		CRAFTING_MANAGER_ALLOY.loadRecipes();
+		CRAFTING_MANAGER_BLOOMERY.loadRecipes();
+		CRAFTING_MANAGER_BLAST_FURNACE.loadRecipes();
+		CRAFTING_MANAGER_QUERN.loadRecipes();
+		CRAFTING_MANAGER_TANNER.loadRecipes();
+		CRAFTING_MANAGER_ROAST.loadRecipes();
+		CRAFTING_MANAGER_KITCHEN_BENCH.loadRecipes();
+		CRAFTING_MANAGER_SALVAGE.loadRecipes();
+		CRAFTING_MANAGER_TRANSFORMATION.loadRecipes();
+		CRAFTING_MANAGER_SPECIAL.loadRecipes();
 
 		PROXY.init();
 	}
 
 	@EventHandler
 	public void postInit(FMLPostInitializationEvent postEvent) {
-		CustomArmourEntry.registerItem(Items.LEATHER_HELMET, ArmourDesign.LEATHER);
-		CustomArmourEntry.registerItem(Items.LEATHER_CHESTPLATE, ArmourDesign.LEATHER);
-		CustomArmourEntry.registerItem(Items.LEATHER_LEGGINGS, ArmourDesign.LEATHER);
-		CustomArmourEntry.registerItem(Items.LEATHER_BOOTS, ArmourDesign.LEATHER);
-
-		CustomArmourEntry.registerItem(Items.CHAINMAIL_HELMET, ArmourDesign.MAIL);
-		CustomArmourEntry.registerItem(Items.CHAINMAIL_CHESTPLATE, ArmourDesign.MAIL);
-		CustomArmourEntry.registerItem(Items.CHAINMAIL_LEGGINGS, ArmourDesign.MAIL);
-		CustomArmourEntry.registerItem(Items.CHAINMAIL_BOOTS, ArmourDesign.MAIL);
-
-		CustomArmourEntry.registerItem(Items.IRON_HELMET, ArmourDesign.SOLID, 1.5F, "medium");
-		CustomArmourEntry.registerItem(Items.IRON_CHESTPLATE, ArmourDesign.SOLID, 1.5F, "medium");
-		CustomArmourEntry.registerItem(Items.IRON_LEGGINGS, ArmourDesign.SOLID, 1.5F, "medium");
-		CustomArmourEntry.registerItem(Items.IRON_BOOTS, ArmourDesign.SOLID, 1.5F, "medium");
-
-		CustomArmourEntry.registerItem(Items.GOLDEN_HELMET, ArmourDesign.SOLID, 2F, "medium");
-		CustomArmourEntry.registerItem(Items.GOLDEN_CHESTPLATE, ArmourDesign.SOLID, 2F, "medium");
-		CustomArmourEntry.registerItem(Items.GOLDEN_LEGGINGS, ArmourDesign.SOLID, 2F, "medium");
-		CustomArmourEntry.registerItem(Items.GOLDEN_BOOTS, ArmourDesign.SOLID, 2F, "medium");
-		
-		CustomArmourEntry.registerItem(Items.DIAMOND_HELMET, ArmourDesign.SOLID, 2.5F, "medium");
-		CustomArmourEntry.registerItem(Items.DIAMOND_CHESTPLATE, ArmourDesign.SOLID, 2.5F, "medium");
-		CustomArmourEntry.registerItem(Items.DIAMOND_LEGGINGS, ArmourDesign.SOLID, 2.5F, "medium");
-		CustomArmourEntry.registerItem(Items.DIAMOND_BOOTS, ArmourDesign.SOLID, 2.5F, "medium");
-
+		MineFantasyArmorCustomEntries.initVanillaArmorEntries();
+		MineFantasyArmorCustomEntries.initModdedArmorCustomEntries();
 		ConfigItemRegistry.readCustoms();
-
-		MineFantasyOreDict.registerOreDictEntries();
 
 		for (Biome biome : Biome.REGISTRY) {
 			registerBiomeStuff(biome);
@@ -193,20 +217,34 @@ public class MineFantasyReforged {
 
 		MineFantasyKnowledgeList.init();
 		MineFantasyKnowledgeList.ArtefactListMFR.init();
-		BasicRecipesMF.init();
+		//Exporters go here
+		RecipeRemover.removeSmeltingRecipes();
 
 		MetalMaterial.addHeatables();
 
+		//See the MFREventHandler.oreDictRegistry for the rest of the OreDict registrations
 		MineFantasyOreDict.registerOreDictCommonIngotEntry();
+		MineFantasyItems.addRandomDrops();
 
-		CarpenterRecipeLoader.INSTANCE.postInit();
-		AnvilRecipeLoader.INSTANCE.postInit();
+		if (postEvent.getSide() == Side.CLIENT) {
+			configClient.save();
+		}
+		configArmour.save();
+		configSpecials.save();
+		configHardcore.save();
+		configIntegration.save();
+		configTools.save();
+		configWeapon.save();
+		configStamina.save();
+		configItemRegistry.save();
+		configFarming.save();
+		configWorldGen.save();
+		configCrafting.save();
+		configMobs.save();
 
 		PROXY.postInit(postEvent);
+		PROXY.postInit();
 
-		// enabling this will dump all carpenter recipes to jsons! see RecipeExporter for path
-		// RecipeExporter exporter = new RecipeExporter();
-		// RecipeExporterAnvil exporterAnvil = new RecipeExporterAnvil();
 	}
 
 	@EventHandler
@@ -217,6 +255,47 @@ public class MineFantasyReforged {
 	@EventHandler
 	public final void serverStarted(FMLServerStartedEvent event) {
 
+	}
+
+	@SubscribeEvent
+	public void createRegistry(RegistryEvent.NewRegistry evt) {
+		CraftingManagerAnvil.init();
+		CraftingManagerCarpenter.init();
+		CraftingManagerBigFurnace.init();
+		CraftingManagerAlloy.init();
+		CraftingManagerBloomery.init();
+		CraftingManagerBlastFurnace.init();
+		CraftingManagerQuern.init();
+		CraftingManagerTanner.init();
+		CraftingManagerRoast.init();
+		CraftingManagerKitchenBench.init();
+		CraftingManagerSalvage.init();
+		CraftingManagerTransformation.init();
+		CraftingManagerSpecial.init();
+	}
+
+	public static void registerIngredients() {
+		CraftingHelper.register(new ResourceLocation(MOD_ID, "item_count"), (IIngredientFactory) (c, j) -> new IngredientCount(CraftingHelper.getItemStack(j, c)));
+		CraftingHelper.register(new ResourceLocation(MOD_ID, "ore_dict_count"), (IIngredientFactory) (c, j) -> new IngredientOreCount(JsonUtils.getString(j, "ore"), JsonUtils.getInt(j, "count", 1)));
+	}
+
+	@SubscribeEvent
+	public void configChangedEvent(ConfigChangedEvent.OnConfigChangedEvent evt) {
+		if (MOD_ID.equals(evt.getModID())) {
+			configClient.save();
+			configArmour.save();
+			configSpecials.save();
+			configHardcore.save();
+			configIntegration.save();
+			configTools.save();
+			configWeapon.save();
+			configStamina.save();
+			configItemRegistry.save();
+			configFarming.save();
+			configWorldGen.save();
+			configCrafting.save();
+			configMobs.save();
+		}
 	}
 
 	private void registerBiomeStuff(Biome biome) {

@@ -14,19 +14,23 @@ import javax.annotation.Nonnull;
 
 public class ContainerCrucible extends ContainerBase {
 
-	private TileEntityCrucible tile;
+	private final TileEntityCrucible tile;
 	private int lastProgress;
 	private int lastProgressMax;
 	private int lastTemp;
 
-	public ContainerCrucible(InventoryPlayer playerInventory, TileEntityCrucible tile) {
+	public ContainerCrucible(TileEntityCrucible tile) {
+		this.tile = tile;
+	}
+
+	public ContainerCrucible(EntityPlayer player, InventoryPlayer playerInventory, TileEntityCrucible tile) {
 		super(playerInventory, tile);
 
 		this.tile = tile;
 
 		addTileSlots(3, 3, 62, 14);
 
-		this.addSlotToContainer(new SlotCrucibleOut(this.tile, this.tile.inventory.getSlots() - 1, 129, 32));
+		this.addSlotToContainer(new SlotCrucibleOut(this.tile, player, this.tile.inventory.getSlots() - 1, 129, 32));
 
 		addPlayerSlots(playerInventory, 8, 162);
 
@@ -37,21 +41,21 @@ public class ContainerCrucible extends ContainerBase {
 
 		super.detectAndSendChanges();
 
-		for (IContainerListener icontainerlistener : this.listeners) {
-			if (this.lastProgress != (int) tile.getProgress()) {
-				icontainerlistener.sendWindowProperty(this, 0, (int) tile.getProgress());
+		for (IContainerListener listener : this.listeners) {
+			if (this.lastProgress !=  tile.getProgress()) {
+				listener.sendWindowProperty(this, 0,  tile.getProgress());
 			}
-			if (this.lastProgressMax != (int) tile.getProgressMax()) {
-				icontainerlistener.sendWindowProperty(this, 1, (int) tile.getProgressMax());
+			if (this.lastProgressMax !=  tile.getProgressMax()) {
+				listener.sendWindowProperty(this, 1,  tile.getProgressMax());
 			}
-			if (this.lastTemp != (int) tile.getTemperature()) {
-				icontainerlistener.sendWindowProperty(this, 2, (int) tile.getTemperature());
+			if (this.lastTemp !=  tile.getTemperature()) {
+				listener.sendWindowProperty(this, 2,  tile.getTemperature());
 			}
 		}
 
-		this.lastProgress = (int) tile.getProgress();
-		this.lastProgressMax = (int) tile.getProgressMax();
-		this.lastTemp = (int) tile.getTemperature();
+		this.lastProgress = tile.getProgress();
+		this.lastProgressMax = tile.getProgressMax();
+		this.lastTemp = tile.getTemperature();
 
 		for (int i = 0; i < this.inventorySlots.size(); ++i) {
 			ItemStack itemstack = this.inventorySlots.get(i).getStack();
@@ -66,6 +70,19 @@ public class ContainerCrucible extends ContainerBase {
 					(listener).sendSlotContents(this, i, itemstack1);
 				}
 			}
+		}
+	}
+
+	@Override
+	public void addListener(IContainerListener listener) {
+		if (this.lastProgress != tile.getProgress()) {
+			listener.sendWindowProperty(this, 0, tile.getProgress());
+		}
+		if (this.lastProgressMax != tile.getProgressMax()) {
+			listener.sendWindowProperty(this, 1, tile.getProgressMax());
+		}
+		if (this.lastTemp != tile.getTemperature()) {
+			listener.sendWindowProperty(this, 2, tile.getTemperature());
 		}
 	}
 

@@ -117,6 +117,7 @@ public class ResearchLogic {
 		if (player.capabilities.isCreativeMode){
 			return true;
 		}
+
 		return ResearchLogic.hasInfoUnlocked(player, research);
 	}
 
@@ -193,6 +194,6 @@ public class ResearchLogic {
 	}
 
 	private static String getKeyName(ItemStack item, InformationBase base) {
-		return "research_" + base.getUnlocalisedName() + "_" + item.getUnlocalizedName() + "_" + item.getItemDamage();
+		return "research_" + base.getUnlocalisedName() + "_" + item.getTranslationKey() + "_" + item.getItemDamage();
 	}
 }

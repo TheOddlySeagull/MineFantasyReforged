@@ -1,6 +1,5 @@
 package minefantasy.mfr.item;
 
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import minefantasy.mfr.MineFantasyReforged;
 import minefantasy.mfr.api.tier.IToolMaterial;
@@ -10,11 +9,12 @@ import minefantasy.mfr.init.MineFantasyTabs;
 import minefantasy.mfr.material.CustomMaterial;
 import minefantasy.mfr.mechanics.StaminaMechanics;
 import minefantasy.mfr.proxy.IClientRegister;
+import minefantasy.mfr.registry.CustomMaterialRegistry;
+import minefantasy.mfr.registry.types.CustomMaterialType;
 import minefantasy.mfr.util.CustomToolHelper;
 import minefantasy.mfr.util.ModelLoaderHelper;
-import net.minecraft.block.Block;
-import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -32,6 +32,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.fml.relauncher.Side;
@@ -41,6 +42,8 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+
+import static minefantasy.mfr.registry.CustomMaterialRegistry.DECIMAL_FORMAT;
 
 /**
  * @author Anonymous Productions
@@ -59,7 +62,7 @@ public class ItemHeavyShovel extends ItemSpade implements IToolMaterial, IClient
 		itemRarity = rarity;
 		setCreativeTab(MineFantasyTabs.tabOldTools);
 		setRegistryName(name);
-		setUnlocalizedName(name);
+		setTranslationKey(name);
 
 		setMaxDamage(material.getMaxUses());
 
@@ -74,11 +77,11 @@ public class ItemHeavyShovel extends ItemSpade implements IToolMaterial, IClient
 				for (int z1 = -range; z1 <= range; z1++) {
 					if (getDistance(pos.getX() + x1, pos.getY(), pos.getZ() + z1, pos) <= range + 0.5D) {
 						EnumFacing facing = EnumFacing.getDirectionFromEntityLiving(pos, user);
-						int blockX = pos.getX() + x1 + facing.getFrontOffsetX();
-						int blockY = pos.getY() + facing.getFrontOffsetY();
-						int blockZ = pos.getZ() + z1 + facing.getFrontOffsetZ();
+						int blockX = pos.getX() + x1 + facing.getXOffset();
+						int blockY = pos.getY() + facing.getYOffset();
+						int blockZ = pos.getZ() + z1 + facing.getZOffset();
 
-						if (!(x1 + facing.getFrontOffsetX() == 0 && facing.getFrontOffsetY() == 0 && z1 + facing.getFrontOffsetZ() == 0)) {
+						if (!(x1 + facing.getXOffset() == 0 && facing.getYOffset() == 0 && z1 + facing.getZOffset() == 0)) {
 							BlockPos newBlockPos = new BlockPos(blockX, blockY, blockZ);
 							IBlockState newState = world.getBlockState(newBlockPos);
 							IBlockState above = world.getBlockState(newBlockPos.add(0, 1, 0));
@@ -137,10 +140,12 @@ public class ItemHeavyShovel extends ItemSpade implements IToolMaterial, IClient
 			return super.getAttributeModifiers(slot, stack);
 		}
 
-		Multimap<String, AttributeModifier> map = HashMultimap.create();
-		map.put(SharedMonsterAttributes.ATTACK_DAMAGE.getName(), new AttributeModifier(ATTACK_DAMAGE_MODIFIER, "Weapon modifier", getMeleeDamage(stack), 0));
-		map.put(SharedMonsterAttributes.ATTACK_SPEED.getName(), new AttributeModifier(ATTACK_SPEED_MODIFIER, "Weapon modifier", -3F, 0));
-		return map;
+		Multimap<String, AttributeModifier> multimap = super.getAttributeModifiers(slot, stack);
+		multimap.put(SharedMonsterAttributes.ATTACK_DAMAGE.getName(),
+				new AttributeModifier(ATTACK_DAMAGE_MODIFIER, "Tool modifier", getMeleeDamage(stack), 0));
+		multimap.put(SharedMonsterAttributes.ATTACK_SPEED.getName(),
+				new AttributeModifier(ATTACK_SPEED_MODIFIER, "Tool modifier", -3F, 0));
+		return multimap;
 	}
 
 	/**
@@ -174,23 +179,33 @@ public class ItemHeavyShovel extends ItemSpade implements IToolMaterial, IClient
 		return CustomToolHelper.getRarity(item, itemRarity);
 	}
 
-	public float getDigSpeed(ItemStack stack, Block block, World world, BlockPos pos, EntityPlayer player) {
-		if (!ForgeHooks.isToolEffective(world, pos, stack)) {
-			return this.getDestroySpeed(stack, block);
+	@Override
+	public float getDestroySpeed(ItemStack stack, IBlockState state) {
+		if (!state.getBlock().isToolEffective("shovel", state)) {
+			return this.getSpadeDestroySpeed(stack, state);
 		}
-		float digSpeed = player.getDigSpeed(block.getDefaultState(), pos);
-		return CustomToolHelper.getEfficiency(stack, digSpeed, efficiencyMod / 10);
+		return CustomToolHelper.getEfficiency(stack, super.getDestroySpeed(stack, state), efficiencyMod / 8F);
 	}
 
-	public float getDestroySpeed(ItemStack stack, Block block) {
-		return block.getMaterial(block.getDefaultState()) != Material.IRON && block.getMaterial(block.getDefaultState()) != Material.ANVIL
-				&& block.getMaterial(block.getDefaultState()) != Material.ROCK ? super.getDestroySpeed(stack, block.getDefaultState())
-				: CustomToolHelper.getEfficiency(stack, this.efficiency, efficiencyMod / 2);
+	public float getSpadeDestroySpeed(ItemStack stack, IBlockState block) {
+		float base = super.getDestroySpeed(stack, block);
+		return base <= 1.0F ? base : CustomToolHelper.getEfficiency(stack, this.efficiency, efficiencyMod );
 	}
 
 	@Override
 	public int getHarvestLevel(ItemStack stack, String toolClass, @Nullable EntityPlayer player, @Nullable IBlockState blockState) {
 		return CustomToolHelper.getHarvestLevel(stack, super.getHarvestLevel(stack, toolClass, player, blockState));
+	}
+
+	/**
+	 * ItemStack sensitive version of getItemEnchantability
+	 *
+	 * @param stack The ItemStack
+	 * @return the item echantability value
+	 */
+	@Override
+	public int getItemEnchantability(ItemStack stack) {
+		return CustomToolHelper.getCustomPrimaryMaterial(stack).getEnchantability();
 	}
 
 	@Override
@@ -199,10 +214,10 @@ public class ItemHeavyShovel extends ItemSpade implements IToolMaterial, IClient
 			return;
 		}
 		if (isCustom) {
-			ArrayList<CustomMaterial> metal = CustomMaterial.getList("metal");
+			ArrayList<CustomMaterial> metal = CustomMaterialRegistry.getList(CustomMaterialType.METAL_MATERIAL);
 			for (CustomMaterial customMat : metal) {
 				if (MineFantasyReforged.isDebug() || !customMat.getItemStack().isEmpty()) {
-					items.add(this.construct(customMat.name, MineFantasyMaterials.Names.OAK_WOOD));
+					items.add(this.construct(customMat.getName(), MineFantasyMaterials.Names.OAK_WOOD));
 				}
 			}
 		} else {
@@ -215,11 +230,16 @@ public class ItemHeavyShovel extends ItemSpade implements IToolMaterial, IClient
 		if (isCustom) {
 			CustomToolHelper.addInformation(item, list);
 		}
+
+		CustomMaterial material = CustomToolHelper.getCustomPrimaryMaterial(item);
+		float efficiency = material.getHardness() > 0 ? material.getHardness() : this.efficiency;
+		list.add(TextFormatting.GREEN + I18n.format("attribute.tool.digEfficiency.name",
+				DECIMAL_FORMAT.format(CustomToolHelper.getEfficiency(item, efficiency, efficiencyMod / 8F))));
+
 		super.addInformation(item, world, list, flag);
 	}
 
 	@Override
-	@SideOnly(Side.CLIENT)
 	public String getItemStackDisplayName(ItemStack item) {
 		String unlocalName = this.getUnlocalizedNameInefficiently(item) + ".name";
 		return CustomToolHelper.getLocalisedName(item, unlocalName);

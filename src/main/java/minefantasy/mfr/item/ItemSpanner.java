@@ -1,6 +1,5 @@
 package minefantasy.mfr.item;
 
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import minefantasy.mfr.MineFantasyReforged;
@@ -14,8 +13,11 @@ import minefantasy.mfr.init.MineFantasyMaterials;
 import minefantasy.mfr.init.MineFantasyTabs;
 import minefantasy.mfr.material.CustomMaterial;
 import minefantasy.mfr.proxy.IClientRegister;
+import minefantasy.mfr.registry.CustomMaterialRegistry;
+import minefantasy.mfr.registry.types.CustomMaterialType;
 import minefantasy.mfr.util.CustomToolHelper;
 import minefantasy.mfr.util.ModelLoaderHelper;
+import minefantasy.mfr.util.ToolHelper;
 import minefantasy.mfr.util.Utils;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockBed;
@@ -73,7 +75,7 @@ public class ItemSpanner extends ItemTool implements IToolMaterial, IToolMFR, ID
 		this.setMaxDamage(material.getMaxUses() * 2);
 		this.tier = tier;
 		setRegistryName(name);
-		this.setUnlocalizedName(name);
+		this.setTranslationKey(name);
 
 		shiftRotations.add(BlockLever.class);
 		shiftRotations.add(BlockButton.class);
@@ -91,7 +93,7 @@ public class ItemSpanner extends ItemTool implements IToolMaterial, IToolMFR, ID
 		Block block = state.getBlock();
 
 		if (block.hasTileEntity(state)){
-			return EnumActionResult.FAIL;
+			return EnumActionResult.PASS;
 		}
 
 		if (block == null || isClass(blacklistedRotations, block.getClass())) {
@@ -172,15 +174,22 @@ public class ItemSpanner extends ItemTool implements IToolMaterial, IToolMFR, ID
 	}
 
 	@Override
+	public EnumActionResult onItemUse(EntityPlayer user, World world, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+		return ToolHelper.performBlockTransformation(user, world, pos, hand, facing);
+	}
+
+	@Override
 	public Multimap<String, AttributeModifier> getAttributeModifiers(EntityEquipmentSlot slot, ItemStack stack) {
 		if (slot != EntityEquipmentSlot.MAINHAND) {
 			return super.getAttributeModifiers(slot, stack);
 		}
 
-		Multimap<String, AttributeModifier> map = HashMultimap.create();
-		map.put(SharedMonsterAttributes.ATTACK_DAMAGE.getName(), new AttributeModifier(ATTACK_DAMAGE_MODIFIER, "Weapon modifier", getMeleeDamage(stack), 0));
-		map.put(SharedMonsterAttributes.ATTACK_DAMAGE.getName(), new AttributeModifier(ATTACK_DAMAGE_MODIFIER, "Weapon modifier", 1F, 0));
-		return map;
+		Multimap<String, AttributeModifier> multimap = super.getAttributeModifiers(slot, stack);
+		multimap.put(SharedMonsterAttributes.ATTACK_DAMAGE.getName(),
+				new AttributeModifier(ATTACK_DAMAGE_MODIFIER, "Tool modifier", getMeleeDamage(stack), 0));
+		multimap.put(SharedMonsterAttributes.ATTACK_SPEED.getName(),
+				new AttributeModifier(ATTACK_SPEED_MODIFIER, "Tool modifier", 1F, 0));
+		return multimap;
 	}
 
 	/**
@@ -237,16 +246,27 @@ public class ItemSpanner extends ItemTool implements IToolMaterial, IToolMFR, ID
 		return CustomToolHelper.getHarvestLevel(stack, super.getHarvestLevel(stack, toolClass, player, blockState));
 	}
 
+	/**
+	 * ItemStack sensitive version of getItemEnchantability
+	 *
+	 * @param stack The ItemStack
+	 * @return the item echantability value
+	 */
+	@Override
+	public int getItemEnchantability(ItemStack stack) {
+		return CustomToolHelper.getCustomPrimaryMaterial(stack).getEnchantability();
+	}
+
 	@Override
 	public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> items) {
 		if (!isInCreativeTab(tab)) {
 			return;
 		}
 		if (isCustom) {
-			ArrayList<CustomMaterial> metal = CustomMaterial.getList("metal");
+			ArrayList<CustomMaterial> metal = CustomMaterialRegistry.getList(CustomMaterialType.METAL_MATERIAL);
 			for (CustomMaterial customMat : metal) {
 				if (MineFantasyReforged.isDebug() || !customMat.getItemStack().isEmpty()) {
-					items.add(this.construct(customMat.name, MineFantasyMaterials.Names.OAK_WOOD));
+					items.add(this.construct(customMat.getName(), MineFantasyMaterials.Names.OAK_WOOD));
 				}
 			}
 		} else {
@@ -263,7 +283,6 @@ public class ItemSpanner extends ItemTool implements IToolMaterial, IToolMFR, ID
 	}
 
 	@Override
-	@SideOnly(Side.CLIENT)
 	public String getItemStackDisplayName(ItemStack item) {
 		String unlocalName = this.getUnlocalizedNameInefficiently(item) + ".name";
 		return CustomToolHelper.getLocalisedName(item, unlocalName);

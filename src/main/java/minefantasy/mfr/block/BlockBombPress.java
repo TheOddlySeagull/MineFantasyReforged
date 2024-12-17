@@ -41,7 +41,7 @@ public class BlockBombPress extends BlockTileEntity<TileEntityBombPress> impleme
 		super(Material.IRON);
 
 		setRegistryName("bomb_press");
-		setUnlocalizedName("bomb_press");
+		setTranslationKey("bomb_press");
 		this.setSoundType(SoundType.METAL);
 		this.setHardness(5F);
 		this.setResistance(2F);
@@ -86,8 +86,9 @@ public class BlockBombPress extends BlockTileEntity<TileEntityBombPress> impleme
 	@Override
 	public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
 		if (!ResearchLogic.getResearchCheck(player, MineFantasyKnowledgeList.bombs)) {
-			if (world.isRemote)
+			if (!world.isRemote && hand == player.getActiveHand()) {
 				player.sendMessage(new TextComponentTranslation("knowledge.unknownUse"));
+			}
 			return false;
 		}
 		TileEntityBombPress tile = (TileEntityBombPress) getTile(world, pos);
@@ -104,7 +105,7 @@ public class BlockBombPress extends BlockTileEntity<TileEntityBombPress> impleme
 
 	@Override
 	public IBlockState getStateFromMeta(int meta) {
-		EnumFacing enumfacing = EnumFacing.getFront(meta);
+		EnumFacing enumfacing = EnumFacing.byIndex(meta);
 
 		if (enumfacing.getAxis() == EnumFacing.Axis.Y) {
 			enumfacing = EnumFacing.NORTH;

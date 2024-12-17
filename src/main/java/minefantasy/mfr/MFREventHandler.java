@@ -2,16 +2,23 @@ package minefantasy.mfr;
 
 import com.google.common.base.CaseFormat;
 import minefantasy.mfr.api.armour.ISpecialArmourMFR;
+import minefantasy.mfr.api.crafting.CustomCrafterEntry;
 import minefantasy.mfr.api.farming.FarmingHelper;
 import minefantasy.mfr.api.heating.IHotItem;
 import minefantasy.mfr.api.heating.TongsHelper;
+import minefantasy.mfr.api.stamina.CustomFoodEntry;
+import minefantasy.mfr.api.tool.IHuntingItem;
 import minefantasy.mfr.api.tool.ISmithTongs;
+import minefantasy.mfr.api.weapon.IParryable;
 import minefantasy.mfr.block.BlockComponent;
 import minefantasy.mfr.client.ClientItemsMFR;
+import minefantasy.mfr.config.ConfigArmour;
 import minefantasy.mfr.config.ConfigClient;
 import minefantasy.mfr.config.ConfigHardcore;
+import minefantasy.mfr.config.ConfigMobs;
 import minefantasy.mfr.config.ConfigSpecials;
 import minefantasy.mfr.config.ConfigStamina;
+import minefantasy.mfr.config.ConfigWeapon;
 import minefantasy.mfr.constants.Constants;
 import minefantasy.mfr.constants.Skill;
 import minefantasy.mfr.constants.Tool;
@@ -24,6 +31,7 @@ import minefantasy.mfr.entity.EntityItemUnbreakable;
 import minefantasy.mfr.entity.mob.EntityDragon;
 import minefantasy.mfr.event.LevelUpEvent;
 import minefantasy.mfr.init.MineFantasyItems;
+import minefantasy.mfr.init.MineFantasyOreDict;
 import minefantasy.mfr.integration.CustomStone;
 import minefantasy.mfr.item.ItemArmourBaseMFR;
 import minefantasy.mfr.item.ItemWeaponMFR;
@@ -37,6 +45,8 @@ import minefantasy.mfr.mechanics.StaminaMechanics;
 import minefantasy.mfr.mechanics.knowledge.ResearchLogic;
 import minefantasy.mfr.network.LevelUpPacket;
 import minefantasy.mfr.network.NetworkHandler;
+import minefantasy.mfr.registry.CustomMaterialRegistry;
+import minefantasy.mfr.registry.types.CustomMaterialType;
 import minefantasy.mfr.util.ArmourCalculator;
 import minefantasy.mfr.util.ArrowEffectsMF;
 import minefantasy.mfr.util.CustomToolHelper;
@@ -55,14 +65,20 @@ import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.EnumCreatureAttribute;
+import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.entity.ai.attributes.AttributeModifier;
+import net.minecraft.entity.ai.attributes.IAttributeInstance;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.monster.EntitySkeleton;
+import net.minecraft.entity.monster.EntityWitch;
+import net.minecraft.entity.monster.EntityZombie;
 import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.passive.EntityChicken;
 import net.minecraft.entity.passive.EntityCow;
 import net.minecraft.entity.passive.EntityHorse;
 import net.minecraft.entity.passive.EntityPig;
 import net.minecraft.entity.passive.EntitySheep;
+import net.minecraft.entity.passive.EntityVillager;
 import net.minecraft.entity.passive.EntityWolf;
 import net.minecraft.entity.passive.IAnimals;
 import net.minecraft.entity.player.EntityPlayer;
@@ -82,6 +98,7 @@ import net.minecraft.item.ItemBow;
 import net.minecraft.item.ItemFood;
 import net.minecraft.item.ItemStack;
 import net.minecraft.potion.PotionEffect;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.SoundCategory;
@@ -90,11 +107,13 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.common.IPlantable;
 import net.minecraftforge.common.util.FakePlayer;
+import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
+import net.minecraftforge.event.entity.player.ArrowLooseEvent;
 import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.event.entity.player.PlayerContainerEvent;
@@ -104,13 +123,18 @@ import net.minecraftforge.event.entity.player.UseHoeEvent;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.Event;
+import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.IItemHandlerModifiable;
 import net.minecraftforge.oredict.OreDictionary;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import static minefantasy.mfr.constants.Constants.CRAFTED_BY_NAME_TAG;
 
@@ -123,6 +147,8 @@ import static minefantasy.mfr.constants.Constants.CRAFTED_BY_NAME_TAG;
 @Mod.EventBusSubscriber
 public final class MFREventHandler {
 	private static final XSTRandom random = new XSTRandom();
+	public static final DecimalFormat decimal_format = new DecimalFormat("#.#");
+	public static final UUID BLOCK_SPEED_MODIFIER_UUID = UUID.fromString("2bafbc0d-1832-4a58-8296-f1a0251c8fe3");
 
 	private MFREventHandler() {} // No instances!
 
@@ -142,7 +168,7 @@ public final class MFREventHandler {
 			list.add(I18n.format("attribute.armour." + armourClass));
 		}
 		if (armour.getItem() instanceof ISpecialArmourMFR) {
-			if (ArmourCalculator.advancedDamageTypes) {
+			if (ConfigArmour.advancedDamageTypes) {
 				list.add(TextFormatting.BLUE + I18n.format("attribute.armour.protection"));
 				addSingleDamageReductionTooltip(armour, user, 0, list, true);
 				addSingleDamageReductionTooltip(armour, user, 2, list, true);
@@ -204,6 +230,45 @@ public final class MFREventHandler {
 		list.add(I18n.format("attribute.mfcrafteff.name") + ": " + efficiency);
 	}
 
+	/**
+	 * Adds a tooltip to the specified ItemStack about custom Food Stats (if it has info about the food in custom data)
+	 *
+	 * @param food the ItemStack
+	 * @param list the tooltip of the ItemStack
+	 */
+	private static void showFoodTooltip(ItemStack food, List<String> list) {
+		CustomFoodEntry foodEntry = CustomFoodEntry.getEntry(food);
+		if (foodEntry.hasEffect && ClientItemsMFR.showSpecials(list)) {
+			list.add("");
+			list.add(TextFormatting.WHITE + I18n.format("food.stat.list.name"));
+			if (foodEntry.eatDelay > 0) {
+				list.add(I18n.format("food.stat.eatDelay.name", decimal_format.format(foodEntry.eatDelay / 20)));
+			}
+			if (foodEntry.staminaRestore > 0) {
+				list.add(I18n.format("food.stat.staminaPlus.name", (int) foodEntry.staminaRestore));
+			}
+			if (foodEntry.staminaBuff > 0) {
+				if (foodEntry.staminaInHours) {
+					list.add(I18n.format("food.stat.staminabuffHours.name", decimal_format.format(foodEntry.staminaBuff), decimal_format.format(foodEntry.staminaSeconds / 3600F)));
+				} else if (foodEntry.staminaInMinutes) {
+					list.add(I18n.format("food.stat.staminabuffMinutes.name", decimal_format.format(foodEntry.staminaBuff), decimal_format.format(foodEntry.staminaSeconds / 60F)));
+				} else {
+					list.add(I18n.format("food.stat.staminabuffSeconds.name", decimal_format.format(foodEntry.staminaBuff), decimal_format.format(foodEntry.staminaSeconds)));
+				}
+			}
+			if (foodEntry.staminaRegenBuff > 0) {
+				if (foodEntry.staminaRegenInMinutes) {
+					list.add(I18n.format("food.stat.staminabuffRegenMinutes.name", decimal_format.format(foodEntry.staminaRegenBuff), decimal_format.format(foodEntry.staminaRegenSeconds / 60F)));
+				} else {
+					list.add(I18n.format("food.stat.staminabuffRegenSeconds.name", decimal_format.format(foodEntry.staminaRegenBuff), decimal_format.format(foodEntry.staminaRegenSeconds)));
+				}
+			}
+			if (foodEntry.fatAccumulation > 0) {
+				list.add(I18n.format("food.stat.fatAccumulation.name", decimal_format.format(foodEntry.fatAccumulation)));
+			}
+		}
+	}
+
 	// ================================================ Event Handlers ================================================
 
 	/**
@@ -227,18 +292,18 @@ public final class MFREventHandler {
 					if (s != null) {
 						if (!hasInfo && s.startsWith("ingot")) {
 							String s2 = s.substring(5, s.length());
-							CustomMaterial material = CustomMaterial.getMaterial(CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, s2));
-							if (material != CustomMaterial.NONE){
+							CustomMaterial material = CustomMaterialRegistry.getMaterial(CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, s2));
+							if (material != CustomMaterialRegistry.NONE){
 								hasInfo = true;
 							}
 							else {
 								if (!s.contains("Brick")){
-									ArrayList<CustomMaterial> metalMaterials = CustomMaterial.getList("metal");
+									ArrayList<CustomMaterial> metalMaterials = CustomMaterialRegistry.getList(CustomMaterialType.METAL_MATERIAL);
 									for (CustomMaterial metal : metalMaterials){
 										if (metal instanceof MetalMaterial) {
 											if (((MetalMaterial) metal).oreDictList.equals(s)){
 												material = metal;
-												if (material != CustomMaterial.NONE){
+												if (material != CustomMaterialRegistry.NONE){
 													break;
 												}
 											}
@@ -247,7 +312,7 @@ public final class MFREventHandler {
 								}
 							}
 
-							CustomToolHelper.addComponentString(event.getItemStack(), event.getToolTip(), material);
+							CustomToolHelper.addComponentString(event.getToolTip(), material);
 						}
 						if (s.startsWith("Artefact-")) {
 							if (!saidArtefact) {
@@ -276,15 +341,18 @@ public final class MFREventHandler {
 			if (event.getEntityPlayer() != null && event.getToolTip() != null && event.getFlags() != null) {
 				if (event.getItemStack().getItem() instanceof ItemArmor
 						&& (!(event.getItemStack().getItem() instanceof ItemArmourBaseMFR)
-						|| ClientItemsMFR.showSpecials(event.getItemStack(), event.getEntityPlayer().world, event.getToolTip(), event.getFlags()))) {
+						|| ClientItemsMFR.showSpecials(event.getToolTip()))) {
 					addArmorDamageReductionTooltip(event.getItemStack(), event.getEntityPlayer(), event.getToolTip(), event.getFlags().isAdvanced());
 				}
 			}
-			if (ArmourCalculator.advancedDamageTypes && ArmourCalculator.getRatioForWeapon(event.getItemStack()) != null) {
+			if (ConfigArmour.advancedDamageTypes && ArmourCalculator.getRatioForWeapon(event.getItemStack()) != null) {
 				displayWeaponTraits(ArmourCalculator.getRatioForWeapon(event.getItemStack()), event.getToolTip());
 			}
 			if (ToolHelper.shouldShowTooltip(event.getItemStack())) {
 				showCrafterTooltip(event.getItemStack(), event.getToolTip());
+			}
+			if (CustomFoodEntry.getEntry(event.getItemStack()) != null) {
+				showFoodTooltip(event.getItemStack(), event.getToolTip());
 			}
 			if (event.getItemStack().hasTagCompound() && event.getItemStack().getTagCompound().hasKey(CRAFTED_BY_NAME_TAG)) {
 				String name = event.getItemStack().getTagCompound().getString(CRAFTED_BY_NAME_TAG);
@@ -307,6 +375,13 @@ public final class MFREventHandler {
 
 	@SubscribeEvent
 	public static void specialInteractForComponentBlock(PlayerInteractEvent.RightClickBlock event) {
+		// Handle Custom Crafters block transformation
+		if (CustomCrafterEntry.getEntry(event.getItemStack()) != null) {
+			ToolHelper.performBlockTransformation(
+					event.getEntityPlayer(), event.getEntityPlayer().world,
+					event.getPos(), event.getHand(), event.getFace());
+		}
+
 		if (event.getEntityPlayer().isSneaking() && event.getWorld().getBlockState(event.getPos()).getBlock() instanceof BlockComponent) {
 			event.setUseBlock(Event.Result.ALLOW);
 		}
@@ -342,7 +417,7 @@ public final class MFREventHandler {
 				alterDrops(dropper, event);
 			}
 		}
-		if (getRegisterName(dropper).contains("Horse")) {
+		if (getRegisterName(dropper).contains("Horse") && !dropper.isEntityUndead()) {
 			int dropCount = random.nextInt(3 + event.getLootingLevel());
 			if (ConfigHardcore.lessHunt) {
 				dropCount = 1 + random.nextInt(event.getLootingLevel() + 1);
@@ -402,13 +477,13 @@ public final class MFREventHandler {
 			for (EntityItem entItem : event.getDrops()) {
 				ItemStack drop = entItem.getItem();
 
-				if (drop.getItem() == Items.LEATHER) {
+				if (ConfigHardcore.dropRawhide && drop.getItem() == Items.LEATHER) {
 					entItem.setDead();
 					dropHide = true;
 				}
 			}
 		}
-		if (dropHide && hide != null && !(ConfigHardcore.hunterKnife && !mob.getEntityData().hasKey(Constants.HUNTER_KILL_TAG))) {
+		if (ConfigHardcore.dropRawhide && dropHide && hide != null && !(ConfigHardcore.hunterKnife && !mob.getEntityData().hasKey(Constants.HUNTER_KILL_TAG))) {
 			mob.entityDropItem(new ItemStack(hide), 0.0F);
 		}
 	}
@@ -460,6 +535,36 @@ public final class MFREventHandler {
 
 	@SubscribeEvent
 	public static void onDeath(LivingDeathEvent event) {
+		//Hunting Mechanics and rare drops
+		EntityLivingBase dead = event.getEntityLiving();
+		EntityLivingBase hunter;
+		ItemStack weapon = null;
+		DamageSource source = event.getSource();
+
+		//drop rare loot
+		dropBook(dead);
+
+		//get weapon mainhand
+		if (source != null && source.getTrueSource() != null) {
+			if (source.getTrueSource() instanceof EntityLivingBase) {
+				hunter = (EntityLivingBase) source.getTrueSource();
+				weapon = hunter.getHeldItemMainhand();
+			}
+		}
+
+		//Add hunter kill tag to entity, it will then be used in hide dropping mechanics if the config is set to hunting items only
+		if (weapon != null) {
+			Tool type = ToolHelper.getToolTypeFromStack(weapon);
+			if (weapon.getItem() instanceof IHuntingItem) {
+				if (((IHuntingItem) weapon.getItem()).canRetrieveDrops(weapon)) {
+					dead.getEntityData().setBoolean(Constants.HUNTER_KILL_TAG, true);
+				}
+			} else if (type != null && type.equals(Tool.KNIFE)) {
+				dead.getEntityData().setBoolean(Constants.HUNTER_KILL_TAG, true);
+			}
+		}
+
+		//Dragon Kill Points for figuring Dragon Spawn Chance
 		if (!event.getEntityLiving().world.isRemote && event.getEntityLiving() instanceof EntityDragon && event.getSource() != null
 				&& event.getSource().getTrueSource() != null && event.getSource().getTrueSource() instanceof EntityPlayer) {
 			PlayerTickHandler.addDragonKill((EntityPlayer) event.getSource().getTrueSource());
@@ -468,6 +573,8 @@ public final class MFREventHandler {
 				&& event.getSource().getTrueSource() != null && event.getSource().getTrueSource() instanceof EntityDragon) {
 			PlayerTickHandler.addDragonEnemyPts((EntityPlayer) event.getEntityLiving(), -1);
 		}
+
+		//Arrow Mechanics
 		Entity dropper = event.getEntity();
 
 		boolean useArrows = true;
@@ -517,9 +624,51 @@ public final class MFREventHandler {
 		}
 	}
 
+	private static void dropBook(EntityLivingBase dead) {
+		if (dead.world.isRemote) {
+			return;
+		}
+
+		Item book = null;
+
+		if (dead instanceof EntityWitch) {
+			float chance = random.nextFloat();
+			if (chance > 0.75F) {
+				book = MineFantasyItems.SKILLBOOK_ENGINEERING;
+			} else {
+				book = MineFantasyItems.SKILLBOOK_PROVISIONING;
+			}
+		} else if (dead instanceof EntityVillager && random.nextInt(5) == 0) {
+			float chance = random.nextFloat();
+			if (chance > 0.9F) {
+				book = MineFantasyItems.SKILLBOOK_ENGINEERING;
+			} else if (chance > 0.6F) {
+				book = MineFantasyItems.SKILLBOOK_ARTISANRY;
+			} else if (chance > 0.3F) {
+				book = MineFantasyItems.SKILLBOOK_CONSTRUCTION;
+			} else {
+				book = MineFantasyItems.SKILLBOOK_PROVISIONING;
+			}
+		} else if (dead instanceof EntityZombie && random.nextInt(25) == 0) {
+			float chance = random.nextFloat();
+			if (chance > 0.9F) {
+				book = MineFantasyItems.SKILLBOOK_ENGINEERING;
+			} else if (chance > 0.6F) {
+				book = MineFantasyItems.SKILLBOOK_ARTISANRY;
+			} else if (chance > 0.3F) {
+				book = MineFantasyItems.SKILLBOOK_CONSTRUCTION;
+			} else {
+				book = MineFantasyItems.SKILLBOOK_PROVISIONING;
+			}
+		}
+
+		if (book != null) {
+			dead.entityDropItem(new ItemStack(book), 0F);
+		}
+	}
 
 	public static void alterDrops(EntityLivingBase dropper, LivingDropsEvent event) {
-		ArrayList<ItemStack> meats = new ArrayList<ItemStack>();
+		ArrayList<ItemStack> meats = new ArrayList<>();
 
 		if (event.getDrops() != null && !event.getDrops().isEmpty()) {
 
@@ -573,7 +722,7 @@ public final class MFREventHandler {
 		Block base = event.getWorld().getBlockState(event.getPos().down()).getBlock();
 		// int meta = event.blockMetadata;
 
-		if (base != null && base == Blocks.FARMLAND && FarmingHelper.didHarvestRuinBlock(event.getWorld(), false)) {
+		if (base == Blocks.FARMLAND && FarmingHelper.didHarvestRuinBlock(event.getWorld(), false)) {
 			event.getWorld().setBlockState(event.getPos().add(0, -1, 0), Blocks.DIRT.getDefaultState());
 		}
 
@@ -603,7 +752,7 @@ public final class MFREventHandler {
 				}
 			}
 
-			if (StaminaBar.isSystemActive && ConfigStamina.affectMining && StaminaBar.doesAffectEntity(player) && !isBlockPlant(broken.getBlock()) && !(broken == (Blocks.SNOW_LAYER).getDefaultState())) {
+			if (ConfigStamina.isSystemActive && ConfigStamina.affectMining && StaminaBar.doesAffectEntity(player) && !isBlockPlant(broken.getBlock()) && !(broken == (Blocks.SNOW_LAYER).getDefaultState())) {
 				float points = 2.0F * ConfigStamina.miningSpeed;
 				ItemWeaponMFR.applyFatigue(player, points, 20F);
 
@@ -658,7 +807,7 @@ public final class MFREventHandler {
 
 		int injury = getInjuredTime(entity);
 
-		if (ConfigHardcore.critLimp && entity.ticksExisted - entity.getLastAttackedEntityTime() > 200 && (entity instanceof EntityLiving || !(entity instanceof EntityPlayer && ((EntityPlayer) entity).capabilities.isCreativeMode))) {
+		if (ConfigMobs.criticalLimp && entity.ticksExisted - entity.getLastAttackedEntityTime() > 200 && (entity instanceof EntityLiving || !(entity instanceof EntityPlayer && ((EntityPlayer) entity).capabilities.isCreativeMode))) {
 			float lowHp = entity.getMaxHealth() / 5F;
 
 			if (entity.getHealth() <= lowHp || injury > 0) {
@@ -671,7 +820,7 @@ public final class MFREventHandler {
 				float z = (float) (entity.posZ + (random.nextFloat() - 0.5F) / 4F);
 				entity.world.spawnParticle(EnumParticleTypes.REDSTONE, x, y, z, 0F, 0F, 0F);
 			}
-			if (!entity.world.isRemote && entity.getHealth() <= (lowHp / 2) && entity.getRNG().nextInt(200) == 0) {
+			if (!entity.world.isRemote && entity instanceof EntityPlayer && entity.getHealth() <= (lowHp / 2) && entity.getRNG().nextInt(200) == 0) {
 				entity.addPotionEffect(new PotionEffect(MobEffects.NAUSEA, 100, 50));
 			}
 		}
@@ -679,8 +828,24 @@ public final class MFREventHandler {
 			injury--;
 			entity.getEntityData().setInteger(Constants.INJURED_TAG, injury);
 		}
-		if (StaminaBar.isSystemActive && StaminaBar.doesAffectEntity(entity) && event.getEntityLiving() instanceof EntityPlayer) {
+		if (ConfigStamina.isSystemActive && StaminaBar.doesAffectEntity(entity) && event.getEntityLiving() instanceof EntityPlayer) {
 			StaminaMechanics.tickEntity((EntityPlayer) event.getEntityLiving());
+		}
+
+		IAttributeInstance speedAttribute = entity.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED);
+		double speedMod = ConfigWeapon.blockSpeedMod;
+		if (entity.getActiveItemStack().getItem() instanceof IParryable) {
+			AttributeModifier blockSpeedMod = new AttributeModifier(BLOCK_SPEED_MODIFIER_UUID, "block_speed_adjustment", speedMod, 2);
+			if (!speedAttribute.hasModifier(blockSpeedMod)) {
+				speedAttribute.applyModifier(blockSpeedMod);
+			}
+			else if (speedAttribute.getModifier(BLOCK_SPEED_MODIFIER_UUID).getAmount() != speedMod) {
+				speedAttribute.removeModifier(BLOCK_SPEED_MODIFIER_UUID);
+				speedAttribute.applyModifier(blockSpeedMod);
+			}
+		}
+		else if (speedAttribute.hasModifier(new AttributeModifier(BLOCK_SPEED_MODIFIER_UUID, "block_speed_adjustment", 0, 0))){
+			speedAttribute.removeModifier(BLOCK_SPEED_MODIFIER_UUID);
 		}
 
 	}
@@ -692,11 +857,23 @@ public final class MFREventHandler {
 		return 0;
 	}
 
+	/**
+	 * Handles stamina drain for holding a bowstring back
+	 * @param event arrow loose event
+	 */
+	@SubscribeEvent(priority = EventPriority.HIGHEST)
+	public void applyExhaustArrow(ArrowLooseEvent event) {
+		if (ConfigStamina.isSystemActive && !StaminaBar.isAnyStamina(event.getEntityPlayer(), false)) {
+			if (ConfigStamina.weaponDrain < 1.0F)
+				event.setCharge(event.getCharge() * (int) ConfigStamina.weaponDrain);
+		}
+	}
+
 	@SubscribeEvent
 	public static void startUseItem(LivingEntityUseItemEvent.Start event) {
 		EntityLivingBase player = event.getEntityLiving();
 		if (!event.getItem().isEmpty() && event.getItem().getItemUseAction() == EnumAction.valueOf("mfr_block")) {
-			if ((StaminaBar.isSystemActive && TacticalManager.shouldStaminaBlock && !StaminaBar.isAnyStamina(player, false)) || !CombatMechanics.isParryAvailable(player)) {
+			if ((ConfigStamina.isSystemActive && TacticalManager.shouldStaminaBlock && !StaminaBar.isAnyStamina(player, false)) || !CombatMechanics.isParryAvailable(player)) {
 				event.setCanceled(true);
 			}
 		}
@@ -737,15 +914,24 @@ public final class MFREventHandler {
 	public static void onContainerClosed(PlayerContainerEvent.Close event){
 		EntityPlayer player = event.getEntityPlayer();
 		Container container = event.getContainer();
+		//Handle not placing hot items in non-allowed containers
 		if (!(container instanceof ContainerAnvil || container instanceof ContainerForge || container instanceof ContainerPlayer)){
 			for (Slot slot : container.inventorySlots){
 				int slotIndex = slot.slotNumber;
 				if (slotIndex < (container.inventorySlots.size() - player.inventory.mainInventory.size())){
 					ItemStack stack = slot.getStack().copy();
-					if (stack.getItem() instanceof IHotItem){
+					if (stack.getItem() instanceof IHotItem && ConfigHardcore.HCChotBurn){
+						IItemHandlerModifiable inventoryHandler = (IItemHandlerModifiable) player.getHeldItemMainhand()
+								.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
 
 						player.dropItem(stack, false);
-						container.putStackInSlot(slotIndex, ItemStack.EMPTY);
+						if (inventoryHandler != null) {
+							inventoryHandler.setStackInSlot(slotIndex, ItemStack.EMPTY);
+						}
+						else {
+							container.putStackInSlot(slotIndex, ItemStack.EMPTY);
+						}
+
 						container.detectAndSendChanges();
 					}
 				}
@@ -772,5 +958,12 @@ public final class MFREventHandler {
 			NetworkHandler.sendToPlayer((EntityPlayerMP) player, new LevelUpPacket(player, event.theSkill, event.theLevel));
 			PlayerData.get(player).sync();
 		}
+	}
+
+	@SubscribeEvent(priority = EventPriority.LOWEST)
+	public static void oreDictRegistry(RegistryEvent.Register<Item> event) {
+		//It is necessary to register the OreDict entries here, instead of somewhere normal, because registries get wierd
+		//Essentially, this needs to happen after Item and Block registry, but before recipes. This works I guess
+		MineFantasyOreDict.registerOreDictEntries();
 	}
 }

@@ -2,6 +2,11 @@ package minefantasy.mfr.item;
 
 import minefantasy.mfr.MineFantasyReforged;
 import minefantasy.mfr.client.ClientItemsMFR;
+import minefantasy.mfr.config.ConfigHardcore;
+import minefantasy.mfr.config.ConfigStamina;
+import minefantasy.mfr.data.IStoredVariable;
+import minefantasy.mfr.data.Persistence;
+import minefantasy.mfr.data.PlayerData;
 import minefantasy.mfr.init.MineFantasyItems;
 import minefantasy.mfr.init.MineFantasyTabs;
 import minefantasy.mfr.mechanics.StaminaBar;
@@ -20,8 +25,11 @@ import net.minecraft.item.ItemFood;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.potion.PotionEffect;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.SoundCategory;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
@@ -31,35 +39,42 @@ import java.text.DecimalFormat;
 import java.util.List;
 
 public class ItemFoodMFR extends ItemFood implements IClientRegister {
-	public static float SAT_MODIFIER = 1.0F;
 	public static final DecimalFormat decimal_format = new DecimalFormat("#.#");
-	private static final String eatDelayNBT = "MF_EatenFoodDelay";
-	private static final String leftOverNbt = "MF_Food_leftover";
+	public static final IStoredVariable<Float> EAT_DELAY = IStoredVariable.StoredVariable.ofFloat("eatDelay", Persistence.RESPAWN);
+	public static final IStoredVariable<Float> FAT_ACCUMULATION = IStoredVariable.StoredVariable.ofFloat("fatAccumulation", Persistence.ALWAYS).setSynced();
+	public static final IStoredVariable<NBTTagCompound> REPEATED_FOOD_NBT = IStoredVariable.StoredVariable.ofNBT("repeatedFoodCount", Persistence.ALWAYS);
 	public int itemRarity;
 	protected int hungerLevel;
-	protected float saturationLevel;
 	private float staminaRestore = 0F;
 	private boolean hasEffect = false;
 	private float staminaBuff = 0F;
 	private int staminaSeconds = 0;
 	private boolean staminaInMinutes = false;
 	private boolean staminaInHours = false;
+	private boolean shouldRepeatCheck = false;
 	private float staminaRegenBuff = 0F;
 	private int staminaRegenSeconds = 0;
 	private boolean staminaRegenInMinutes = false;
+	private float eatDelay = 0;
+	private float fatAccumulation = 0;
 	private int useTime = 32;
+
+	private Item returnItem;
 
 	public ItemFoodMFR(String name, int hunger, float saturation, boolean isMeat) {
 		super(hunger, saturation, isMeat);
 
 		hungerLevel = hunger;
-		saturationLevel = saturation;
 		setRegistryName(name);
-		setUnlocalizedName(name);
+		setTranslationKey(name);
 
 		setCreativeTab(MineFantasyTabs.tabFood);
 
 		MineFantasyReforged.PROXY.addClientRegister(this);
+	}
+
+	static {
+		PlayerData.registerStoredVariables(EAT_DELAY, FAT_ACCUMULATION, REPEATED_FOOD_NBT);
 	}
 
 	public ItemFoodMFR(String name, int hunger, float saturation, boolean isMeat, int rarity) {
@@ -67,38 +82,76 @@ public class ItemFoodMFR extends ItemFood implements IClientRegister {
 		itemRarity = rarity;
 	}
 
-	public static void setLeftOver(ItemStack food, ItemStack leftover) {
-		if (!food.hasTagCompound()) {
-			food.setTagCompound(new NBTTagCompound());
-		}
-		NBTTagCompound savedItem = new NBTTagCompound();
-		leftover.writeToNBT(savedItem);
-		food.getTagCompound().setTag(leftOverNbt, savedItem);
+	public ItemFoodMFR setReturnItem(Item item) {
+		this.returnItem = item;
+		return this;
+	}
+
+	public ItemFoodMFR setShouldRepeatPenaltyCheck() {
+		this.shouldRepeatCheck = true;
+		return this;
 	}
 
 	public static void onTick(EntityPlayer player) {
-		int time = getEatDelay(player);
+		float time = getEatDelay(player);
 		if (time > 0) {
 			time--;
 			setEatDelay(player, time);
 		}
 	}
 
-	private static void setEatDelay(EntityPlayer player, int time) {
-		time += getEatDelay(player);// add to existing
-
-		player.getEntityData().setInteger(eatDelayNBT, time);
+	private static void setEatDelay(EntityPlayer player, float time) {
+		PlayerData data = PlayerData.get(player);
+		if (data != null) {
+			data.setVariable(EAT_DELAY, time);
+		}
 	}
 
-	private static int getEatDelay(EntityPlayer player) {
-		if (player.getEntityData().hasKey(eatDelayNBT)) {
-			return player.getEntityData().getInteger(eatDelayNBT);
+	private static float getEatDelay(EntityPlayer player) {
+		PlayerData data = PlayerData.get(player);
+		if (data != null) {
+			if (data.getVariable(EAT_DELAY) == null) {
+				setEatDelay(player, 0);
+			}
+			return data.getVariable(EAT_DELAY);
 		}
 		return 0;
 	}
 
-	protected void onMFFoodEaten(ItemStack food, World world, EntityPlayer consumer) {
-		if (StaminaBar.isSystemActive) {
+	public static void setFatAccumulation(EntityPlayer player, float fat) {
+		PlayerData data = PlayerData.get(player);
+		if (data != null) {
+			data.setVariable(FAT_ACCUMULATION, fat);
+			data.sync();
+		}
+	}
+
+	public static float getFatAccumulation(EntityPlayer player) {
+		PlayerData data = PlayerData.get(player);
+		if (data != null) {
+			if (data.getVariable(FAT_ACCUMULATION) == null) {
+				setFatAccumulation(player, 0);
+			}
+			return data.getVariable(FAT_ACCUMULATION);
+		}
+		return 0;
+	}
+
+	public static void decrementFatAccumulation(EntityPlayer player, float decrement) {
+		if (!player.world.isRemote) {
+			float fat_accumulation = ItemFoodMFR.getFatAccumulation(player);
+			if (fat_accumulation > 0) {
+				fat_accumulation -= decrement;
+				ItemFoodMFR.setFatAccumulation(player, fat_accumulation);
+			}
+			if (fat_accumulation < 0) {
+				ItemFoodMFR.setFatAccumulation(player, 0);
+			}
+		}
+	}
+
+	protected void onMFFoodEaten(ItemStack food, EntityPlayer consumer) {
+		if (ConfigStamina.isSystemActive) {
 			if (staminaRestore > 0) {
 				StaminaBar.modifyStaminaValue(consumer, staminaRestore);
 			}
@@ -109,6 +162,43 @@ public class ItemFoodMFR extends ItemFood implements IClientRegister {
 				StaminaBar.buffStaminaRegen(consumer, staminaRegenBuff, staminaRegenSeconds);
 			}
 		}
+		if (eatDelay > 0) {
+			setEatDelay(consumer, eatDelay);
+		}
+		setFatAccumulation(consumer, fatAccumulation + getFatAccumulation(consumer));
+
+		//MFR repeated eat penalty
+		PlayerData data = PlayerData.get(consumer);
+		if (data != null) {
+			NBTTagCompound nbt = data.getVariable(REPEATED_FOOD_NBT);
+			if (nbt == null) {
+				nbt = new NBTTagCompound();
+				nbt.setInteger("repeat_count", 0);
+				food.writeToNBT(nbt);
+			}
+			else {
+				ItemStack lastEatenFood = new ItemStack(nbt);
+				if (lastEatenFood.isItemEqual(food)) {
+					if (shouldRepeatCheck) {
+						int repeat_count = nbt.getInteger("repeat_count");
+						nbt.setInteger("repeat_count", repeat_count + 1);
+						if (repeat_count >= ConfigHardcore.foodRepeatPenaltyLimit) {
+							consumer.addPotionEffect(new PotionEffect(MobEffects.NAUSEA, 300, 1));
+							consumer.addPotionEffect(new PotionEffect(MobEffects.POISON, 120, 900));
+							consumer.addPotionEffect(new PotionEffect(MobEffects.HUNGER, 120, 120));
+							if (!consumer.world.isRemote && repeat_count == 3) {
+								consumer.sendMessage(new TextComponentTranslation("info.vomiting.message", food.getDisplayName()));
+							}
+						}
+					}
+				}
+				else {
+					nbt.setInteger("repeat_count", 0);
+					food.writeToNBT(nbt);
+				}
+			}
+			data.setVariable(REPEATED_FOOD_NBT, nbt);
+		}
 
 		if (this == MineFantasyItems.BERRIES_JUICY) {
 			PotionEffect poison = consumer.getActivePotionEffect(MobEffects.POISON);
@@ -117,6 +207,24 @@ public class ItemFoodMFR extends ItemFood implements IClientRegister {
 				consumer.curePotionEffects(food);
 			}
 		}
+	}
+
+	public static void onCustomFoodEaten(EntityPlayer consumer, float staminaRestore, int staminaSeconds, float staminaBuff, int staminaRegenSeconds, float staminaRegenBuff, float eatDelay, float fatAccumulation) {
+		if (ConfigStamina.isSystemActive) {
+			if (staminaRestore > 0) {
+				StaminaBar.modifyStaminaValue(consumer, staminaRestore);
+			}
+			if (staminaSeconds > 0) {
+				StaminaBar.buffStamina(consumer, staminaBuff, staminaSeconds);
+			}
+			if (staminaRegenSeconds > 0) {
+				StaminaBar.buffStaminaRegen(consumer, staminaRegenBuff, staminaRegenSeconds);
+			}
+		}
+		if (eatDelay > 0) {
+			setEatDelay(consumer, eatDelay);
+		}
+		setFatAccumulation(consumer, fatAccumulation + getFatAccumulation(consumer));
 	}
 
 	public ItemFoodMFR setRarity(int i) {
@@ -148,7 +256,7 @@ public class ItemFoodMFR extends ItemFood implements IClientRegister {
 	 *
 	 * @param sugar restore stamina and add regen
 	 * @param carbs increase max stamina for 1 hr
-	 * @param fats  saturation
+	 * @param fats  fat based eat delay
 	 */
 	public ItemFoodMFR setFoodStats(float sugar, float carbs, float fats) {
 		if (sugar > 0) {
@@ -156,37 +264,37 @@ public class ItemFoodMFR extends ItemFood implements IClientRegister {
 			setStaminaRegenModifier((int) sugar, sugar / 30);
 		}
 		if (carbs > 0) {
-			setStaminaModifier(50 * carbs, 1F);
+			setStaminaModifier(50 * carbs, carbs);
 		}
 		if (fats > 0) {
-			setSaturation(10 * fats);
+			setEatDelayModifier(fats * ConfigStamina.eatDelayModifier);
+			fatAccumulation = fats * ConfigStamina.fatAccumulationModifier;
 		}
 		return this;
 	}
 
-	public ItemFoodMFR setSaturation(float amount) {
-		hasEffect = true;
-		this.saturationLevel = amount * SAT_MODIFIER;
-		return this;
-	}
-
-	public ItemFoodMFR setStaminaModifier(float buff, float hours) {
+	public void setStaminaModifier(float buff, float hours) {
 		int secondsLasting = (int) (hours * 3600F);
 		staminaBuff = buff;
 		staminaSeconds = secondsLasting;
 		staminaInMinutes = secondsLasting > 60;
 		staminaInHours = secondsLasting > 3600;
 		hasEffect = true;
-		return this;
 	}
 
-	public ItemFoodMFR setStaminaRegenModifier(float buff, float minutesLasting) {
+	public void setStaminaRegenModifier(float buff, float minutesLasting) {
 		int secondsLasting = (int) (minutesLasting * 60F);
 		staminaRegenBuff = buff;
 		staminaRegenSeconds = secondsLasting;
 		staminaRegenInMinutes = secondsLasting > 60;
 		hasEffect = true;
-		return this;
+	}
+
+	public void setEatDelayModifier(float fat) {
+		eatDelay = fat * 10;
+		if (eatDelay > 0) {
+			hasEffect = true;
+		}
 	}
 
 	@Override
@@ -195,36 +303,33 @@ public class ItemFoodMFR extends ItemFood implements IClientRegister {
 		super.addInformation(food, world, list, flag);
 		list.add(I18n.format("food.stat.hunger.name", hungerLevel));
 
-		if (hasEffect && ClientItemsMFR.showSpecials(food, world, list, flag)) {
+		if (hasEffect && ClientItemsMFR.showSpecials(list)) {
 			list.add("");
 			list.add(TextFormatting.WHITE + I18n.format("food.stat.list.name"));
-			if (saturationLevel > 0) {
-				list.add(I18n.format("food.stat.saturation.name",
-						decimal_format.format(saturationLevel)));
+			if (eatDelay > 0) {
+				list.add(I18n.format("food.stat.eatDelay.name", decimal_format.format(eatDelay / 20)));
 			}
 			if (staminaRestore > 0) {
 				list.add(I18n.format("food.stat.staminaPlus.name", (int) staminaRestore));
 			}
 			if (staminaBuff > 0) {
 				if (staminaInHours) {
-					list.add(I18n.format("food.stat.staminabuffHours.name",
-							decimal_format.format(staminaBuff), decimal_format.format(staminaSeconds / 3600F)));
+					list.add(I18n.format("food.stat.staminabuffHours.name", decimal_format.format(staminaBuff), decimal_format.format(staminaSeconds / 3600F)));
 				} else if (staminaInMinutes) {
-					list.add(I18n.format("food.stat.staminabuffMinutes.name",
-							decimal_format.format(staminaBuff), decimal_format.format(staminaSeconds / 60F)));
+					list.add(I18n.format("food.stat.staminabuffMinutes.name", decimal_format.format(staminaBuff), decimal_format.format(staminaSeconds / 60F)));
 				} else {
-					list.add(I18n.format("food.stat.staminabuffSeconds.name",
-							decimal_format.format(staminaBuff), decimal_format.format(staminaSeconds)));
+					list.add(I18n.format("food.stat.staminabuffSeconds.name", decimal_format.format(staminaBuff), decimal_format.format(staminaSeconds)));
 				}
 			}
 			if (staminaRegenBuff > 0) {
 				if (staminaRegenInMinutes) {
-					list.add(I18n.format("food.stat.staminabuffRegenMinutes.name",
-							decimal_format.format(staminaRegenBuff), decimal_format.format(staminaRegenSeconds / 60F)));
+					list.add(I18n.format("food.stat.staminabuffRegenMinutes.name", decimal_format.format(staminaRegenBuff), decimal_format.format(staminaRegenSeconds / 60F)));
 				} else {
-					list.add(I18n.format("food.stat.staminabuffRegenSeconds.name",
-							decimal_format.format(staminaRegenBuff), decimal_format.format(staminaRegenSeconds)));
+					list.add(I18n.format("food.stat.staminabuffRegenSeconds.name", decimal_format.format(staminaRegenBuff), decimal_format.format(staminaRegenSeconds)));
 				}
+			}
+			if (fatAccumulation > 0) {
+				list.add(I18n.format("food.stat.fatAccumulation.name", decimal_format.format(fatAccumulation)));
 			}
 		}
 		if (this == MineFantasyItems.BERRIES_JUICY) {
@@ -248,17 +353,12 @@ public class ItemFoodMFR extends ItemFood implements IClientRegister {
 		return MineFantasyItems.RARITY[lvl];
 	}
 
-	public ItemFoodMFR setReturnItem(Item item) {
-		return this;
-	}
-
 	@Override
 	public ItemStack onItemUseFinish(ItemStack food, World world, EntityLivingBase consumer) {
 		if (consumer instanceof EntityPlayer) {
-			setEatDelay((EntityPlayer) consumer, 10);
 			((EntityPlayer) consumer).getFoodStats().addStats(this, food);
 			world.playSound((EntityPlayer) consumer, consumer.getPosition(), SoundEvents.ENTITY_PLAYER_BURP, SoundCategory.AMBIENT, 1.0F, 1.0F);
-			this.onMFFoodEaten(food, world, (EntityPlayer) consumer);
+			this.onMFFoodEaten(food, (EntityPlayer) consumer);
 
 			if (this.isDamageable() && consumer instanceof EntityPlayerMP) {
 				if (food.attemptDamageItem(1, consumer.getRNG(), (EntityPlayerMP) consumer)) {
@@ -270,24 +370,14 @@ public class ItemFoodMFR extends ItemFood implements IClientRegister {
 			} else {
 				food.shrink(1);
 			}
+
+			if (returnItem != null) {
+				return new ItemStack(returnItem);
+			}
 		}
 
 		return food;
 	}
-
-	//
-	//    @Override
-	//    public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> items) {
-	//        if (!isInCreativeTab(tab)) {
-	//            rNeturn;
-	////        }
-	////        //ItemStack food = items.get(0);
-	////        // TODO: this should be in its own childclass
-	////        //        if (this.getUnlocalizedame().contains("stew")) {
-	//        //            setLeftOver(food, new ItemStack(Items.BOWL));
-	//        //        }
-	//        //        items.add(food);
-	//    }
 
 	public ItemFoodMFR setEatTime(int i) {
 		useTime = i;
@@ -299,11 +389,13 @@ public class ItemFoodMFR extends ItemFood implements IClientRegister {
 		return useTime;
 	}
 
-	public Object onItemRightClick(ItemStack food, World world, EntityPlayer user, EnumHand hand) {
-		if (getEatDelay(user) > 0) {
-			return food;
+	@Override
+	public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand) {
+		ItemStack food = player.getHeldItem(hand);
+		if (getEatDelay(player) > 0) {
+			return ActionResult.newResult(EnumActionResult.FAIL, food);
 		}
-		return super.onItemRightClick(world, user, hand);
+		return super.onItemRightClick(world, player, hand);
 	}
 
 	@Override

@@ -1,9 +1,14 @@
 package minefantasy.mfr.util;
 
 import com.google.common.base.CaseFormat;
+import com.google.common.collect.Sets;
 import minefantasy.mfr.MineFantasyReforged;
+import minefantasy.mfr.api.archery.IAmmo;
+import minefantasy.mfr.api.archery.IFirearm;
+import minefantasy.mfr.item.ItemArrowMFR;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.IItemPropertyGetter;
+import net.minecraft.item.ItemArrow;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
@@ -14,11 +19,19 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.oredict.OreDictionary;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.WordUtils;
 
 import javax.annotation.Nullable;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 
 public class Utils {
+
+	public Utils() {
+		throw new IllegalStateException("Util class cannot be instantiated");
+	}
 
 	public static <T> T nullValue() {
 		return null;
@@ -31,6 +44,48 @@ public class Utils {
 
 	public static String convertSnakeCaseToSplitCapitalized(String string) {
 		return WordUtils.capitalize(CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_UNDERSCORE, string).replaceAll("_", " "));
+	}
+
+	public static String convertSplitCapitalizedToSnakeCase(String string) {
+		return string.toLowerCase().replaceAll(" ", "_");
+	}
+
+	public static String serializeList(Set<String> list) {
+		return list.toString().replaceAll("[\\[|\\]]", "");
+	}
+
+	public static Set<String> deserializeList(String string) {
+		List<String> list = Arrays.asList(StringUtils.splitByWholeSeparator(string, ","));
+		list.replaceAll(String::trim);
+		return Sets.newHashSet(list);
+	}
+
+	public static boolean canAcceptArrow(ItemStack ammo, ItemStack weapon) {
+		String ammoType = "null";
+		if (!ammo.isEmpty() && ammo.getItem() instanceof IAmmo) {
+			ammoType = ((IAmmo) ammo.getItem()).getAmmoType(ammo);
+		}
+
+		if (isVanillaArrow(ammo)) {
+			ammoType = "arrow";
+		}
+
+		if (!weapon.isEmpty() && weapon.getItem() instanceof IFirearm) {
+			return ((IFirearm) weapon.getItem()).canAcceptAmmo(weapon, ammoType);
+		}
+
+		return ammoType.equalsIgnoreCase("arrow");
+	}
+
+	public static boolean isVanillaArrow(ItemStack ammo) {
+		return ammo.getItem() instanceof ItemArrow && !(ammo.getItem() instanceof ItemArrowMFR);
+	}
+
+	public static NBTTagCompound getOrApplyNBT(ItemStack stack) {
+		if (!stack.hasTagCompound()) {
+			stack.setTagCompound(new NBTTagCompound());
+		}
+		return stack.getTagCompound();
 	}
 
 	public static TileEntityChest getOtherDoubleChest(TileEntity inv) {
@@ -87,8 +142,8 @@ public class Utils {
 	public static void storeTagSafely(NBTTagCompound compound, String key, NBTBase tag){
 
 		if(compound == tag || deepContains(tag, compound)){
-			MineFantasyReforged.LOG.error("Cannot store tag of type {} under key '{}' as it would result in a circular reference! Please report this (including your full log) to wizardry's issue tracker.",
-					NBTBase.getTagTypeName(tag.getId()), key);
+			MineFantasyReforged.LOG.error("Cannot store tag of type {} under key '{}' as it would result in a circular reference! Please report this (including your full log) to MFR's issue tracker.",
+					NBTBase.getTypeName(tag.getId()), key);
 		}else{
 			compound.setTag(key, tag);
 			//MineFantasyReforged.LOG.warn("writing: " + key + ": " + tag);
@@ -130,5 +185,21 @@ public class Utils {
 		float absoluteDifference = Math.abs(a - b);
 		float average = (a + b) / 2F;
 		return 100 * (absoluteDifference/average);
+	}
+
+	public static Long gcd(List<Long> input) {
+		long result = input.get(0);
+		for (int i = 1; i < input.size(); i++)
+			result = gcd(result, input.get(i));
+		return result;
+	}
+
+	private static long gcd(Long a, Long b) {
+		while (b > 0) {
+			long temp = b;
+			b = a % b; // % is remainder
+			a = temp;
+		}
+		return a;
 	}
 }

@@ -62,6 +62,22 @@ public class CustomArmourEntry {
 	}
 
 	/**
+	 * Registers an item to a template of an ArmourDesign, while dividing the suit
+	 * into the 4 pieces If it's unable to divide it, it simply quarters it's value
+	 *
+	 * @param piece     the item to register
+	 * @param template  the ArmourDesign to work off
+	 * @param weightMod the multiplier for the tier weight if a tier is heavier or lighter
+	 */
+	public static void registerItem(ItemStack piece, ArmourDesign template, float weightMod, String weightType) {
+		float divider = 0.25F;
+		if (piece.getItem() instanceof ItemArmor) {
+			divider = ArmourCalculator.sizes[((ItemArmor) piece.getItem()).armorType.getIndex()];
+		}
+		registerItem(piece, template.getWeight() * weightMod, template.getBulk() * divider, weightType);
+	}
+
+	/**
 	 * Registeres a piece (called by code or config)
 	 *
 	 * @param piece  the item to list
@@ -75,6 +91,17 @@ public class CustomArmourEntry {
 	/**
 	 * Registeres a piece (called by code or config)
 	 *
+	 * @param piece  the item to list
+	 * @param weight the weight of the piece (Kg)
+	 * @param bulk   the bulk of the piece
+	 */
+	public static void registerItem(ItemStack piece, float weight, float bulk, String AC) {
+		registerItem(piece, weight, bulk, true, AC);
+	}
+
+	/**
+	 * Registeres a piece (called by code or config)
+	 *
 	 * @param piece      the item to list
 	 * @param weight     the weight of the piece (Kg)
 	 * @param bulk       the bulk of the piece
@@ -82,8 +109,22 @@ public class CustomArmourEntry {
 	 */
 	public static void registerItem(Item piece, float weight, float bulk, boolean alterSpeed, String AC) {
 
-		MineFantasyReforgedAPI.debugMsg("Added Custom " + AC + " armour: " + piece.getUnlocalizedName() + " Traits = " + weight + "," + bulk + " alter speed = " + alterSpeed);
+		MineFantasyReforgedAPI.debugMsg("Added Custom " + AC + " armour: " + piece.getTranslationKey() + " Traits = " + weight + "," + bulk + " alter speed = " + alterSpeed);
 		entries.put(piece.getRegistryName(), new CustomArmourEntry(piece.getRegistryName(), weight, bulk, alterSpeed, AC));
+	}
+
+	/**
+	 * Registeres a piece (called by code or config)
+	 *
+	 * @param piece      the item to list
+	 * @param weight     the weight of the piece (Kg)
+	 * @param bulk       the bulk of the piece
+	 * @param alterSpeed if the armour's weight slows you down
+	 */
+	public static void registerItem(ItemStack piece, float weight, float bulk, boolean alterSpeed, String AC) {
+
+		MineFantasyReforgedAPI.debugMsg("Added Custom " + AC + " armour: " + piece.getTranslationKey() + " Traits = " + weight + "," + bulk + " alter speed = " + alterSpeed);
+		entries.put(piece.getItem().getRegistryName(), new CustomArmourEntry(piece.getItem().getRegistryName(), weight, bulk, alterSpeed, AC));
 	}
 
 	/**
@@ -133,19 +174,9 @@ public class CustomArmourEntry {
 	 * @return the entry(if there is one), else null
 	 */
 	public static CustomArmourEntry getEntry(ItemStack piece) {
-		return getEntry(piece.getItem());
-	}
-
-	/**
-	 * Gets the entry for an item
-	 *
-	 * @param piece the armour item
-	 * @return the entry(if there is one), else null
-	 */
-	public static CustomArmourEntry getEntry(Item piece) {
 		if (piece != null) {
-			if (entries.containsKey(piece.getRegistryName())) {
-				return entries.get(piece.getRegistryName());
+			if (entries.containsKey(piece.getItem().getRegistryName())) {
+				return entries.get(piece.getItem().getRegistryName());
 			}
 		}
 		return null;

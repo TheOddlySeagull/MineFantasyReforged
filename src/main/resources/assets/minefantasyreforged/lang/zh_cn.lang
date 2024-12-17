@@ -3,6 +3,7 @@
 forge.fuel.name=~燃料~
 vehicle.fuel.name=燃料：%1$s
 info.bow.reload=潜行状态下右键打开火器。
+info.bow.reload_custom=Press [%1$s] to open firearm.
 info.firearm.ammo=%1$s/%2$s
 info.tooltip.moreinfo=按住 [%1$s] 获取更多信息。
 message.mythic_ore_sound=你听到一声%1$s的鸣叫。
@@ -11,6 +12,7 @@ message.below=少于
 message.above=多于
 info.salvage.usage=将一个合适的物品放至方块顶部以分解它
 gui.no_project_set=<No Project Set>
+info.offBalance.message=单手使用重型武器会使你失衡！
 
 attribute.kit.salvage.name=回收调节
 
@@ -161,9 +163,9 @@ component.grip.name=%1$s握把
 component.brace.name=%1$s支架
 
 # MATERIAL LIST
-materialtype.wood.name=木材等级：%1$s
-materialtype.leather.name=皮革等级：%1$s
-materialtype.metal.name=金属等级：%1$s
+materialtype.wood_material.name=木材等级：%1$s
+materialtype.leather_material.name=皮革等级：%1$s
+materialtype.metal_material.name=金属等级：%1$s
 materialtype.workable.name=锻造温度：%1$s*C - %2$s*C
 
 materialtype.resist.name=%1$s 抗性
@@ -257,6 +259,7 @@ attribute.armour.heavy=重型盔甲
 attribute.weight.name=重量
 
 attribute.bowPower.name=伤害倍数 x%1$s
+attribute.bowDrawbackSpeed.name=拉弓速度 %1$ss
 attribute.arrowPower.name=伤害
 
 attribute.armour.rating.0=斩击防护：
@@ -488,11 +491,11 @@ gui.bombcraftmf.name=制作炸弹
 gui.crossbowcraftmf.name=制作弩弓
 
 attribute.crossbow.power.name=伤害系数 x%1$s
-attribute.crossbow.speed.name=装填速度 = %1$ss
+attribute.crossbow.speed.name=装填速度 %1$ss
 attribute.crossbow.spread.name=射击范围 x%1$s
 attribute.crossbow.recoil.name=后坐力 x%1$s
-attribute.crossbow.capacity.name=容量 = %1$s
-attribute.crossbow.bash.name=近战伤害 = %1$s
+attribute.crossbow.capacity.name=容量 %1$s
+attribute.crossbow.bash.name=近战伤害 %1$s
 
 crosspart.stock.crossbow_stock_wood=木弩
 crosspart.stock.crossbow_stock_iron=铁弩
@@ -1118,9 +1121,8 @@ food.stat.staminaPlus.name=恢复%1$耐力
 food.stat.staminabuffHours.name=%2$s小时内增加%1$s耐力
 food.stat.staminabuffMinutes.name=%2$s分钟内增加%1$s耐力
 food.stat.staminabuffSeconds.name=%2$s秒内增加%1$s耐力
-food.stat.saturationMinutes.name=%1$s分钟内饱和
-food.stat.saturationSeconds.name=%1$s秒内饱和
-food.stat.saturation.name=饱和度：%1$s
+food.stat.eatDelay.name=吃延迟：%1$s 秒
+food.stat.fatAccumulation.name=肥胖堆积：%1$s 克
 food.stat.staminabuffRegenMinutes.name=%2$s分钟内每秒恢复%1$s耐力
 food.stat.staminabuffRegenSeconds.name=%2$s秒内每秒恢复%1$s耐力
 food.stat.cure.poison=解毒

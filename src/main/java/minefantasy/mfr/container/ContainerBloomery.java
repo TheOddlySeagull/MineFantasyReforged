@@ -1,8 +1,8 @@
 package minefantasy.mfr.container;
 
+import minefantasy.mfr.api.crafting.MineFantasyFuels;
 import minefantasy.mfr.container.slots.SlotRestrictive;
 import minefantasy.mfr.tile.TileEntityBloomery;
-import minefantasy.mfr.tile.blastfurnace.TileEntityBlastChamber;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.IContainerListener;
@@ -12,7 +12,7 @@ import net.minecraft.item.ItemStack;
 import javax.annotation.Nonnull;
 
 public class ContainerBloomery extends ContainerBase {
-	private TileEntityBloomery tile;
+	private final TileEntityBloomery tile;
 
 	public ContainerBloomery(InventoryPlayer playerInventory, TileEntityBloomery tile) {
 		super(playerInventory, tile);
@@ -62,11 +62,11 @@ public class ContainerBloomery extends ContainerBase {
 
 			if (clicked > 1)// INVENTORY
 			{
-				if (TileEntityBloomery.isInput(itemstack1)) {
+				if (tile.isInput(itemstack1)) {
 					if (!this.mergeItemStack(itemstack1, 0, 1, false)) {
 						return ItemStack.EMPTY;
 					}
-				} else if (TileEntityBlastChamber.isCarbon(itemstack1)) {
+				} else if (MineFantasyFuels.isCarbon(itemstack1)) {
 					if (!this.mergeItemStack(itemstack1, 1, 2, false)) {
 						return ItemStack.EMPTY;
 					}

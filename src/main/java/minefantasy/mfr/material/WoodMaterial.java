@@ -1,5 +1,6 @@
 package minefantasy.mfr.material;
 
+import minefantasy.mfr.registry.types.CustomMaterialType;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
@@ -12,14 +13,14 @@ public class WoodMaterial extends CustomMaterial {
 	public int inputItemMeta;
 
 	public WoodMaterial(String name, int tier, float hardness, float durability, float flexibility, float resistance, float density, int[] color, ResourceLocation inputItemResourceLocation, int inputItemMeta) {
-		super(name, "wood", tier, hardness, durability, flexibility, resistance, 0F, density, color);
+		super(name, CustomMaterialType.WOOD_MATERIAL, tier, hardness, durability, flexibility, resistance, 0F, density, color);
 		this.inputItemResourceLocation = inputItemResourceLocation;
 		this.inputItemMeta = inputItemMeta;
 	}
 
 	@Override
 	public String getMaterialString() {
-		return I18n.format("materialtype." + this.type + ".name", this.tier);
+		return I18n.format("materialtype." + this.getType().getName() + ".name", this.getTier());
 	}
 
 	@Override

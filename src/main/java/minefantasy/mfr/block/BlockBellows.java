@@ -16,6 +16,7 @@ import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.block.statemap.StateMapperBase;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
@@ -53,7 +54,7 @@ public class BlockBellows extends BlockTileEntity<TileEntityBellows> implements 
 		super(Material.WOOD);
 
 		setRegistryName("bellows");
-		setUnlocalizedName("bellows");
+		setTranslationKey("bellows");
 		this.setHardness(1F);
 		this.setResistance(0.5F);
 		this.setCreativeTab(MineFantasyTabs.tabUtil);
@@ -122,13 +123,24 @@ public class BlockBellows extends BlockTileEntity<TileEntityBellows> implements 
 	}
 
 	@Override
+	public void onFallenUpon(World world, BlockPos pos, Entity entity, float fallDistance) {
+		super.onFallenUpon(world, pos, entity, fallDistance);
+		if (entity instanceof EntityLivingBase && fallDistance > 1 && entity.motionY < -0.4) {
+			TileEntityBellows bellows = (TileEntityBellows) getTile(world, pos);
+			if (bellows != null) {
+				bellows.interact(entity, 2F);
+			}
+		}
+	}
+
+	@Override
 	public String getTexture() {
 		return "noteblock";
 	}
 
 	@Override
 	public IBlockState getStateFromMeta(int meta) {
-		EnumFacing enumfacing = EnumFacing.getFront(meta);
+		EnumFacing enumfacing = EnumFacing.byIndex(meta);
 
 		if (enumfacing.getAxis() == EnumFacing.Axis.Y) {
 			enumfacing = EnumFacing.NORTH;

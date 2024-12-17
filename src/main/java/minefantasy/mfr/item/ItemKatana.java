@@ -31,11 +31,6 @@ public class ItemKatana extends ItemHeavyWeapon {
 	}
 
 	@Override
-	public boolean canBlock() {
-		return true;
-	}
-
-	@Override
 	public boolean allowOffhand(EntityLivingBase entity, EnumHand hand) {
 		return true;
 	}
@@ -97,7 +92,7 @@ public class ItemKatana extends ItemHeavyWeapon {
 
 	@Override
 	public float getRegenModifier(EntityLivingBase user, ItemStack item) {
-		return user.world.getDifficulty().getDifficultyId() < 3 ? 1.25F : 1.0F;
+		return user.world.getDifficulty().getId() < 3 ? 1.25F : 1.0F;
 	}
 
 	@Override

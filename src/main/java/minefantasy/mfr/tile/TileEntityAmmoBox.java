@@ -8,10 +8,10 @@ import minefantasy.mfr.block.BlockAmmoBox;
 import minefantasy.mfr.container.ContainerBase;
 import minefantasy.mfr.item.ItemBandage;
 import minefantasy.mfr.item.ItemSyringe;
-import minefantasy.mfr.material.CustomMaterial;
 import minefantasy.mfr.mechanics.AmmoMechanics;
 import minefantasy.mfr.network.AmmoBoxCommandPacket;
 import minefantasy.mfr.network.NetworkHandler;
+import minefantasy.mfr.registry.CustomMaterialRegistry;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
@@ -30,7 +30,7 @@ public class TileEntityAmmoBox extends TileEntityWoodDecor implements ITickable,
 	private int ticksExisted;
 
 	public TileEntityAmmoBox() {
-		super("ammo_box_basic", CustomMaterial.NONE);
+		super("ammo_box_basic", CustomMaterialRegistry.NONE);
 	}
 
 	@Override
@@ -197,7 +197,7 @@ public class TileEntityAmmoBox extends TileEntityWoodDecor implements ITickable,
 	}
 
 	public int getMaxAmmo(ItemStack ammo) {
-		return ammo.getMaxStackSize() * getCapacity(getMaterial().tier);
+		return ammo.getMaxStackSize() * getCapacity(getMaterial().getTier());
 	}
 
 	@Override

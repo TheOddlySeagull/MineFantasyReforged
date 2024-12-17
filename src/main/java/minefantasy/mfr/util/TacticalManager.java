@@ -4,9 +4,12 @@ import minefantasy.mfr.api.MineFantasyReforgedAPI;
 import minefantasy.mfr.api.armour.IElementalResistance;
 import minefantasy.mfr.api.weapon.IParryable;
 import minefantasy.mfr.api.weapon.ISpecialCombatMob;
+import minefantasy.mfr.config.ConfigArmour;
+import minefantasy.mfr.config.ConfigStamina;
 import minefantasy.mfr.data.PlayerData;
 import minefantasy.mfr.entity.EntityArrowMFR;
 import minefantasy.mfr.entity.mob.EntityMinotaur;
+import minefantasy.mfr.item.ItemWeaponMFR;
 import minefantasy.mfr.mechanics.CombatMechanics;
 import minefantasy.mfr.mechanics.PlayerTickHandler;
 import minefantasy.mfr.mechanics.StaminaBar;
@@ -24,6 +27,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemSword;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EntityDamageSourceIndirect;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.MathHelper;
 
 import java.util.Random;
@@ -33,9 +37,8 @@ import java.util.Random;
  * blocking
  */
 public class TacticalManager {
-	public static boolean shouldSlow = true;
-	public static float minWeightSpeed = 10F;
-	public static float arrowDeflectChance = 1.0F;
+
+
 	/**
 	 * Determines if you cant block with no stamina
 	 */
@@ -92,7 +95,7 @@ public class TacticalManager {
 
 	public static boolean canParry(DamageSource source, EntityLivingBase user, Entity entityHitting, ItemStack weapon) {
 		boolean autoParry = false;
-		if (shouldStaminaBlock && StaminaBar.isSystemActive && StaminaBar.doesAffectEntity(user)
+		if (shouldStaminaBlock && ConfigStamina.isSystemActive && StaminaBar.doesAffectEntity(user)
 				&& !StaminaBar.isAnyStamina(user, false)) {
 			return false;
 		}
@@ -101,7 +104,7 @@ public class TacticalManager {
 		}
 		if (user instanceof EntityPlayer) {
 			EntityPlayer player = (EntityPlayer) user;
-			autoParry = ResearchLogic.hasInfoUnlocked(player, "autoparry") && !player.isHandActive();
+			autoParry = ResearchLogic.hasInfoUnlocked(player, "auto_parry") && !player.isHandActive();
 
 			if (!player.isHandActive() && !autoParry) {
 				return false;
@@ -155,6 +158,18 @@ public class TacticalManager {
 
 	private static boolean canWeaponBlock(ItemStack item) {
 		return item.getItem() instanceof ItemSword || item.getItem() instanceof IParryable;
+	}
+
+	public static boolean checkAllowsOffhandOnBoth(EntityPlayer player) {
+		ItemStack mainHand = player.getHeldItemMainhand();
+		ItemStack offHand = player.getHeldItemOffhand();
+		if(mainHand.getItem() instanceof ItemWeaponMFR && offHand.getItem() instanceof ItemWeaponMFR) {
+			return ((ItemWeaponMFR) mainHand.getItem()).allowOffhand(player, EnumHand.MAIN_HAND)
+					&& ((ItemWeaponMFR) offHand.getItem()).allowOffhand(player, EnumHand.OFF_HAND);
+		}
+		else {
+			return false;
+		}
 	}
 
 	private static boolean isMobBlocking(EntityLivingBase user) {
@@ -222,8 +237,8 @@ public class TacticalManager {
 		if (source.isProjectile() || source instanceof EntityDamageSourceIndirect) {
 			return true;
 		}
-		if (source.getImmediateSource() != null && source.getImmediateSource() != null) {
-			return source.getImmediateSource() != source.getImmediateSource();
+		if (source.getTrueSource() != null && source.getImmediateSource() != null) {
+			return source.getTrueSource() != source.getImmediateSource();
 		}
 		return false;
 	}
@@ -271,12 +286,20 @@ public class TacticalManager {
 		// Default speed is 100%
 		float totalSpeed = 100F;
 
-		if (shouldSlow && !isImmuneToWeight(player)) {
+		if (ConfigArmour.shouldSlow && !isImmuneToWeight(player)) {
 
 			totalSpeed += ArmourCalculator.getSpeedModForWeight(player);
 			// Limit the slowest speed to 1%
-			if (totalSpeed <= minWeightSpeed) {
-				totalSpeed = minWeightSpeed;
+			if (totalSpeed <= ConfigArmour.minWeightSpeed) {
+				totalSpeed = ConfigArmour.minWeightSpeed;
+			}
+
+			//Apply sink in water
+			float weight = ArmourCalculator.getTotalWeightOfWorn(player, false);
+			if (weight > 100F) {
+				if (player.isInWater()) {
+					player.motionY -= (weight / 20000F);
+				}
 			}
 		}
 		// apply speed mod

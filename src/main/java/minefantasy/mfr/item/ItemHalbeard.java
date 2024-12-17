@@ -98,6 +98,11 @@ public class ItemHalbeard extends ItemSpear {
 	}
 
 	@Override
+	public float[] getCounterRatio() {
+		return piercingDamage;
+	}
+
+	@Override
 	protected float[] getWeaponRatio(ItemStack implement) {
 		return heavyHackingDamage;
 	}
@@ -105,6 +110,11 @@ public class ItemHalbeard extends ItemSpear {
 	@Override
 	protected float getMeleeDamage(ItemStack item) {
 		return super.getMeleeDamage(item) * 1.5F;
+	}
+
+	@Override
+	protected float getMountedDamage() {
+		return 0;
 	}
 
 	@Override

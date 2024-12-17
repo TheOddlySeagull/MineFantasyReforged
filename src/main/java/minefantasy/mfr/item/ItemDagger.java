@@ -26,11 +26,6 @@ public class ItemDagger extends ItemWeaponMFR {
 		super(material, name, rarity, weight);
 	}
 
-	@Override
-	public boolean canBlock() {
-		return true;
-	}
-
 	/**
 	 * Determines if the weapon can parry
 	 */
@@ -75,7 +70,7 @@ public class ItemDagger extends ItemWeaponMFR {
 
 	@Override
 	public float getRegenModifier(EntityLivingBase user, ItemStack item) {
-		return user.world.getDifficulty().getDifficultyId() < 3 ? 1.5F : 1.0F;
+		return user.world.getDifficulty().getId() < 3 ? 1.5F : 1.0F;
 	}
 
 	@Override

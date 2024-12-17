@@ -1,7 +1,6 @@
 package minefantasy.mfr.tile;
 
 import minefantasy.mfr.api.heating.ForgeItemHandler;
-import minefantasy.mfr.api.refine.BigFurnaceRecipes;
 import minefantasy.mfr.api.refine.IBellowsUseable;
 import minefantasy.mfr.api.refine.SmokeMechanics;
 import minefantasy.mfr.block.BlockBigFurnace;
@@ -11,7 +10,11 @@ import minefantasy.mfr.init.MineFantasyBlocks;
 import minefantasy.mfr.init.MineFantasyItems;
 import minefantasy.mfr.init.MineFantasySounds;
 import minefantasy.mfr.network.NetworkHandler;
+import minefantasy.mfr.recipe.BigFurnaceRecipeBase;
+import minefantasy.mfr.recipe.CraftingManagerBigFurnace;
+import minefantasy.mfr.recipe.IRecipeMFR;
 import minefantasy.mfr.util.CustomToolHelper;
+import minefantasy.mfr.util.Utils;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
@@ -36,7 +39,9 @@ import net.minecraftforge.items.ItemStackHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
 
 public class TileEntityBigFurnace extends TileEntityBase implements IBellowsUseable, ITickable {
 
@@ -44,21 +49,21 @@ public class TileEntityBigFurnace extends TileEntityBase implements IBellowsUsea
 	public int fuel;
 	public int maxFuel;
 	public boolean built = false;
+	private Set<String> knownResearches = new HashSet<>();
 	// ANIMATE
 	private boolean opening = false;
 	public int numUsers;
 	private float doorAngle = 0;
 	private float prevDoorAngle = 0;
 	// HEATER
-	public float heat;
-	public float maxHeat;
+	public int heat;
+	public int maxHeat;
 	public int justShared;
 	// FURNACE
 	public int progress;
 	private Random rand = new Random();
 	private int aboveType;
 	private int ticksExisted;
-	private boolean wasBurning;
 
 	public final ItemStackHandler inventory = createInventory();
 
@@ -118,11 +123,6 @@ public class TileEntityBigFurnace extends TileEntityBase implements IBellowsUsea
 		} else {
 			updateFurnace();
 		}
-		// UNIVERSAL
-		if (isBurning() != wasBurning || ticksExisted == 20) {
-			world.notifyLightSet(pos);
-		}
-		wasBurning = isBurning();
 	}
 
 	@Override
@@ -149,7 +149,7 @@ public class TileEntityBigFurnace extends TileEntityBase implements IBellowsUsea
 			if (fuel > 0) {
 				int max = (int) (maxHeat * 1.5F);
 				if (heat < max) {
-					heat += 50 * powerLevel;
+					heat += (int) (50 * powerLevel);
 				}
 
 				for (int a = 0; a < 10; a++) {
@@ -199,85 +199,23 @@ public class TileEntityBigFurnace extends TileEntityBase implements IBellowsUsea
 		boolean canSmelt = false;
 		boolean smelted = false;
 
-		if (!getSpecialResult().isEmpty()) {
-			if (!canFitSpecialResult()) {
-				canSmelt = false;
-			} else {
+		for (int a = 0; a < 4; a++) {
+			if (canSmelt(getInventory().getStackInSlot(a), getInventory().getStackInSlot(a + 4))) {
 				canSmelt = true;
 
 				if (progress >= getMaxTime()) {
-					smeltSpecial();
+					smeltItem(a, a + 4);
 					smelted = true;
 				}
 			}
-		} else
-			for (int a = 0; a < 4; a++) {
-				if (canSmelt(getInventory().getStackInSlot(a), getInventory().getStackInSlot(a + 4))) {
-					canSmelt = true;
-
-					if (progress >= getMaxTime()) {
-						smeltItem(a, a + 4);
-						smelted = true;
-					}
-				}
-			}
+		}
 
 		if (canSmelt) {
-			progress += heat;
+			progress += (int) heat;
 		}
 		if (!canSmelt || smelted) {
 			progress = 0;
 		}
-	}
-
-	private boolean canFitSpecialResult() {
-		ItemStack spec = getSpecialResult();
-
-		if (!spec.isEmpty()) {
-			int spaceLeft = 0;
-
-			for (int a = 4; a < 8; a++) {
-				if (getInventory().getStackInSlot(a).isEmpty()) {
-					spaceLeft += 64;
-				} else {
-					if (CustomToolHelper.areEqual(getInventory().getStackInSlot(a), spec)) {
-						if (getInventory().getStackInSlot(a).getCount() < getInventory().getStackInSlot(a).getMaxStackSize()) {
-							spaceLeft += getInventory().getStackInSlot(a).getMaxStackSize() - getInventory().getStackInSlot(a).getCount();
-						}
-					}
-				}
-			}
-			return spec.getCount() <= spaceLeft;
-		}
-		return false;
-	}
-
-	private void smeltSpecial() {
-		ItemStack res = getSpecialResult().copy();
-
-		for (int output = 4; output < 8; output++) {
-			if (res.getCount() <= 0)
-				break;
-
-			if (getInventory().getStackInSlot(output).isEmpty()) {
-				getInventory().setStackInSlot(output, res);
-				break;
-			} else {
-				if (CustomToolHelper.areEqual(getInventory().getStackInSlot(output), res)) {
-					int spaceLeft = getInventory().getStackInSlot(output).getMaxStackSize() - getInventory().getStackInSlot(output).getCount();
-
-					if (res.getCount() <= spaceLeft) {
-						getInventory().getStackInSlot(output).grow(res.getCount());
-						break;
-					} else {
-						getInventory().getStackInSlot(output).grow(spaceLeft);
-						res.shrink(spaceLeft);
-					}
-				}
-			}
-		}
-		for (int input = 0; input < 4; input++)
-			getInventory().extractItem(input, 1, false);
 	}
 
 	public void puffSmoke(Random rand, World world, BlockPos pos) {
@@ -287,7 +225,7 @@ public class TileEntityBigFurnace extends TileEntityBase implements IBellowsUsea
 		IBlockState state = world.getBlockState(pos);
 		EnumFacing facing = state.getValue(BlockBigFurnace.FACING).getOpposite();
 
-		SmokeMechanics.emitSmokeIndirect(world, pos.add(facing.getFrontOffsetX(), (isHeater() ? 2 : 1), facing.getFrontOffsetZ()), 1);
+		SmokeMechanics.emitSmokeIndirect(world, pos.add(facing.getXOffset(), (isHeater() ? 2 : 1), facing.getZOffset()), 1);
 	}
 
 	private int getMaxTime() {
@@ -350,12 +288,26 @@ public class TileEntityBigFurnace extends TileEntityBase implements IBellowsUsea
 	}
 
 	private void updateHeater() {
-		if (world.isRemote)
+		if (world.isRemote) {
 			return;
+		}
 
 		TileEntityBigFurnace furn = getFurnace();
 		if (furn != null) {
 			aboveType = furn.getType();
+		}
+		if (ticksExisted % 20 == 0) {
+			IBlockState state = world.getBlockState(pos);
+			if (!state.getValue(BlockBigFurnace.BURNING)) {
+				if (isBurning()) {
+					world.setBlockState(pos, state.withProperty(BlockBigFurnace.BURNING, true));
+				}
+			}
+			else {
+				if (!isBurning()) {
+					world.setBlockState(pos, state.withProperty(BlockBigFurnace.BURNING, false));
+				}
+			}
 		}
 		if (!built) {
 			heat = maxHeat = fuel = maxFuel = 0;
@@ -383,28 +335,32 @@ public class TileEntityBigFurnace extends TileEntityBase implements IBellowsUsea
 				}
 			}
 			if (fuel <= 0) {
-				if (heat > 0)
+				if (heat > 0) {
 					heat--;
+				}
 				maxHeat = 0;
 			}
 		}
 	}
 
-	private float getItemHeat(ItemStack itemStack) {
+	private int getItemHeat(ItemStack itemStack) {
 		return ForgeItemHandler.getForgeHeat(itemStack);
 	}
 
 	public ItemStack getResult(ItemStack item) {
-		if (item.isEmpty())
+		if (item.isEmpty()) {
 			return ItemStack.EMPTY;
-
-		// SPECIAL SMELTING
-		BigFurnaceRecipes recipe = BigFurnaceRecipes.getResult(item);
-		if (recipe != null && recipe.tier <= this.getTier()) {
-			return recipe.result;
 		}
 
-		ItemStack res = FurnaceRecipes.instance().getSmeltingResult(item);// If no special: try vanilla
+		// SPECIAL SMELTING
+		BigFurnaceRecipeBase recipe = CraftingManagerBigFurnace.findMatchingRecipe(item, this.knownResearches);
+		if (recipe != null && recipe.getTier() <= this.getTier()) {
+			setRecipe(recipe);
+			return recipe.getBigFurnaceRecipeOutput();
+		}
+
+		// If no special: try vanilla
+		ItemStack res = FurnaceRecipes.instance().getSmeltingResult(item);
 		if (!res.isEmpty()) {
 			if (res.getItem() instanceof ItemFood || item.getItem() instanceof ItemFood) {
 				return new ItemStack(MineFantasyItems.BURNT_FOOD, 1);
@@ -415,8 +371,13 @@ public class TileEntityBigFurnace extends TileEntityBase implements IBellowsUsea
 		return ItemStack.EMPTY;
 	}
 
-	public ItemStack getSpecialResult() {
-		return ItemStack.EMPTY;
+	@Override
+	public IRecipeMFR getRecipeByOutput(ItemStack stack) {
+		return CraftingManagerBigFurnace.findRecipeByOutput(stack);
+	}
+
+	public void setKnownResearches(Set<String> knownResearches) {
+		this.knownResearches = knownResearches;
 	}
 
 	@SideOnly(Side.CLIENT)
@@ -532,7 +493,7 @@ public class TileEntityBigFurnace extends TileEntityBase implements IBellowsUsea
 		if (block == world.getBlockState(pos).getBlock()) {
 			return true;
 		}
-		return block == MineFantasyBlocks.FIREBRICKS;
+		return block == MineFantasyBlocks.FIREBRICKS || block == MineFantasyBlocks.FIREBRICK_STAIRS;
 	}
 
 	public boolean isBlockValidForTop(BlockPos pos) {
@@ -544,7 +505,7 @@ public class TileEntityBigFurnace extends TileEntityBase implements IBellowsUsea
 		if (block == null) {
 			return false;
 		}
-		return block == MineFantasyBlocks.FIREBRICKS;
+		return block == MineFantasyBlocks.FIREBRICKS || block == MineFantasyBlocks.FIREBRICK_STAIRS;
 	}
 
 	public boolean isBlockValidForSide(EnumFacing side) {
@@ -552,7 +513,7 @@ public class TileEntityBigFurnace extends TileEntityBase implements IBellowsUsea
 			return false;
 		}
 
-		return isBlockValidForSide(pos.add(side.getFrontOffsetX(), side.getFrontOffsetY(), side.getFrontOffsetZ()));
+		return isBlockValidForSide(pos.add(side.getXOffset(), side.getYOffset(), side.getZOffset()));
 	}
 
 	public boolean isSolid(EnumFacing side) {
@@ -560,7 +521,7 @@ public class TileEntityBigFurnace extends TileEntityBase implements IBellowsUsea
 			return false;
 		}
 
-		Material mat = world.getBlockState(pos.add(side.getFrontOffsetX(), side.getFrontOffsetY(), side.getFrontOffsetZ())).getMaterial();
+		Material mat = world.getBlockState(pos.add(side.getXOffset(), side.getYOffset(), side.getZOffset())).getMaterial();
 
 		return mat.isSolid();
 	}
@@ -575,6 +536,9 @@ public class TileEntityBigFurnace extends TileEntityBase implements IBellowsUsea
 		}
 
 		IBlockState state = world.getBlockState(pos);
+		if (!(world.getTileEntity(pos) instanceof TileEntityBigFurnace)) {
+			return false;
+		}
 		EnumFacing facing = state.getValue(BlockBigFurnace.FACING);
 		if (isSolid(facing)) {
 			return false;
@@ -608,6 +572,11 @@ public class TileEntityBigFurnace extends TileEntityBase implements IBellowsUsea
 
 		inventory.deserializeNBT(nbt.getCompoundTag("inventory"));
 
+		ResourceLocation resourceLocation = new ResourceLocation(nbt.getString(RECIPE_RESOURCE_LOCATION_TAG));
+		this.setRecipe(CraftingManagerBigFurnace.getRecipeByResourceLocation(resourceLocation));
+
+		knownResearches = Utils.deserializeList(nbt.getString(KNOWN_RESEARCHES_TAG));
+
 		justShared = nbt.getInteger("Shared");
 		built = nbt.getBoolean("Built");
 
@@ -616,8 +585,8 @@ public class TileEntityBigFurnace extends TileEntityBase implements IBellowsUsea
 		fuel = nbt.getInteger("fuel");
 		maxFuel = nbt.getInteger("MaxFuel");
 
-		heat = nbt.getFloat("heat");
-		maxHeat = nbt.getFloat("maxHeat");
+		heat = nbt.getInteger("heat");
+		maxHeat = nbt.getInteger("maxHeat");
 
 		progress = nbt.getInteger("progress");
 		aboveType = nbt.getInteger("Level");
@@ -635,12 +604,21 @@ public class TileEntityBigFurnace extends TileEntityBase implements IBellowsUsea
 		nbt.setInteger("fuel", fuel);
 		nbt.setInteger("maxFuel", maxFuel);
 
-		nbt.setFloat("heat", heat);
-		nbt.setFloat("maxHeat", maxHeat);
+		nbt.setInteger("heat", heat);
+		nbt.setInteger("maxHeat", maxHeat);
 
 		nbt.setInteger("progress", progress);
 
 		nbt.setTag("inventory", inventory.serializeNBT());
+
+		if (getRecipe() != null) {
+			nbt.setString(RECIPE_RESOURCE_LOCATION_TAG, getRecipe().getResourceLocation());
+		}
+		else {
+			nbt.setString(RECIPE_RESOURCE_LOCATION_TAG, "");
+		}
+
+		nbt.setString(KNOWN_RESEARCHES_TAG, Utils.serializeList(knownResearches));
 
 		return nbt;
 	}

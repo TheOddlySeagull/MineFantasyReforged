@@ -1,13 +1,13 @@
 package minefantasy.mfr.item;
 
 import minefantasy.mfr.material.CustomMaterial;
+import minefantasy.mfr.registry.CustomMaterialRegistry;
+import minefantasy.mfr.registry.types.CustomMaterialType;
 import minefantasy.mfr.util.CustomToolHelper;
 import net.minecraft.block.Block;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.ArrayList;
 
@@ -21,9 +21,9 @@ public class ItemBlockToolRack extends ItemBlockBase {
 		if (!isInCreativeTab(itemIn)) {
 			return;
 		}
-		ArrayList<CustomMaterial> wood = CustomMaterial.getList("wood");
+		ArrayList<CustomMaterial> wood = CustomMaterialRegistry.getList(CustomMaterialType.WOOD_MATERIAL);
 		for (CustomMaterial customMat : wood) {
-			items.add(this.construct(customMat.name));
+			items.add(this.construct(customMat.getName()));
 		}
 	}
 
@@ -32,7 +32,6 @@ public class ItemBlockToolRack extends ItemBlockBase {
 	}
 
 	@Override
-	@SideOnly(Side.CLIENT)
 	public String getItemStackDisplayName(ItemStack item) {
 		return CustomToolHelper.getLocalisedName(item, this.getUnlocalizedNameInefficiently(item) + ".name");
 	}

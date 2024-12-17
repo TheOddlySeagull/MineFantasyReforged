@@ -1,11 +1,11 @@
 package minefantasy.mfr.item;
 
 import minefantasy.mfr.init.MineFantasyItems;
+import minefantasy.mfr.integration.CustomSand;
 import minefantasy.mfr.util.MFRLogUtil;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumActionResult;
@@ -44,7 +44,7 @@ public class ItemBowl extends ItemComponentMFR {
 					return super.onItemUseFirst(player, world, pos, side, hitX, hitY, hitZ, hand);
 				}
 
-				if (isWaterSource(world, rayTraceResult.getBlockPos())) {
+				if (isSaltWaterSource(world, rayTraceResult.getBlockPos())) {
 					gather(item, hand, world, player);
 					return EnumActionResult.SUCCESS;
 				}
@@ -64,7 +64,7 @@ public class ItemBowl extends ItemComponentMFR {
 		}
 	}
 
-	private boolean isWaterSource(World world, BlockPos pos) {
+	private boolean isSaltWaterSource(World world, BlockPos pos) {
 		if (world.getBlockState(pos).getMaterial() != Material.WATER) {
 			return false;
 		}
@@ -74,6 +74,6 @@ public class ItemBowl extends ItemComponentMFR {
 			return true;
 		}
 		MFRLogUtil.logDebug("Biome = " + biome);
-		return world.getBlockState(pos.add(0, -1, 0)).getBlock() == Blocks.SAND;
+		return CustomSand.isSand(world.getBlockState(pos.add(0, -1, 0)).getBlock());
 	}
 }

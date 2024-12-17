@@ -3,10 +3,12 @@ package minefantasy.mfr.item;
 import minefantasy.mfr.api.tool.IStorageBlock;
 import minefantasy.mfr.block.BlockTrough;
 import minefantasy.mfr.material.CustomMaterial;
+import minefantasy.mfr.registry.CustomMaterialRegistry;
+import minefantasy.mfr.registry.types.CustomMaterialType;
 import minefantasy.mfr.tile.TileEntityTrough;
+import minefantasy.mfr.util.BlockUtils;
 import minefantasy.mfr.util.CustomToolHelper;
 import net.minecraft.block.Block;
-import net.minecraft.block.material.Material;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
@@ -45,10 +47,10 @@ public class ItemBlockTrough extends ItemBlockBase implements IStorageBlock {
 				list.add(I18n.format("attribute.fill", stock));
 			}
 		}
-		CustomMaterial material = CustomMaterial.getMaterialFor(item, CustomToolHelper.slot_main);
-		if (material != CustomMaterial.NONE) {
+		CustomMaterial material = CustomMaterialRegistry.getMaterialFor(item, CustomToolHelper.slot_main);
+		if (material != CustomMaterialRegistry.NONE) {
 			list.add(I18n.format("attribute.fill.capacity.name",
-					TileEntityTrough.getCapacity(material.tier) * TileEntityTrough.capacityScale));
+					TileEntityTrough.getCapacity(material.getTier()) * TileEntityTrough.capacityScale));
 		}
 	}
 
@@ -57,9 +59,9 @@ public class ItemBlockTrough extends ItemBlockBase implements IStorageBlock {
 		if (!isInCreativeTab(itemIn)) {
 			return;
 		}
-		ArrayList<CustomMaterial> wood = CustomMaterial.getList("wood");
+		ArrayList<CustomMaterial> wood = CustomMaterialRegistry.getList(CustomMaterialType.WOOD_MATERIAL);
 		for (CustomMaterial customMat : wood) {
-			items.add(this.construct(customMat.name));
+			items.add(this.construct(customMat.getName()));
 		}
 	}
 
@@ -68,7 +70,6 @@ public class ItemBlockTrough extends ItemBlockBase implements IStorageBlock {
 	}
 
 	@Override
-	@SideOnly(Side.CLIENT)
 	public String getItemStackDisplayName(ItemStack item) {
 		return CustomToolHelper.getLocalisedName(item, this.getUnlocalizedNameInefficiently(item) + ".name");
 	}
@@ -92,7 +93,7 @@ public class ItemBlockTrough extends ItemBlockBase implements IStorageBlock {
 					return super.onItemUse(player, world, pos, hand, facing, hitX, hitY, hitZ);
 				}
 
-				if (isWaterSource(world, hit)) {
+				if (BlockUtils.isWaterSource(world, hit)) {
 					gather(player);
 					world.playSound(player, pos, SoundEvents.ENTITY_GENERIC_SPLASH, SoundCategory.AMBIENT, 0.125F + rand.nextFloat() / 4F, 0.5F + rand.nextFloat());
 					return EnumActionResult.FAIL;
@@ -103,12 +104,12 @@ public class ItemBlockTrough extends ItemBlockBase implements IStorageBlock {
 	}
 
 	private void gather(EntityPlayer player) {
-		ItemStack item = player.getHeldItem(EnumHand.MAIN_HAND);
+		ItemStack item = player.getHeldItemMainhand();
 		if (!item.isEmpty()) {
 			int tier = 0;
-			CustomMaterial material = CustomMaterial.getMaterialFor(item, CustomToolHelper.slot_main);
-			if (material != CustomMaterial.NONE) {
-				tier = material.tier;
+			CustomMaterial material = CustomMaterialRegistry.getMaterialFor(item, CustomToolHelper.slot_main);
+			if (material != CustomMaterialRegistry.NONE) {
+				tier = material.getTier();
 			}
 			NBTTagCompound nbt = getNBT(item);
 			nbt.setInteger(BlockTrough.FILL_LEVEL, TileEntityTrough.getCapacity(tier) * TileEntityTrough.capacityScale);
@@ -122,12 +123,5 @@ public class ItemBlockTrough extends ItemBlockBase implements IStorageBlock {
 			item.setTagCompound(new NBTTagCompound());
 		}
 		return item.getTagCompound();
-	}
-
-	private boolean isWaterSource(World world, BlockPos pos) {
-		if (world.getBlockState(pos).getMaterial() == Material.WATER) {
-			return true;
-		}
-		return false;
 	}
 }

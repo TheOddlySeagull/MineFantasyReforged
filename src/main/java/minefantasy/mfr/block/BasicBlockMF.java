@@ -8,11 +8,8 @@ import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.util.BlockRenderLayer;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -30,7 +27,7 @@ public class BasicBlockMF extends Block implements IClientRegister {
 		super(material);
 
 		setRegistryName(name);
-		setUnlocalizedName(name);
+		setTranslationKey(name);
 		if (material == Material.ROCK) {
 			this.setHarvestLevel("pickaxe", 0);
 		}
@@ -47,13 +44,13 @@ public class BasicBlockMF extends Block implements IClientRegister {
 	@Override
 	@SideOnly(Side.CLIENT)
 	public boolean isOpaqueCube(IBlockState state) {
-		return this.blockMaterial != Material.GLASS;
+		return this.material != Material.GLASS;
 	}
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public BlockRenderLayer getBlockLayer() {
-		if (this.blockMaterial == Material.GLASS) {
+	public BlockRenderLayer getRenderLayer() {
+		if (this.material == Material.GLASS) {
 			return BlockRenderLayer.CUTOUT;
 		}
 		return BlockRenderLayer.SOLID;
@@ -70,11 +67,6 @@ public class BasicBlockMF extends Block implements IClientRegister {
 			}
 		}
 		return Item.getItemFromBlock(this);
-	}
-
-	@Override
-	public boolean canSilkHarvest(World world, BlockPos pos, IBlockState state, EntityPlayer player) {
-		return false;
 	}
 
 	@Override

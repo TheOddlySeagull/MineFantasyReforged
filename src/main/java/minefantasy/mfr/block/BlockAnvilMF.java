@@ -4,13 +4,17 @@ import minefantasy.mfr.api.heating.TongsHelper;
 import minefantasy.mfr.init.MineFantasyItems;
 import minefantasy.mfr.init.MineFantasyMaterials;
 import minefantasy.mfr.init.MineFantasyTabs;
+import minefantasy.mfr.item.ItemHammer;
 import minefantasy.mfr.item.ItemTongs;
 import minefantasy.mfr.material.BaseMaterial;
 import minefantasy.mfr.mechanics.knowledge.ResearchLogic;
+import minefantasy.mfr.network.NetworkHandler;
+import minefantasy.mfr.network.SparkParticlePacket;
 import minefantasy.mfr.tile.TileEntityAnvil;
 import net.minecraft.block.BlockHorizontal;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
+import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.properties.PropertyDirection;
 import net.minecraft.block.state.BlockFaceShape;
 import net.minecraft.block.state.BlockStateContainer;
@@ -25,9 +29,11 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 
 public class BlockAnvilMF extends BlockTileEntity<TileEntityAnvil> {
 	public static final PropertyDirection FACING = BlockHorizontal.FACING;
+	public static final PropertyBool BURNING = PropertyBool.create("burning");
 	public BaseMaterial material;
 	private final int tier;
 	private static final AxisAlignedBB ANVIL_STONE_AABB_NORTH_SOUTH = new AxisAlignedBB(0.1875D, 0.0D, 0.3125D, 0.8125D, 0.8125D, 0.6875D);
@@ -43,7 +49,7 @@ public class BlockAnvilMF extends BlockTileEntity<TileEntityAnvil> {
 		this.tier = material.tier;
 
 		setRegistryName(name);
-		setUnlocalizedName(name);
+		setTranslationKey(name);
 		this.setSoundType(SoundType.METAL);
 		this.setHardness(material.hardness + 1 / 2F);
 		this.setResistance(material.hardness + 1);
@@ -53,36 +59,39 @@ public class BlockAnvilMF extends BlockTileEntity<TileEntityAnvil> {
 
 	@Override
 	protected BlockStateContainer createBlockState() {
-		return new BlockStateContainer(this, FACING);
+		return new BlockStateContainer(this, FACING, BURNING);
 	}
 
 	@Override
 	public TileEntity createTileEntity(World world, IBlockState state) {
 		TileEntityAnvil anvil = new TileEntityAnvil();
 		anvil.setTier(tier);
-		anvil.setTextureName(this.getRegistryName().getResourcePath());
+		anvil.setTextureName(this.getRegistryName().getPath());
 		return anvil;
 	}
 
-	@Override
 	public IBlockState getStateFromMeta(int meta) {
-		EnumFacing enumfacing = EnumFacing.getFront(meta);
-
-		if (enumfacing.getAxis() == EnumFacing.Axis.Y) {
-			enumfacing = EnumFacing.NORTH;
-		}
-
-		return this.getDefaultState().withProperty(FACING, enumfacing);
+		return this.getDefaultState()
+				.withProperty(BURNING, (meta & 4) != 0)
+				.withProperty(FACING, EnumFacing.byHorizontalIndex(meta & 3));
 	}
 
-	@Override
 	public int getMetaFromState(IBlockState state) {
-		return state.getValue(FACING).getIndex();
+		int i = 0;
+		i = i | state.getValue(FACING).getHorizontalIndex();
+
+		if (state.getValue(BURNING)) {
+			i |= 4;
+		}
+
+		return i;
 	}
 
 	@Override
 	public IBlockState getStateForPlacement(World worldIn, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer) {
-		return this.getDefaultState().withProperty(FACING, placer.getHorizontalFacing());
+		return this.getDefaultState()
+				.withProperty(FACING, placer.getHorizontalFacing())
+				.withProperty(BURNING, false);
 	}
 
 	@Override
@@ -104,6 +113,11 @@ public class BlockAnvilMF extends BlockTileEntity<TileEntityAnvil> {
 	@Override
 	public boolean isFullCube(IBlockState state) {
 		return false;
+	}
+
+	@Override
+	public int getLightValue(IBlockState state, IBlockAccess world, BlockPos pos) {
+		return state.getValue(BURNING) ? 5 : 0;
 	}
 
 	/**
@@ -146,6 +160,10 @@ public class BlockAnvilMF extends BlockTileEntity<TileEntityAnvil> {
 			if (facing != EnumFacing.UP || !tile.tryCraft(player, true) && !world.isRemote) {
 				tile.openGUI(world, player);
 			}
+			if (held.getItem() instanceof ItemHammer) {
+				generateSparks(world, pos.getX() + hitX, pos.getY(), pos.getZ() + hitZ, player.dimension);
+				tile.setHit(true);
+			}
 		}
 		if (!world.isRemote) {
 			ResearchLogic.syncData(player);
@@ -179,14 +197,16 @@ public class BlockAnvilMF extends BlockTileEntity<TileEntityAnvil> {
 	}
 
 	@Override
-	public void onBlockClicked(World world, BlockPos pos, EntityPlayer user) {
-		{
-			TileEntityAnvil tile = (TileEntityAnvil) getTile(world, pos);
-			if (tile != null) {
-				if (user.isSneaking()) {
-					tile.upset(user);
-				} else {
-					tile.tryCraft(user, false);
+	public void onBlockClicked(World world, BlockPos pos, EntityPlayer player) {
+		TileEntityAnvil tile = (TileEntityAnvil) getTile(world, pos);
+		if (tile != null) {
+			if (player.isSneaking()) {
+				tile.upset(player);
+			} else {
+				tile.tryCraft(player, false);
+				if (player.getHeldItemMainhand().getItem() instanceof ItemHammer) {
+					generateSparks(world, pos.getX() + 0.5F, pos.getY(), pos.getZ() + 0.5F, player.dimension);
+					tile.setHit(true);
 				}
 			}
 		}
@@ -196,4 +216,11 @@ public class BlockAnvilMF extends BlockTileEntity<TileEntityAnvil> {
 		return tier;
 	}
 
+	private void generateSparks(World world, double x, double y, double z, int dimensionId) {
+		if (!world.isRemote) {
+			TargetPoint targetPoint = new TargetPoint(dimensionId, x, y, z, 0);
+			SparkParticlePacket packet = new SparkParticlePacket(x, y, z);
+			NetworkHandler.sendToAllTrackingBlock(targetPoint, packet);
+		}
+	}
 }

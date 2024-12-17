@@ -1,11 +1,11 @@
 package minefantasy.mfr.mechanics;
 
-import minefantasy.mfr.config.ConfigHardcore;
+import minefantasy.mfr.config.ConfigMobs;
 import minefantasy.mfr.init.MineFantasyItems;
 import minefantasy.mfr.init.MineFantasyMaterials;
 import minefantasy.mfr.item.ItemCustomArmour;
 import minefantasy.mfr.item.ItemWeaponMFR;
-import minefantasy.mfr.material.CustomMaterial;
+import minefantasy.mfr.registry.CustomMaterialRegistry;
 import minefantasy.mfr.util.XSTRandom;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
@@ -34,13 +34,13 @@ public class MonsterUpgrader {
 	private static XSTRandom random = new XSTRandom();
 
 	public void upgradeMob(EntityLivingBase mob) {
-		int diff = mob.world.getDifficulty().getDifficultyId();
+		int diff = mob.world.getDifficulty().getId();
 
-		if (ConfigHardcore.upgradeZombieWep) {
+		if (ConfigMobs.upgradeZombieWep) {
 			if (mob instanceof AbstractSkeleton) {
 				if ((mob) instanceof EntityWitherSkeleton) {
 					giveEntityWeapon(mob, MineFantasyMaterials.Names.ENCRUSTED, random.nextInt(8));
-				} else if (CombatMechanics.swordSkeleton && random.nextInt(3) == 0) {
+				} else if (ConfigMobs.swordSkeleton && random.nextInt(3) == 0) {
 					mob.setItemStackToSlot(EntityEquipmentSlot.MAINHAND,
 							MineFantasyItems.STANDARD_SWORD.construct(MineFantasyMaterials.Names.BRONZE, MineFantasyMaterials.Names.OAK_WOOD));
 					((AbstractSkeleton) mob).setCombatTask();
@@ -61,8 +61,8 @@ public class MonsterUpgrader {
 							mob.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(1.0F);
 						}
 					} else {
-						float mod = diff >= 2 ? ConfigHardcore.zombieWepChance * 2
-								: diff < 1 ? ConfigHardcore.zombieWepChance / 2 : ConfigHardcore.zombieWepChance;
+						float mod = diff >= 2 ? ConfigMobs.zombieWepChance * 2
+								: diff < 1 ? ConfigMobs.zombieWepChance / 2 : ConfigMobs.zombieWepChance;
 						float chance = random.nextFloat() * 100F * mod;
 						if (chance >= (100F - zombieWepChance)) {
 							giveEntityWeapon(mob, tier, random.nextInt(5));
@@ -76,7 +76,7 @@ public class MonsterUpgrader {
 					createZombieKnight((EntityZombie) mob);
 				} else if (random.nextFloat() * (zombieBruteChance) < diff) {
 					createZombieBrute((EntityZombie) mob);
-				} else if (ConfigHardcore.fastZombies) {
+				} else if (ConfigMobs.fastZombies) {
 					mob.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.3F);
 				}
 			}
@@ -176,7 +176,7 @@ public class MonsterUpgrader {
 	 * 1=Axe.....2=Mace.....3=dagger.....4=spear.....else sword
 	 */
 	private void giveEntityWeapon(EntityLivingBase mob, String tier, int weaponType) {
-		if (CustomMaterial.getMaterial(tier) == CustomMaterial.NONE)
+		if (CustomMaterialRegistry.getMaterial(tier) == CustomMaterialRegistry.NONE)
 			return;
 
 		ItemWeaponMFR weapon = MineFantasyItems.STANDARD_SWORD;

@@ -14,6 +14,8 @@ import minefantasy.mfr.init.MineFantasyTabs;
 import minefantasy.mfr.material.CustomMaterial;
 import minefantasy.mfr.mechanics.StaminaMechanics;
 import minefantasy.mfr.proxy.IClientRegister;
+import minefantasy.mfr.registry.CustomMaterialRegistry;
+import minefantasy.mfr.registry.types.CustomMaterialType;
 import minefantasy.mfr.tile.TileEntityRack;
 import minefantasy.mfr.util.CustomToolHelper;
 import minefantasy.mfr.util.ModelLoaderHelper;
@@ -24,6 +26,7 @@ import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.item.EntityItem;
@@ -71,7 +74,7 @@ public class ItemScythe extends Item implements IToolMaterial, IDamageType, IRac
 		this.setFull3D();
 		itemRarity = rarity;
 		setRegistryName(name);
-		setUnlocalizedName(name);
+		setTranslationKey(name);
 
 		setCreativeTab(MineFantasyTabs.tabOldTools);
 		this.maxStackSize = 1;
@@ -236,6 +239,12 @@ public class ItemScythe extends Item implements IToolMaterial, IDamageType, IRac
 		return CustomToolHelper.getMaxDamage(stack, super.getMaxDamage(stack));
 	}
 
+	@Override
+	public boolean hitEntity(ItemStack stack, EntityLivingBase target, EntityLivingBase attacker) {
+		stack.damageItem(1, attacker);
+		return true;
+	}
+
 	public ItemStack construct(String main, String haft) {
 		return CustomToolHelper.construct(this, main, haft);
 	}
@@ -258,16 +267,27 @@ public class ItemScythe extends Item implements IToolMaterial, IDamageType, IRac
 		return CustomToolHelper.getHarvestLevel(stack, super.getHarvestLevel(stack, toolClass, player, blockState));
 	}
 
+	/**
+	 * ItemStack sensitive version of getItemEnchantability
+	 *
+	 * @param stack The ItemStack
+	 * @return the item echantability value
+	 */
+	@Override
+	public int getItemEnchantability(ItemStack stack) {
+		return CustomToolHelper.getCustomPrimaryMaterial(stack).getEnchantability();
+	}
+
 	@Override
 	public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> items) {
 		if (!isInCreativeTab(tab)) {
 			return;
 		}
 		if (isCustom) {
-			ArrayList<CustomMaterial> metal = CustomMaterial.getList("metal");
+			ArrayList<CustomMaterial> metal = CustomMaterialRegistry.getList(CustomMaterialType.METAL_MATERIAL);
 			for (CustomMaterial customMat : metal) {
 				if (MineFantasyReforged.isDebug() || !customMat.getItemStack().isEmpty()) {
-					items.add(this.construct(customMat.name, MineFantasyMaterials.Names.OAK_WOOD));
+					items.add(this.construct(customMat.getName(), MineFantasyMaterials.Names.OAK_WOOD));
 				}
 			}
 		} else {
@@ -284,7 +304,6 @@ public class ItemScythe extends Item implements IToolMaterial, IDamageType, IRac
 	}
 
 	@Override
-	@SideOnly(Side.CLIENT)
 	public String getItemStackDisplayName(ItemStack item) {
 		String unlocalName = this.getUnlocalizedNameInefficiently(item) + ".name";
 		return CustomToolHelper.getLocalisedName(item, unlocalName);

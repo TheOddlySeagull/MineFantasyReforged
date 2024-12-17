@@ -102,10 +102,10 @@ public class BlockOreMF extends BasicBlockMF {
 
 	@Override
 	public String getHarvestTool(IBlockState state) {
-		if (blockMaterial == Material.ROCK){
+		if (material == Material.ROCK){
 			return "pickaxe";
 		}
-		if (blockMaterial == Material.GROUND){
+		if (material == Material.GROUND){
 			return "shovel";
 		}
 		return null;

@@ -8,8 +8,11 @@ import minefantasy.mfr.init.MineFantasyMaterials;
 import minefantasy.mfr.init.MineFantasyTabs;
 import minefantasy.mfr.material.CustomMaterial;
 import minefantasy.mfr.proxy.IClientRegister;
+import minefantasy.mfr.registry.CustomMaterialRegistry;
+import minefantasy.mfr.registry.types.CustomMaterialType;
 import minefantasy.mfr.util.CustomToolHelper;
 import minefantasy.mfr.util.ModelLoaderHelper;
+import minefantasy.mfr.util.ToolHelper;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
@@ -17,7 +20,11 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.EnumRarity;
 import net.minecraft.item.ItemShears;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumActionResult;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.NonNullList;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -46,7 +53,7 @@ public class ItemShearsMFR extends ItemShears implements IToolMaterial, IToolMFR
 		setCreativeTab(MineFantasyTabs.tabOldTools);
 		this.setMaxDamage(material.getMaxUses());
 		setRegistryName(name);
-		setUnlocalizedName(name);
+		setTranslationKey(name);
 
 		MineFantasyReforged.PROXY.addClientRegister(this);
 	}
@@ -60,6 +67,11 @@ public class ItemShearsMFR extends ItemShears implements IToolMaterial, IToolMFR
 	public ItemShearsMFR setEfficiencyMod(float efficiencyMod) {
 		this.efficiencyMod = efficiencyMod;
 		return this;
+	}
+
+	@Override
+	public EnumActionResult onItemUse(EntityPlayer user, World world, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+		return ToolHelper.performBlockTransformation(user, world, pos, hand, facing);
 	}
 
 	protected float getWeightModifier(ItemStack stack) {
@@ -85,16 +97,27 @@ public class ItemShearsMFR extends ItemShears implements IToolMaterial, IToolMFR
 		return CustomToolHelper.getHarvestLevel(stack, super.getHarvestLevel(stack, toolClass, player, blockState));
 	}
 
+	/**
+	 * ItemStack sensitive version of getItemEnchantability
+	 *
+	 * @param stack The ItemStack
+	 * @return the item echantability value
+	 */
+	@Override
+	public int getItemEnchantability(ItemStack stack) {
+		return CustomToolHelper.getCustomPrimaryMaterial(stack).getEnchantability();
+	}
+
 	@Override
 	public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> items) {
 		if (!isInCreativeTab(tab)) {
 			return;
 		}
 		if (isCustom) {
-			ArrayList<CustomMaterial> metal = CustomMaterial.getList("metal");
+			ArrayList<CustomMaterial> metal = CustomMaterialRegistry.getList(CustomMaterialType.METAL_MATERIAL);
 			for (CustomMaterial customMat : metal) {
 				if (MineFantasyReforged.isDebug() || !customMat.getItemStack().isEmpty()) {
-					items.add(this.construct(customMat.name, MineFantasyMaterials.Names.OAK_WOOD));
+					items.add(this.construct(customMat.getName(), MineFantasyMaterials.Names.OAK_WOOD));
 				}
 			}
 		} else {
@@ -121,7 +144,6 @@ public class ItemShearsMFR extends ItemShears implements IToolMaterial, IToolMFR
 	}
 
 	@Override
-	@SideOnly(Side.CLIENT)
 	public String getItemStackDisplayName(ItemStack item) {
 		String unlocalName = this.getUnlocalizedNameInefficiently(item) + ".name";
 		return CustomToolHelper.getLocalisedName(item, unlocalName);

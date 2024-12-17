@@ -7,6 +7,8 @@ import minefantasy.mfr.init.MineFantasyMaterials;
 import minefantasy.mfr.init.MineFantasyTabs;
 import minefantasy.mfr.material.CustomMaterial;
 import minefantasy.mfr.mechanics.CombatMechanics;
+import minefantasy.mfr.registry.CustomMaterialRegistry;
+import minefantasy.mfr.registry.types.CustomMaterialType;
 import minefantasy.mfr.util.ArmourCalculator;
 import minefantasy.mfr.util.CustomToolHelper;
 import net.minecraft.creativetab.CreativeTabs;
@@ -16,8 +18,6 @@ import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.NonNullList;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,28 +32,6 @@ public class ItemCustomArmour extends ItemArmourMFR {
 		canRepair = false;
 	}
 
-	public static void addSuits(List<ItemStack> list, String material) {
-		list.add(MineFantasyItems.STANDARD_CHAIN_HELMET.construct(material));
-		list.add(MineFantasyItems.STANDARD_CHAIN_CHESTPLATE.construct(material));
-		list.add(MineFantasyItems.STANDARD_CHAIN_LEGGINGS.construct(material));
-		list.add(MineFantasyItems.STANDARD_CHAIN_BOOTS.construct(material));
-
-		list.add(MineFantasyItems.STANDARD_SCALE_HELMET.construct(material));
-		list.add(MineFantasyItems.STANDARD_SCALE_CHESTPLATE.construct(material));
-		list.add(MineFantasyItems.STANDARD_SCALE_LEGGINGS.construct(material));
-		list.add((MineFantasyItems.STANDARD_SCALE_BOOTS).construct(material));
-
-		list.add((MineFantasyItems.STANDARD_SPLINT_HELMET).construct(material));
-		list.add((MineFantasyItems.STANDARD_SPLINT_CHESTPLATE).construct(material));
-		list.add((MineFantasyItems.STANDARD_SPLINT_LEGGINGS).construct(material));
-		list.add((MineFantasyItems.STANDARD_SPLINT_BOOTS).construct(material));
-
-		list.add((MineFantasyItems.STANDARD_PLATE_HELMET).construct(material));
-		list.add((MineFantasyItems.STANDARD_PLATE_CHESTPLATE).construct(material));
-		list.add((MineFantasyItems.STANDARD_PLATE_LEGGINGS).construct(material));
-		list.add((MineFantasyItems.STANDARD_PLATE_BOOTS).construct(material));
-	}
-
 	public ItemCustomArmour modifyRating(float rating) {
 		this.ratingModifier = rating;
 		return this;
@@ -65,7 +43,6 @@ public class ItemCustomArmour extends ItemArmourMFR {
 	}
 
 	@Override
-	@SideOnly(Side.CLIENT)
 	public String getItemStackDisplayName(ItemStack item) {
 		String unlocalName = this.getUnlocalizedNameInefficiently(item) + ".name";
 		return CustomToolHelper.getLocalisedName(item, unlocalName);
@@ -97,7 +74,7 @@ public class ItemCustomArmour extends ItemArmourMFR {
 	@Override
 	public int getBaseColour(ItemStack item) {
 		CustomMaterial material = getCustomMaterial(item);
-		if (material == CustomMaterial.NONE) {
+		if (material == CustomMaterialRegistry.NONE) {
 			return (255 << 16) + (255 << 8) + 255;
 		}
 		return material.getColourInt();
@@ -105,7 +82,7 @@ public class ItemCustomArmour extends ItemArmourMFR {
 
 	@Override
 	public CustomMaterial getCustomMaterial(ItemStack item) {
-		return CustomMaterial.getMaterialFor(item, CustomToolHelper.slot_main);
+		return CustomMaterialRegistry.getMaterialFor(item, CustomToolHelper.slot_main);
 	}
 
 	@Override
@@ -113,39 +90,110 @@ public class ItemCustomArmour extends ItemArmourMFR {
 		if (!isInCreativeTab(tab)) {
 			return;
 		}
-		ArrayList<CustomMaterial> metal = CustomMaterial.getList("metal");
-		if (this.getCreativeTab() != MineFantasyTabs.tabArmour) {
+		ArrayList<CustomMaterial> metal = CustomMaterialRegistry.getList(CustomMaterialType.METAL_MATERIAL);
+		if (items.stream().noneMatch(stack -> stack.getItem() instanceof ItemCustomArmour)) {
 			for (CustomMaterial customMat : metal) {
-				if (!customMat.getItemStack().isEmpty()) {
-					items.add(construct(customMat.name));
+				if (MineFantasyReforged.isDebug() || !customMat.getItemStack().isEmpty()) {
+					if (tab == MineFantasyTabs.tabArmour) {
+						addSuits(items, customMat.getName());
+					}
+					if (tab == MineFantasyTabs.tabDragonforged) {
+						addDragonforgedSuits(items, customMat.getName());
+					}
+					if (tab == MineFantasyTabs.tabOrnate) {
+						addOrnateSuits(items, customMat.getName());
+					}
+					if (tab == CreativeTabs.SEARCH) {
+						addSuits(items, customMat.getName());
+						addDragonforgedSuits(items, customMat.getName());
+						addOrnateSuits(items, customMat.getName());
+					}
 				}
-			}
-			return;
-		}
-		if (this != MineFantasyItems.STANDARD_CHAIN_BOOTS)
-			return;
-
-		for (CustomMaterial customMat : metal) {
-			if (!customMat.getItemStack().isEmpty()) {
-				addSuits(items, customMat.name);
 			}
 		}
 	}
+
+	public static void addSuits(List<ItemStack> list, String material) {
+		list.add(MineFantasyItems.STANDARD_CHAIN_HELMET.construct(material));
+		list.add(MineFantasyItems.STANDARD_CHAIN_CHESTPLATE.construct(material));
+		list.add(MineFantasyItems.STANDARD_CHAIN_LEGGINGS.construct(material));
+		list.add(MineFantasyItems.STANDARD_CHAIN_BOOTS.construct(material));
+
+		list.add(MineFantasyItems.STANDARD_SCALE_HELMET.construct(material));
+		list.add(MineFantasyItems.STANDARD_SCALE_CHESTPLATE.construct(material));
+		list.add(MineFantasyItems.STANDARD_SCALE_LEGGINGS.construct(material));
+		list.add((MineFantasyItems.STANDARD_SCALE_BOOTS).construct(material));
+
+		list.add((MineFantasyItems.STANDARD_SPLINT_HELMET).construct(material));
+		list.add((MineFantasyItems.STANDARD_SPLINT_CHESTPLATE).construct(material));
+		list.add((MineFantasyItems.STANDARD_SPLINT_LEGGINGS).construct(material));
+		list.add((MineFantasyItems.STANDARD_SPLINT_BOOTS).construct(material));
+
+		list.add((MineFantasyItems.STANDARD_PLATE_HELMET).construct(material));
+		list.add((MineFantasyItems.STANDARD_PLATE_CHESTPLATE).construct(material));
+		list.add((MineFantasyItems.STANDARD_PLATE_LEGGINGS).construct(material));
+		list.add((MineFantasyItems.STANDARD_PLATE_BOOTS).construct(material));
+	}
+
+	public static void addDragonforgedSuits(List<ItemStack> list, String material) {
+		list.add(MineFantasyItems.DRAGONFORGED_CHAIN_HELMET.construct(material));
+		list.add(MineFantasyItems.DRAGONFORGED_CHAIN_CHESTPLATE.construct(material));
+		list.add(MineFantasyItems.DRAGONFORGED_CHAIN_LEGGINGS.construct(material));
+		list.add(MineFantasyItems.DRAGONFORGED_CHAIN_BOOTS.construct(material));
+
+		list.add(MineFantasyItems.DRAGONFORGED_SCALE_HELMET.construct(material));
+		list.add(MineFantasyItems.DRAGONFORGED_SCALE_CHESTPLATE.construct(material));
+		list.add(MineFantasyItems.DRAGONFORGED_SCALE_LEGGINGS.construct(material));
+		list.add((MineFantasyItems.DRAGONFORGED_SCALE_BOOTS).construct(material));
+
+		list.add((MineFantasyItems.DRAGONFORGED_SPLINT_HELMET).construct(material));
+		list.add((MineFantasyItems.DRAGONFORGED_SPLINT_CHESTPLATE).construct(material));
+		list.add((MineFantasyItems.DRAGONFORGED_SPLINT_LEGGINGS).construct(material));
+		list.add((MineFantasyItems.DRAGONFORGED_SPLINT_BOOTS).construct(material));
+
+		list.add((MineFantasyItems.DRAGONFORGED_PLATE_HELMET).construct(material));
+		list.add((MineFantasyItems.DRAGONFORGED_PLATE_CHESTPLATE).construct(material));
+		list.add((MineFantasyItems.DRAGONFORGED_PLATE_LEGGINGS).construct(material));
+		list.add((MineFantasyItems.DRAGONFORGED_PLATE_BOOTS).construct(material));
+	}
+
+	public static void addOrnateSuits(List<ItemStack> list, String material) {
+		list.add(MineFantasyItems.ORNATE_CHAIN_HELMET.construct(material));
+		list.add(MineFantasyItems.ORNATE_CHAIN_CHESTPLATE.construct(material));
+		list.add(MineFantasyItems.ORNATE_CHAIN_LEGGINGS.construct(material));
+		list.add(MineFantasyItems.ORNATE_CHAIN_BOOTS.construct(material));
+
+		list.add(MineFantasyItems.ORNATE_SCALE_HELMET.construct(material));
+		list.add(MineFantasyItems.ORNATE_SCALE_CHESTPLATE.construct(material));
+		list.add(MineFantasyItems.ORNATE_SCALE_LEGGINGS.construct(material));
+		list.add((MineFantasyItems.ORNATE_SCALE_BOOTS).construct(material));
+
+		list.add((MineFantasyItems.ORNATE_SPLINT_HELMET).construct(material));
+		list.add((MineFantasyItems.ORNATE_SPLINT_CHESTPLATE).construct(material));
+		list.add((MineFantasyItems.ORNATE_SPLINT_LEGGINGS).construct(material));
+		list.add((MineFantasyItems.ORNATE_SPLINT_BOOTS).construct(material));
+
+		list.add((MineFantasyItems.ORNATE_PLATE_HELMET).construct(material));
+		list.add((MineFantasyItems.ORNATE_PLATE_CHESTPLATE).construct(material));
+		list.add((MineFantasyItems.ORNATE_PLATE_LEGGINGS).construct(material));
+		list.add((MineFantasyItems.ORNATE_PLATE_BOOTS).construct(material));
+	}
+
 
 	@Override
 	public float getPieceWeight(ItemStack item, EntityEquipmentSlot slot) {
 		float baseWeight = armourWeight * ArmourCalculator.sizes[slot.getIndex()];
 		CustomMaterial material = this.getCustomMaterial(item);
-		if (material != CustomMaterial.NONE) {
-			baseWeight *= material.density;
+		if (material != CustomMaterialRegistry.NONE) {
+			baseWeight *= material.getDensity();
 		}
 		return baseWeight;
 	}
 
 	public int getMaxDamage(ItemStack stack) {
 		CustomMaterial material = this.getCustomMaterial(stack);
-		if (material != CustomMaterial.NONE) {
-			return (int) ((material.durability * 250) * (design.getDurability() / 2F));
+		if (material != CustomMaterialRegistry.NONE) {
+			return (int) ((material.getDurability() * 250) * (design.getDurability() / 2F));
 		}
 		return getMaxDamage();
 	}

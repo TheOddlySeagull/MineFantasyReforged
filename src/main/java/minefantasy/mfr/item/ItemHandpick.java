@@ -1,6 +1,5 @@
 package minefantasy.mfr.item;
 
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import minefantasy.mfr.MineFantasyReforged;
 import minefantasy.mfr.api.mining.RandomOre;
@@ -10,11 +9,13 @@ import minefantasy.mfr.init.MineFantasyMaterials;
 import minefantasy.mfr.init.MineFantasyTabs;
 import minefantasy.mfr.material.CustomMaterial;
 import minefantasy.mfr.proxy.IClientRegister;
+import minefantasy.mfr.registry.CustomMaterialRegistry;
+import minefantasy.mfr.registry.types.CustomMaterialType;
 import minefantasy.mfr.util.CustomToolHelper;
 import minefantasy.mfr.util.ModelLoaderHelper;
 import net.minecraft.block.Block;
-import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -31,8 +32,8 @@ import net.minecraft.item.ItemPickaxe;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
-import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.oredict.OreDictionary;
@@ -40,6 +41,8 @@ import net.minecraftforge.oredict.OreDictionary;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+
+import static minefantasy.mfr.registry.CustomMaterialRegistry.DECIMAL_FORMAT;
 
 /**
  * @author Anonymous Productions
@@ -57,9 +60,7 @@ public class ItemHandpick extends ItemPickaxe implements IToolMaterial, IClientR
 		itemRarity = rarity;
 		setCreativeTab(MineFantasyTabs.tabOldTools);
 		setRegistryName(name);
-		setUnlocalizedName(name);
-
-		this.setUnlocalizedName(name);
+		setTranslationKey(name);
 		setMaxDamage(material.getMaxUses());
 
 		MineFantasyReforged.PROXY.addClientRegister(this);
@@ -69,7 +70,7 @@ public class ItemHandpick extends ItemPickaxe implements IToolMaterial, IClientR
 	public boolean onBlockDestroyed(ItemStack item, World world, IBlockState blockState, BlockPos pos, EntityLivingBase user) {
 		if (!world.isRemote) {
 			IBlockState state = world.getBlockState(pos);
-			int harvestlvl = this.getMaterial().getHarvestLevel();
+			int harvestlvl = CustomToolHelper.getHarvestLevel(item, this.getMaterial().getHarvestLevel());
 			int fortune = EnchantmentHelper.getEnchantmentLevel(Enchantments.FORTUNE, item);
 			boolean silk = EnchantmentHelper.getEnchantmentLevel(Enchantments.SILK_TOUCH, user.getHeldItemMainhand()) > 0;
 
@@ -86,15 +87,15 @@ public class ItemHandpick extends ItemPickaxe implements IToolMaterial, IClientR
 			}
 
 			//special drop logic
-			ArrayList<ItemStack> specialdrops = RandomOre.getDroppedItems(user, blockState.getBlock(), harvestlvl, fortune, silk, pos.getY());
+			ArrayList<ItemStack> specialDrops = RandomOre.getDroppedItems(user, blockState.getBlock(), harvestlvl, fortune, silk, pos.getY());
 
-			if (!specialdrops.isEmpty()) {
+			if (!specialDrops.isEmpty()) {
 
-				for (ItemStack newdrop : specialdrops) {
+				for (ItemStack newdrop : specialDrops) {
 					if (!newdrop.isEmpty()) {
 						if (newdrop.getCount() > 1) {
-							if (CustomToolHelper.getCustomPrimaryMaterial(item).tier > 0) {
-								newdrop.setCount(itemRand.nextInt(CustomToolHelper.getCustomPrimaryMaterial(item).tier));
+							if (CustomToolHelper.getCustomPrimaryMaterial(item).getTier() > 0) {
+								newdrop.setCount(itemRand.nextInt(CustomToolHelper.getCustomPrimaryMaterial(item).getTier()));
 							} else {
 								newdrop.setCount(1);
 							}
@@ -161,10 +162,13 @@ public class ItemHandpick extends ItemPickaxe implements IToolMaterial, IClientR
 		if (slot != EntityEquipmentSlot.MAINHAND) {
 			return super.getAttributeModifiers(slot, stack);
 		}
-		Multimap<String, AttributeModifier> map = HashMultimap.create();
-		map.put(SharedMonsterAttributes.ATTACK_DAMAGE.getName(), new AttributeModifier(ATTACK_DAMAGE_MODIFIER, "Weapon modifier", getMeleeDamage(stack), 0));
-		map.put(SharedMonsterAttributes.ATTACK_SPEED.getName(), new AttributeModifier(ATTACK_SPEED_MODIFIER, "Weapon modifier", -3F, 0));
-		return map;
+
+		Multimap<String, AttributeModifier> multimap = super.getAttributeModifiers(slot, stack);
+		multimap.put(SharedMonsterAttributes.ATTACK_DAMAGE.getName(),
+				new AttributeModifier(ATTACK_DAMAGE_MODIFIER, "Tool modifier", getMeleeDamage(stack), 0));
+		multimap.put(SharedMonsterAttributes.ATTACK_SPEED.getName(),
+				new AttributeModifier(ATTACK_SPEED_MODIFIER, "Tool modifier", -3F, 0));
+		return multimap;
 	}
 
 	/**
@@ -192,23 +196,29 @@ public class ItemHandpick extends ItemPickaxe implements IToolMaterial, IClientR
 		return CustomToolHelper.getRarity(item, itemRarity);
 	}
 
-	public float getDigSpeed(ItemStack stack, Block block, World world, BlockPos pos, EntityPlayer player) {
-		if (!ForgeHooks.isToolEffective(world, pos, stack)) {
-			return this.getDestroySpeed(stack, block);
-		}
-		float digSpeed = player.getDigSpeed(block.getDefaultState(), pos);
-		return CustomToolHelper.getEfficiency(stack, digSpeed, efficiencyMod / 10);
-	}
-
-	public float getDestroySpeed(ItemStack stack, Block block) {
-		return block.getMaterial(block.getDefaultState()) != Material.IRON && block.getMaterial(block.getDefaultState()) != Material.ANVIL
-				&& block.getMaterial(block.getDefaultState()) != Material.ROCK ? super.getDestroySpeed(stack, block.getDefaultState())
-				: CustomToolHelper.getEfficiency(stack, this.efficiency, efficiencyMod / 2);
+	@Override
+	public float getDestroySpeed(ItemStack stack, IBlockState state) {
+		CustomMaterial material = CustomToolHelper.getCustomPrimaryMaterial(stack);
+		float efficiency = material.getHardness() > 0 ? material.getHardness() : this.efficiency;
+		return !state.getBlock().isToolEffective("pickaxe", state)
+				? super.getDestroySpeed(stack, state)
+				: CustomToolHelper.getEfficiency(stack, efficiency, efficiencyMod / 3F);
 	}
 
 	@Override
 	public int getHarvestLevel(ItemStack stack, String toolClass, @Nullable EntityPlayer player, @Nullable IBlockState blockState) {
 		return CustomToolHelper.getHarvestLevel(stack, super.getHarvestLevel(stack, toolClass, player, blockState));
+	}
+
+	/**
+	 * ItemStack sensitive version of getItemEnchantability
+	 *
+	 * @param stack The ItemStack
+	 * @return the item echantability value
+	 */
+	@Override
+	public int getItemEnchantability(ItemStack stack) {
+		return CustomToolHelper.getCustomPrimaryMaterial(stack).getEnchantability();
 	}
 
 	@Override
@@ -217,10 +227,10 @@ public class ItemHandpick extends ItemPickaxe implements IToolMaterial, IClientR
 			return;
 		}
 		if (isCustom) {
-			ArrayList<CustomMaterial> metal = CustomMaterial.getList("metal");
+			ArrayList<CustomMaterial> metal = CustomMaterialRegistry.getList(CustomMaterialType.METAL_MATERIAL);
 			for (CustomMaterial customMat : metal) {
 				if (MineFantasyReforged.isDebug() || !customMat.getItemStack().isEmpty()) {
-					items.add(this.construct(customMat.name, MineFantasyMaterials.Names.OAK_WOOD));
+					items.add(this.construct(customMat.getName(), MineFantasyMaterials.Names.OAK_WOOD));
 				}
 			}
 		} else {
@@ -233,11 +243,16 @@ public class ItemHandpick extends ItemPickaxe implements IToolMaterial, IClientR
 		if (isCustom) {
 			CustomToolHelper.addInformation(item, list);
 		}
+
+		CustomMaterial material = CustomToolHelper.getCustomPrimaryMaterial(item);
+		float efficiency = material.getHardness() > 0 ? material.getHardness() : this.efficiency;
+		list.add(TextFormatting.GREEN + I18n.format("attribute.tool.digEfficiency.name",
+				DECIMAL_FORMAT.format(CustomToolHelper.getEfficiency(item, efficiency, efficiencyMod / 2F))));
+
 		super.addInformation(item, world, list, flag);
 	}
 
 	@Override
-	@SideOnly(Side.CLIENT)
 	public String getItemStackDisplayName(ItemStack item) {
 		String unlocalName = this.getUnlocalizedNameInefficiently(item) + ".name";
 		return CustomToolHelper.getLocalisedName(item, unlocalName);

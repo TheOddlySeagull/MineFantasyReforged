@@ -18,21 +18,25 @@ import minefantasy.mfr.api.weapon.ISpecialCombatMob;
 import minefantasy.mfr.api.weapon.ISpecialEffect;
 import minefantasy.mfr.api.weapon.IWeaponClass;
 import minefantasy.mfr.api.weapon.IWeightedWeapon;
+import minefantasy.mfr.config.ConfigStamina;
 import minefantasy.mfr.config.ConfigWeapon;
 import minefantasy.mfr.data.PlayerData;
+import minefantasy.mfr.entity.EntityCogwork;
 import minefantasy.mfr.init.MineFantasyItems;
 import minefantasy.mfr.init.MineFantasyMaterials;
 import minefantasy.mfr.init.MineFantasySounds;
 import minefantasy.mfr.init.MineFantasyTabs;
 import minefantasy.mfr.material.CustomMaterial;
+import minefantasy.mfr.mechanics.PlayerTickHandler;
 import minefantasy.mfr.mechanics.StaminaBar;
 import minefantasy.mfr.mechanics.knowledge.ResearchLogic;
 import minefantasy.mfr.proxy.IClientRegister;
+import minefantasy.mfr.registry.CustomMaterialRegistry;
+import minefantasy.mfr.registry.types.CustomMaterialType;
 import minefantasy.mfr.tile.TileEntityRack;
 import minefantasy.mfr.util.CustomToolHelper;
 import minefantasy.mfr.util.MFRLogUtil;
 import minefantasy.mfr.util.ModelLoaderHelper;
-import minefantasy.mfr.util.PlayerUtils;
 import minefantasy.mfr.util.TacticalManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
@@ -61,6 +65,7 @@ import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
@@ -153,7 +158,7 @@ public abstract class ItemWeaponMFR extends ItemSword implements ISpecialDesign,
 		this.material = material;
 		setCreativeTab(MineFantasyTabs.tabOldTools);
 		setRegistryName(name);
-		setUnlocalizedName(name);
+		setTranslationKey(name);
 
 		this.baseDamage = 4 + getDamageModifier();
 
@@ -199,7 +204,7 @@ public abstract class ItemWeaponMFR extends ItemSword implements ISpecialDesign,
 	}
 
 	public static boolean tryPerformAbility(EntityLivingBase user, float points, boolean flash, boolean armour, boolean weapon, boolean takePoints) {
-		if (user instanceof EntityPlayer && StaminaBar.isSystemActive && StaminaBar.doesAffectEntity(user)) {
+		if (user instanceof EntityPlayer && ConfigStamina.isSystemActive && StaminaBar.doesAffectEntity(user)) {
 			points *= StaminaBar.getBaseDecayModifier((EntityPlayer) user, armour, weapon);
 			if (StaminaBar.isStaminaAvailable(user, points, flash)) {
 				if (takePoints && !user.world.isRemote) {
@@ -218,13 +223,13 @@ public abstract class ItemWeaponMFR extends ItemSword implements ISpecialDesign,
 	}
 
 	public static void applyFatigue(EntityLivingBase user, float points, float pause) {
-		if (StaminaBar.isSystemActive && StaminaBar.doesAffectEntity(user)) {
+		if (ConfigStamina.isSystemActive && StaminaBar.doesAffectEntity(user)) {
 			float stam = StaminaBar.getStaminaValue(user);
 			if (stam > 0) {
 				StaminaBar.modifyStaminaValue(user, -points);
 			}
 			if (user instanceof EntityPlayer) {
-				StaminaBar.setIdleTime(PlayerData.get((EntityPlayer) user), pause * StaminaBar.pauseModifier);
+				StaminaBar.setIdleTime(PlayerData.get((EntityPlayer) user), pause * ConfigStamina.pauseModifier);
 			}
 
 			if (!user.world.isRemote) {
@@ -238,13 +243,6 @@ public abstract class ItemWeaponMFR extends ItemSword implements ISpecialDesign,
 	 */
 	public float getDamageModifier() {
 		return 0;
-	}
-
-	/**
-	 * Determines if the item can block/parry
-	 */
-	public boolean canBlock() {
-		return true;
 	}
 
 	/**
@@ -330,7 +328,16 @@ public abstract class ItemWeaponMFR extends ItemSword implements ISpecialDesign,
 	@Override
 	public boolean onEntitySwing(EntityLivingBase entityLiving, ItemStack stack) {
 		if (entityLiving instanceof EntityPlayer) {
+			PlayerData data = PlayerData.get((EntityPlayer) entityLiving);
+			float balance = data.getVariable(PlayerTickHandler.BALANCE_PITCH_KEY);
+
 			if (!allowOffhand(entityLiving, EnumHand.OFF_HAND)) {
+				if (entityLiving.isRiding() && entityLiving.getRidingEntity() instanceof EntityCogwork) {
+					return false;
+				}
+				if (!entityLiving.world.isRemote && balance == 0) {
+					entityLiving.sendMessage(new TextComponentTranslation("info.offBalance.message"));
+				}
 				TacticalManager.throwPlayerOffBalance((EntityPlayer) entityLiving, 5F);
 				StaminaBar.modifyStaminaValue(entityLiving, -95F);
 			}
@@ -374,7 +381,33 @@ public abstract class ItemWeaponMFR extends ItemSword implements ISpecialDesign,
 
 	@Override
 	public EnumAction getItemUseAction(ItemStack item) {
-		return EnumAction.valueOf("mfr_block");
+		//if it is an MFR item in the offhand, it should remove the block option
+		if (item.getTagCompound() != null && item.getTagCompound().hasKey("mfr_offhand")) {
+			return EnumAction.NONE;
+		}
+		else {
+			return EnumAction.valueOf("mfr_block");
+		}
+	}
+
+	@Override
+	public void onUpdate(ItemStack stack, World world, Entity entity, int itemSlot, boolean isSelected) {
+		if (entity instanceof EntityPlayer) {
+			EntityPlayer player = (EntityPlayer) entity;
+
+			//Handle adding and removing the mfr_offhand tag when the current MFR item matches the offhand
+			ItemStack offhand = player.getHeldItemOffhand();
+			if (stack.getItem() instanceof ItemWeaponMFR && offhand.getItem() instanceof ItemWeaponMFR) {
+				if (stack.getTagCompound() != null && !stack.getTagCompound().hasKey("mfr_offhand")) {
+					stack.getOrCreateSubCompound("mfr_offhand");
+				}
+			}
+			else {
+				if (stack.getTagCompound() != null && stack.getTagCompound().hasKey("mfr_offhand")) {
+					stack.getTagCompound().removeTag("mfr_offhand");
+				}
+			}
+		}
 	}
 
 	protected void addXp(EntityLivingBase user, int chance) {
@@ -500,7 +533,7 @@ public abstract class ItemWeaponMFR extends ItemSword implements ISpecialDesign,
 		for (Entity hit : hurt) {
 			if (user.canEntityBeSeen(hit)) {
 				TacticalManager.knockbackEntity(hit, user, 1.5F, 0.2F);
-				if (StaminaBar.isSystemActive) {
+				if (ConfigStamina.isSystemActive) {
 					if (user instanceof EntityPlayer) {
 						StaminaBar.setIdleTime(PlayerData.get((EntityPlayer) user), 60);
 					}
@@ -544,7 +577,7 @@ public abstract class ItemWeaponMFR extends ItemSword implements ISpecialDesign,
 	}
 
 	protected float[] getWeaponRatio(ItemStack implement) {
-		return new float[] {1F, 0F, 0F};
+		return slashingDamage;
 	}
 
 	protected float[] getWeaponRatio(ItemStack implement, EntityLivingBase user) {
@@ -560,31 +593,42 @@ public abstract class ItemWeaponMFR extends ItemSword implements ISpecialDesign,
 			return;
 		}
 		if (isCustom) {
-			ArrayList<CustomMaterial> metal = CustomMaterial.getList("metal");
+			ArrayList<CustomMaterial> metal = CustomMaterialRegistry.getList(CustomMaterialType.METAL_MATERIAL);
 			for (CustomMaterial customMat : metal) {
 				if (MineFantasyReforged.isDebug() || !customMat.getItemStack().isEmpty()) {
-					items.add(this.construct(customMat.name, MineFantasyMaterials.Names.OAK_WOOD));
+					items.add(this.construct(customMat.getName(), MineFantasyMaterials.Names.OAK_WOOD));
 				}
 			}
 			return;
 		}
 
-		if (this instanceof ItemKnife) {
-			super.getSubItems(tab, items);
-			return;
+		if (this == MineFantasyItems.TRAINING_SWORD) {
+			items.add(new ItemStack(MineFantasyItems.TRAINING_SWORD));
 		}
-		if (this != MineFantasyItems.TRAINING_SWORD) {
-			return;
+		if (this == MineFantasyItems.TRAINING_WARAXE) {
+			items.add(new ItemStack(MineFantasyItems.TRAINING_WARAXE));
 		}
-		items.add(new ItemStack(MineFantasyItems.TRAINING_SWORD));
-		items.add(new ItemStack(MineFantasyItems.TRAINING_WARAXE));
-		items.add(new ItemStack(MineFantasyItems.TRAINING_MACE));
-		items.add(new ItemStack(MineFantasyItems.TRAINING_SPEAR));
-
-		items.add(new ItemStack(MineFantasyItems.STONE_SWORD));
-		items.add(new ItemStack(MineFantasyItems.STONE_WARAXE));
-		items.add(new ItemStack(MineFantasyItems.STONE_MACE));
-		items.add(new ItemStack(MineFantasyItems.STONE_SPEAR));
+		if (this == MineFantasyItems.TRAINING_MACE) {
+			items.add(new ItemStack(MineFantasyItems.TRAINING_MACE));
+		}
+		if (this == MineFantasyItems.TRAINING_SPEAR) {
+			items.add(new ItemStack(MineFantasyItems.TRAINING_SPEAR));
+		}
+		if (this == MineFantasyItems.STONE_KNIFE) {
+			items.add(new ItemStack(MineFantasyItems.STONE_KNIFE));
+		}
+		if (this == MineFantasyItems.STONE_SWORD) {
+			items.add(new ItemStack(MineFantasyItems.STONE_SWORD));
+		}
+		if (this == MineFantasyItems.STONE_WARAXE) {
+			items.add(new ItemStack(MineFantasyItems.STONE_WARAXE));
+		}
+		if (this == MineFantasyItems.STONE_MACE) {
+			items.add(new ItemStack(MineFantasyItems.STONE_MACE));
+		}
+		if (this == MineFantasyItems.STONE_SPEAR) {
+			items.add(new ItemStack(MineFantasyItems.STONE_SPEAR));
+		}
 	}
 
 	@Override
@@ -623,7 +667,7 @@ public abstract class ItemWeaponMFR extends ItemSword implements ISpecialDesign,
 	}
 
 	public float[] getCounterRatio() {
-		return new float[] {0, 0, 1};
+		return piercingDamage;
 	}
 
 	public float getCounterDamage() {
@@ -637,11 +681,11 @@ public abstract class ItemWeaponMFR extends ItemSword implements ISpecialDesign,
 	/*
 	 * 0 = Cannot Counter 1 = Can Counter -1 = Not Possible
 	 */
-	private int canCounter(EntityLivingBase user, ItemStack item) {
+	public static int canCounter(EntityLivingBase user, ItemStack item) {
 		if (user instanceof EntityPlayer) {
 			EntityPlayer player = (EntityPlayer) user;
-			if (getParry(item) > 0) {
-				if (ResearchLogic.hasInfoUnlocked(player, "counteratt")) {
+			if (getParry(item) > 0 && item.getItem() instanceof ItemWeaponMFR) {
+				if (ResearchLogic.hasInfoUnlocked(player, "counter_attack") && ((ItemWeaponMFR)item.getItem()).canCounter()) {
 					return 1;// Can
 				}
 				return 0;// Cannot
@@ -711,6 +755,17 @@ public abstract class ItemWeaponMFR extends ItemSword implements ISpecialDesign,
 		return CustomToolHelper.getRarity(item, itemRarity);
 	}
 
+	/**
+	 * ItemStack sensitive version of getItemEnchantability
+	 *
+	 * @param stack The ItemStack
+	 * @return the item enchantability value
+	 */
+	@Override
+	public int getItemEnchantability(ItemStack stack) {
+		return CustomToolHelper.getCustomPrimaryMaterial(stack).getEnchantability();
+	}
+
 	// ====================================================== CUSTOM END
 	// ==============================================================\\
 
@@ -735,7 +790,6 @@ public abstract class ItemWeaponMFR extends ItemSword implements ISpecialDesign,
 		return super.shouldCauseReequipAnimation(oldStack, newStack, slotChanged);	}
 
 	@Override
-	@SideOnly(Side.CLIENT)
 	public String getItemStackDisplayName(ItemStack item) {
 		String unlocalName = this.getUnlocalizedNameInefficiently(item) + ".name";
 		return CustomToolHelper.getLocalisedName(item, unlocalName);

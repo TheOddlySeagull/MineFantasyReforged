@@ -5,10 +5,14 @@ import minefantasy.mfr.api.armour.ArmourDesign;
 import minefantasy.mfr.api.armour.IArmourMFR;
 import minefantasy.mfr.api.armour.IArmourRating;
 import minefantasy.mfr.api.armour.ISpecialArmourMFR;
+import minefantasy.mfr.config.ConfigArmour;
 import minefantasy.mfr.constants.Constants;
 import minefantasy.mfr.material.ArmorMaterialMFR;
+import minefantasy.mfr.material.CustomMaterial;
 import minefantasy.mfr.proxy.IClientRegister;
+import minefantasy.mfr.registry.CustomMaterialRegistry;
 import minefantasy.mfr.util.ArmourCalculator;
+import minefantasy.mfr.util.CustomToolHelper;
 import minefantasy.mfr.util.ModelLoaderHelper;
 import minefantasy.mfr.util.ToolHelper;
 import net.minecraft.client.resources.I18n;
@@ -31,7 +35,8 @@ import java.text.DecimalFormat;
 import java.util.List;
 
 public class ItemArmourBaseMFR extends ItemArmor implements ISpecialArmor, IArmourMFR, IArmourRating, ISpecialArmourMFR, IClientRegister {
-public static final DecimalFormat decimal_format = new DecimalFormat("#.#");
+
+	public static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("#.#");
 	public static ArmorMaterial baseMaterial = EnumHelper.addArmorMaterial("MF Armour Base", "MFR_armour_base_texture", 0, new int[] {2, 6, 5, 2}, 0, SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 0);
 	public float baseArmorRating;
 	public int enchantment;
@@ -56,7 +61,7 @@ public static final DecimalFormat decimal_format = new DecimalFormat("#.#");
 		float baseDurability = material.durability * design.getDurability() / 2F;
 		float durability = baseDurability / 2F + (baseDurability / 2F * ArmourCalculator.sizes[slot.getIndex()] / ArmourCalculator.sizes[1]);
 		this.setMaxDamage((int) durability);
-		this.setUnlocalizedName(name);
+		this.setTranslationKey(name);
 		setDamageType(getBaseArmorClass() * scalePiece());
 		MineFantasyReforged.PROXY.addClientRegister(this);
 	}
@@ -95,7 +100,7 @@ public static final DecimalFormat decimal_format = new DecimalFormat("#.#");
 		float armorClass = getProtectionRatio(armour);
 		armorClass = ArmourCalculator.getArmourValueMod(armour, armorClass);
 
-		if (ArmourCalculator.advancedDamageTypes && !entity.world.isRemote) {
+		if (ConfigArmour.advancedDamageTypes && !entity.world.isRemote) {
 			armorClass = ArmourCalculator.adjustArmorClassForDamage(source, armorClass, getProtectiveTrait(armour, 0), getProtectiveTrait(armour, 1), getProtectiveTrait(armour, 2));
 		}
 
@@ -172,12 +177,12 @@ public static final DecimalFormat decimal_format = new DecimalFormat("#.#");
 			if (getProtectionRatio(item) > ratio) {
 				float percent = (ratio / getProtectionRatio(item)) - 1F;
 				list.add(TextFormatting.RED + I18n.format(
-						"attribute.modifier.take." + 1, decimal_format.format(-percent * 100),
+						"attribute.modifier.take." + 1, DECIMAL_FORMAT.format(-percent * 100),
 						I18n.format("attribute.armour." + name)));
 			} else {
 				float percent = (ratio / getProtectionRatio(item)) - 1F;
 				list.add(TextFormatting.DARK_GREEN + I18n.format(
-						"attribute.modifier.plus." + 1, decimal_format.format(percent * 100),
+						"attribute.modifier.plus." + 1, DECIMAL_FORMAT.format(percent * 100),
 						I18n.format("attribute.armour." + name)));
 			}
 		}
@@ -211,9 +216,21 @@ public static final DecimalFormat decimal_format = new DecimalFormat("#.#");
 		return scalePiece();
 	}
 
+	/**
+	 * ItemStack sensitive version of getItemEnchantability
+	 *
+	 * @param stack The ItemStack
+	 * @return the item enchantability value
+	 */
 	@Override
-	public int getItemEnchantability() {
-		return material.enchantability;
+	public int getItemEnchantability(ItemStack stack) {
+		CustomMaterial customMaterial = CustomToolHelper.getCustomPrimaryMaterial(stack);
+		if (customMaterial != CustomMaterialRegistry.NONE) {
+			return customMaterial.getEnchantability();
+		}
+		else {
+			return material.enchantability;
+		}
 	}
 
 	@Override
@@ -225,7 +242,7 @@ public static final DecimalFormat decimal_format = new DecimalFormat("#.#");
 	public float getDamageTypeValue(EntityLivingBase user, ItemStack armour, DamageSource src) {
 		float newDamageType = damageType;
 
-		if (ArmourCalculator.advancedDamageTypes && !user.world.isRemote) {
+		if (ConfigArmour.advancedDamageTypes && !user.world.isRemote) {
 			newDamageType = ArmourCalculator.adjustArmorClassForDamage(src, newDamageType, getProtectiveTrait(armour, 0),
 					getProtectiveTrait(armour, 1), getProtectiveTrait(armour, 2));
 		}
@@ -242,7 +259,7 @@ public static final DecimalFormat decimal_format = new DecimalFormat("#.#");
 	public float getDamageRatingValue(EntityLivingBase user, ItemStack armour, DamageSource src) {
 		float damageRating = getProtectionRatio(armour) * scalePiece();
 
-		if (ArmourCalculator.advancedDamageTypes && !user.world.isRemote) {
+		if (ConfigArmour.advancedDamageTypes && !user.world.isRemote) {
 			damageRating = ArmourCalculator.adjustArmorClassForDamage(src, damageRating, getProtectiveTrait(armour, 0),
 					getProtectiveTrait(armour, 1), getProtectiveTrait(armour, 2));
 		}
@@ -254,7 +271,7 @@ public static final DecimalFormat decimal_format = new DecimalFormat("#.#");
 	public float getDamageRatingDisplay(ItemStack armour, int damageType) {
 		float damageRating = getProtectionRatio(armour) * scalePiece();
 
-		if (ArmourCalculator.advancedDamageTypes) {
+		if (ConfigArmour.advancedDamageTypes) {
 			damageRating = ArmourCalculator.modifyArmorClassForType(damageType, damageRating, getProtectiveTrait(armour, 0),
 					getProtectiveTrait(armour, 1), getProtectiveTrait(armour, 2));
 		}

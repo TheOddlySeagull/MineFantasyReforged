@@ -4,7 +4,6 @@ import minefantasy.mfr.MineFantasyReforged;
 import minefantasy.mfr.api.MineFantasyReforgedAPI;
 import minefantasy.mfr.api.armour.ArmourDesign;
 import minefantasy.mfr.api.crafting.MineFantasyFuels;
-import minefantasy.mfr.api.crafting.exotic.SpecialForging;
 import minefantasy.mfr.api.mining.RandomDigs;
 import minefantasy.mfr.api.mining.RandomOre;
 import minefantasy.mfr.config.ConfigHardcore;
@@ -66,6 +65,7 @@ import minefantasy.mfr.item.ItemMultiFood;
 import minefantasy.mfr.item.ItemNeedle;
 import minefantasy.mfr.item.ItemPaintBrush;
 import minefantasy.mfr.item.ItemParachute;
+import minefantasy.mfr.item.ItemPersistentComponentMarker;
 import minefantasy.mfr.item.ItemPickMFR;
 import minefantasy.mfr.item.ItemResearchBook;
 import minefantasy.mfr.item.ItemSaw;
@@ -84,11 +84,12 @@ import minefantasy.mfr.item.ItemTrow;
 import minefantasy.mfr.item.ItemUnfinishedFood;
 import minefantasy.mfr.item.ItemWaraxe;
 import minefantasy.mfr.item.ItemWarhammer;
+import minefantasy.mfr.item.ItemWashCloth;
 import minefantasy.mfr.item.ItemWeaponMFR;
 import minefantasy.mfr.item.ItemWoodComponent;
 import minefantasy.mfr.item.ItemWorldGenPlacer;
 import minefantasy.mfr.material.BaseMaterial;
-import minefantasy.mfr.recipe.CookRecipe;
+import minefantasy.mfr.registry.types.CustomMaterialType;
 import minefantasy.mfr.util.Utils;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Blocks;
@@ -147,6 +148,7 @@ public class MineFantasyItems {
 	public static ItemComponentMFR TIMBER = Utils.nullValue();
 	public static Item TIMBER_CUT = Utils.nullValue();
 	public static Item TIMBER_PANE = Utils.nullValue();
+	public static Item PERSISTENT_COMPONENT_FLAG = Utils.nullValue();
 	public static Item CLAY_POT = Utils.nullValue();
 	public static Item CLAY_POT_UNCOOKED = Utils.nullValue();
 	public static Item INGOT_MOULD = Utils.nullValue();
@@ -354,6 +356,7 @@ public class MineFantasyItems {
 	public static ItemBasicCraftTool STANDARD_SPOON = Utils.nullValue();
 	public static ItemBasicCraftTool STANDARD_MALLET = Utils.nullValue();
 	public static ItemSpanner STANDARD_SPANNER = Utils.nullValue();
+	public static ItemWashCloth WASH_CLOTH_WOOL = Utils.nullValue();
 	public static ItemBowMFR STANDARD_BOW = Utils.nullValue();
 	public static ItemArrowMFR STANDARD_ARROW = Utils.nullValue();
 	public static ItemArrowMFR STANDARD_BOLT = Utils.nullValue();
@@ -409,7 +412,7 @@ public class MineFantasyItems {
 	// T5 (Advanced baking, multiple process, temperature regulation, many
 	// ingreedients)
 	public static Item CHOCCAKE_SLICE = Utils.nullValue();
-	// T6 (Perfected meals, extremely difficylt to create)
+	// T6 (Perfected meals, extremely difficult to create)
 	public static Item BFCAKE_SLICE = Utils.nullValue();
 	public static Item ECLAIR_UNICED = Utils.nullValue();
 	public static Item ECLAIR_EMPTY = Utils.nullValue();
@@ -511,7 +514,6 @@ public class MineFantasyItems {
 	public static ItemCustomArmour ORNATE_PLATE_CHESTPLATE = Utils.nullValue();
 	public static ItemCustomArmour ORNATE_PLATE_LEGGINGS = Utils.nullValue();
 	public static ItemCustomArmour ORNATE_PLATE_BOOTS = Utils.nullValue();
-//	public static Item[] INGOTS;
 
 	// Tools
 	public static Item TRAINING_SWORD = Utils.nullValue();
@@ -575,7 +577,7 @@ public class MineFantasyItems {
 		WOLF_RAW = new ItemFoodMFR("wolf_raw", 2, 0.2F, true);
 		WOLF_COOKED = new ItemFoodMFR("wolf_cooked", 6, 0.6F, true);
 		HORSE_RAW = new ItemFoodMFR("horse_raw", 4, 0.4F, true).setPotionEffect(new PotionEffect(MobEffects.HUNGER, 500, 0), 0.5F);
-		HORSE_COOKED = new ItemFoodMFR("horse_cooked", 10, 1.0F, true);
+		HORSE_COOKED = new ItemFoodMFR("horse_cooked", 7, 0.6F, true);
 		GENERIC_MEAT_UNCOOKED = new ItemFoodMFR("generic_meat_uncooked", 2, 0.2F, true);
 		GENERIC_MEAT_COOKED = new ItemFoodMFR("generic_meat_cooked", 5, 0.5F, true);
 		GENERIC_MEAT_STRIP_UNCOOKED = new ItemFoodMFR("generic_meat_strip_uncooked", 2, 0.2F, true);
@@ -595,42 +597,42 @@ public class MineFantasyItems {
 
 		// T1 (basic mixing)
 		// Util: Roast, Prep Block (Stone-Bronze Age)
-		STEW = new ItemFoodMFR("stew", 5, 1.0F, false, 0).setFoodStats(1, 0.0F, 0.0F, 1.0F).setReturnItem(Items.BOWL).setMaxStackSize(1);
-		OATS = new ItemFoodMFR("oats", 5, 1.0F, false, 0).setFoodStats(1, 0.0F, 0.8F, 0.2F).setReturnItem(Items.BOWL).setMaxStackSize(1);
+		STEW = new ItemFoodMFR("stew", 5, 0.7F, false, 0).setFoodStats(1, 0.0F, 0.0F, 1.0F).setReturnItem(Items.BOWL).setMaxStackSize(1);
+		OATS = new ItemFoodMFR("oats", 5, 0.7F, false, 0).setFoodStats(1, 0.0F, 0.8F, 0.2F).setReturnItem(Items.BOWL).setMaxStackSize(1);
 
 		// T2 (Basic baking, stone oven, processed mixing)
 		// Util: Stone Oven, Prep Block (Bronze Age - Early Iron Age)
-		CHEESE_ROLL = new ItemFoodMFR("cheese_roll", 6, 1.0F, false, 0).setFoodStats(2, 0.0F, 0.4F, 0.6F).setMaxStackSize(1);
-		JERKY = new ItemFoodMFR("jerky", 6, 1.0F, true, 0).setFoodStats(2, 0.0F, 0.0F, 1.0F).setMaxStackSize(8);
-		SAUSAGE_RAW = new ItemFoodMFR("saussage_raw", 4, 1.0F, true, 0).setFoodStats(2, 0.0F, 0.1F, 0.6F).setMaxStackSize(16);
-		SAUSAGE_COOKED = new ItemFoodMFR("saussage_cooked", 8, 1.0F, true, 0).setFoodStats(2, 0.0F, 0.2F, 0.8F).setMaxStackSize(16);
-		SWEETROLL_UNICED = new ItemFoodMFR("sweetroll_uniced", 5, 1.0F, false, 0).setFoodStats(2, 0.5F, 0.0F, 0.0F).setEatTime(16).setAlwaysEdible().setMaxStackSize(64);
-		SWEETROLL = new ItemMultiFood("sweetroll", 2, 3, 1.0F, false, 0).setFoodStats(2, 1.0F, 0.0F, 0.0F).setEatTime(16).setAlwaysEdible();
-		SANDWITCH_MEAT = new ItemMultiFood("sandwitch_meat", 2, 6, 1.0F, false, 0).setFoodStats(2, 0.0F, 0.5F, 0.5F).setUnlocalizedName("sandwitch");
-		SANDWITCH_BIG = new ItemMultiFood("sandwitch_big", 4, 6, 1.0F, false, 1).setFoodStats(2, 0.0F, 0.5F, 0.5F);
+		CHEESE_ROLL = new ItemFoodMFR("cheese_roll", 6, 0.8F, false, 0).setFoodStats(2, 0.0F, 0.4F, 0.6F).setMaxStackSize(4);
+		JERKY = new ItemFoodMFR("jerky", 6, 0.8F, true, 0).setFoodStats(2, 0.0F, 0.0F, 1.0F).setMaxStackSize(8);
+		SAUSAGE_RAW = new ItemFoodMFR("saussage_raw", 4, 0.8F, true, 0).setFoodStats(2, 0.0F, 0.1F, 0.6F).setMaxStackSize(16);
+		SAUSAGE_COOKED = new ItemFoodMFR("saussage_cooked", 8, 0.8F, true, 0).setFoodStats(2, 0.0F, 0.2F, 0.8F).setMaxStackSize(16);
+		SWEETROLL_UNICED = new ItemFoodMFR("sweetroll_uniced", 5, 0.8F, false, 0).setFoodStats(2, 0.5F, 0.0F, 0.2F).setEatTime(16).setAlwaysEdible().setMaxStackSize(64);
+		SWEETROLL = new ItemMultiFood("sweetroll", 2, 3, 0.8F, false, 0).setFoodStats(2, 1.0F, 0.0F, 0.2F).setEatTime(16).setAlwaysEdible();
+		SANDWITCH_MEAT = new ItemMultiFood("sandwitch_meat", 2, 6, 0.8F, false, 0).setFoodStats(2, 0.0F, 0.5F, 0.5F).setTranslationKey("sandwitch");
+		SANDWITCH_BIG = new ItemMultiFood("sandwitch_big", 4, 6, 0.8F, false, 1).setFoodStats(2, 0.0F, 0.5F, 0.5F);
 
 		// T3 (Quality baking, metal oven)
 		// Util: Metal Oven, Prep Block, Steel Tools (Mid Iron Age)
-		MEATPIE_SLICE = new ItemFoodMFR("meatpie_slice", 8, 1.0F, false, 0).setFoodStats(3, 0.0F, 0.2F, 0.8F).setMaxStackSize(1);
-		PIESLICE_APPLE = new ItemFoodMFR("pieslice_apple", 5, 1.0F, false, 0).setFoodStats(3, 0.8F, 0.2F, 0.0F).setEatTime(16).setAlwaysEdible().setAlwaysEdible();
-		PIESLICE_BERRY = new ItemFoodMFR("pieslice_berry", 5, 1.0F, false, 0).setFoodStats(3, 1.0F, 0.0F, 0.0F).setEatTime(16).setAlwaysEdible().setAlwaysEdible();
+		MEATPIE_SLICE = new ItemFoodMFR("meatpie_slice", 8, 1.0F, false, 0).setFoodStats(3, 0.0F, 0.2F, 0.8F).setMaxStackSize(16);
+		PIESLICE_APPLE = new ItemFoodMFR("pieslice_apple", 5, 1.0F, false, 0).setFoodStats(3, 0.8F, 0.2F, 0.5F).setEatTime(16).setAlwaysEdible().setAlwaysEdible();
+		PIESLICE_BERRY = new ItemFoodMFR("pieslice_berry", 5, 1.0F, false, 0).setFoodStats(3, 1.0F, 0.0F, 0.5F).setEatTime(16).setAlwaysEdible().setAlwaysEdible();
 
 		// T4 (Advanced baking, multiple processes, temperature regulation)
 		// Util : Metal Oven, Prep Block, Full tool set, Proper kitchen setup (Mid Iron
 		// Age)
-		PIESLICE_SHEPARDS = new ItemFoodMFR("pieslice_shepards", 10, 1.0F, false, 1).setFoodStats(4, 0.0F, 0.5F, 0.5F);
-		CAKE_SLICE = new ItemFoodMFR("cake_slice", 3, 0.8F, false, 0).setFoodStats(3, 1.0F, 0.0F, 0.0F).setEatTime(16).setAlwaysEdible().setMaxStackSize(1);
-		CARROTCAKE_SLICE = new ItemFoodMFR("carrotcake_slice", 4, 0.8F, false, 0).setFoodStats(4, 1.0F, 0.0F, 0.0F).setEatTime(16).setAlwaysEdible().setMaxStackSize(1);
+		PIESLICE_SHEPARDS = new ItemFoodMFR("pieslice_shepards", 10, 1.0F, false, 1).setFoodStats(4, 0.0F, 0.5F, 0.7F);
+		CAKE_SLICE = new ItemFoodMFR("cake_slice", 5, 0.8F, false, 0).setFoodStats(3, 1.0F, 0.0F, 1.0F).setEatTime(16).setAlwaysEdible().setMaxStackSize(4);
+		CARROTCAKE_SLICE = new ItemFoodMFR("carrotcake_slice", 6, 0.8F, false, 0).setFoodStats(4, 1.0F, 0.0F, 0.8F).setEatTime(16).setAlwaysEdible().setMaxStackSize(4);
 
 		// T5 (Advanced baking, multiple process, temperature regulation, many
-		// ingreedients)
-		CHOCCAKE_SLICE = new ItemFoodMFR("choccake_slice", 4, 0.8F, false, 0).setFoodStats(4, 1.0F, 0.0F, 0.0F).setEatTime(16).setAlwaysEdible().setMaxStackSize(1);
+		// ingredients)
+		CHOCCAKE_SLICE = new ItemFoodMFR("choccake_slice", 6, 0.8F, false, 0).setFoodStats(4, 1.0F, 0.0F, 1.2F).setEatTime(16).setAlwaysEdible().setMaxStackSize(4);
 
-		// T6 (Perfected meals, extremely difficylt to create)
-		BFCAKE_SLICE = new ItemFoodMFR("bfcake_slice", 6, 1.0F, false, 1).setFoodStats(5, 1.0F, 0.0F, 0.0F).setEatTime(16).setAlwaysEdible().setMaxStackSize(1);
-		ECLAIR_UNICED = new ItemFoodMFR("eclair_uniced", 5, 1.0F, false, 0).setFoodStats(5, 0.3F, 0.0F, 0.0F).setEatTime(16).setAlwaysEdible().setMaxStackSize(64);
-		ECLAIR_EMPTY = new ItemFoodMFR("eclair_empty", 5, 1.0F, false, 0).setFoodStats(5, 0.5F, 0.0F, 0.0F).setEatTime(16).setAlwaysEdible().setMaxStackSize(64);
-		ECLAIR = new ItemMultiFood("eclair", 4, 4, 1.0F, false, 1).setFoodStats(5, 1.0F, 0.0F, 0.0F).setEatTime(16).setAlwaysEdible().setMaxStackSize(1);
+		// T6 (Perfected meals, extremely difficult to create)
+		BFCAKE_SLICE = new ItemFoodMFR("bfcake_slice", 7, 1.0F, false, 1).setFoodStats(5, 1.0F, 0.0F, 1.3F).setEatTime(16).setAlwaysEdible().setMaxStackSize(4);
+		ECLAIR_UNICED = new ItemFoodMFR("eclair_uniced", 5, 1.0F, false, 0).setFoodStats(5, 0.3F, 0.0F, 0.4F).setEatTime(16).setAlwaysEdible().setMaxStackSize(64);
+		ECLAIR_EMPTY = new ItemFoodMFR("eclair_empty", 5, 1.0F, false, 0).setFoodStats(5, 0.5F, 0.0F, 0.6F).setEatTime(16).setAlwaysEdible().setMaxStackSize(64);
+		ECLAIR = new ItemMultiFood("eclair", 4, 7, 1.0F, false, 1).setFoodStats(5, 1.0F, 0.0F, 1.5F).setEatTime(16).setAlwaysEdible().setMaxStackSize(1);
 
 		// MISC
 		CAKE_TIN = new ItemComponentMFR("cake_tin", 0).setCreativeTab(MineFantasyTabs.tabFood);
@@ -640,8 +642,8 @@ public class MineFantasyItems {
 		COCA_POWDER = new ItemComponentMFR("coca_powder", 0).setCreativeTab(MineFantasyTabs.tabFood).setContainerItem(CLAY_POT);
 		CHOCOLATE = new ItemComponentMFR("chocolate", 0).setCreativeTab(MineFantasyTabs.tabFood).setContainerItem(CLAY_POT);
 		CHOC_CHIPS = new ItemComponentMFR("choc_chips", 0).setCreativeTab(MineFantasyTabs.tabFood).setContainerItem(CLAY_POT);
-		BERRIES = new ItemFoodMFR("berries", 2, 2.0F, false).setEatTime(10).setStaminaRestore(10F).setAlwaysEdible();
-		BERRIES_JUICY = new ItemFoodMFR("berries_juicy", 3, 5.0F, false).setEatTime(10).setStaminaRestore(25F).setRarity(1).setAlwaysEdible();
+		BERRIES = new ItemFoodMFR("berries", 2, 0.5F, false).setEatTime(10).setStaminaRestore(10F).setShouldRepeatPenaltyCheck().setAlwaysEdible();
+		BERRIES_JUICY = new ItemFoodMFR("berries_juicy", 3, 0.5F, false).setEatTime(10).setStaminaRestore(25F).setRarity(1).setShouldRepeatPenaltyCheck().setAlwaysEdible();
 		SWEETROLL_RAW = new ItemUnfinishedFood("sweetroll_raw").setMaxStackSize(64);
 		ECLAIR_RAW = new ItemUnfinishedFood("eclair_raw").setMaxStackSize(64);
 		CAKE_RAW = new ItemUnfinishedFood("cake_raw");
@@ -679,10 +681,6 @@ public class MineFantasyItems {
 
 		//SPECIAL RECIPES
 		BURNT_CAKE = new ItemBurntFood("burnt_cake").setContainerItem(CAKE_TIN);
-	}
-
-	public static void loadSpecialFood() {
-		CookRecipe.burnt_food = BURNT_FOOD;
 	}
 
 	public static void initCustomArmor() {
@@ -741,6 +739,7 @@ public class MineFantasyItems {
 		registry.register(TIMBER);
 		registry.register(TIMBER_CUT);
 		registry.register(TIMBER_PANE);
+		registry.register(PERSISTENT_COMPONENT_FLAG);
 
 		registry.register(CLAY_POT);
 		registry.register(CLAY_POT_UNCOOKED);
@@ -910,7 +909,6 @@ public class MineFantasyItems {
 		registry.register(SAUSAGE_COOKED);
 		registry.register(SWEETROLL_UNICED);
 
-		// TODO: fix item texture to change with metadata
 		registry.register(SWEETROLL);
 		registry.register(SANDWITCH_MEAT);
 		registry.register(SANDWITCH_BIG);
@@ -937,7 +935,6 @@ public class MineFantasyItems {
 		registry.register(ECLAIR_UNICED);
 		registry.register(ECLAIR_EMPTY);
 
-		// TODO: fix item texture to change with metadata
 		registry.register(ECLAIR);
 
 		// MISC
@@ -1181,9 +1178,13 @@ public class MineFantasyItems {
 	}
 
 	public static void initComponent() {
-		TIMBER = new ItemWoodComponent("timber").setCustom(1, "wood").setStoragePlacement(Constants.StorageTextures.PLANK, Constants.StorageTextures.PLANK);
-		TIMBER_CUT = new ItemWoodComponent("timber_cut").setCustom(1, "wood").setStoragePlacement(Constants.StorageTextures.PLANK, Constants.StorageTextures.PLANK_CUT);
-		TIMBER_PANE = new ItemWoodComponent("timber_pane").setCustom(6, "wood").setStoragePlacement(Constants.StorageTextures.SHEET, Constants.StorageTextures.WOOD_PANE);
+		TIMBER = new ItemWoodComponent("timber").setCustom(1, CustomMaterialType.WOOD_MATERIAL)
+				.setStoragePlacement(Constants.StorageTextures.PLANK, Constants.StorageTextures.PLANK);
+		TIMBER_CUT = new ItemWoodComponent("timber_cut").setCustom(1, CustomMaterialType.WOOD_MATERIAL)
+				.setStoragePlacement(Constants.StorageTextures.PLANK, Constants.StorageTextures.PLANK_CUT);
+		TIMBER_PANE = new ItemWoodComponent("timber_pane").setCustom(6, CustomMaterialType.WOOD_MATERIAL)
+				.setStoragePlacement(Constants.StorageTextures.SHEET, Constants.StorageTextures.WOOD_PANE);
+		PERSISTENT_COMPONENT_FLAG = new ItemPersistentComponentMarker("persistent_component_flag");
 
 		COPPER_INGOT = new ItemBaseMFR("copper_ingot").setCreativeTab(MineFantasyTabs.tabMaterials);
 		TIN_INGOT = new ItemBaseMFR("tin_ingot").setCreativeTab(MineFantasyTabs.tabMaterials);
@@ -1206,7 +1207,7 @@ public class MineFantasyItems {
 		TUNGSTEN_INGOT = new ItemBaseMFR("tungsten_ingot").setCreativeTab(MineFantasyTabs.tabMaterials);
 		OBSIDIAN_INGOT = new ItemBaseMFR("obsidian_ingot").setCreativeTab(MineFantasyTabs.tabMaterials);
 		COMPOSITE_ALLOY_INGOT = new ItemBaseMFR("composite_alloy_ingot", Rarity.UNCOMMON).setCreativeTab(MineFantasyTabs.tabMaterials);
-		BAR = new ItemMetalComponent("bar", 1F, "metal").setStoragePlacement("bar", "bar").setCreativeTab(MineFantasyTabs.tabMaterials);
+		BAR = new ItemMetalComponent("bar", 1F, CustomMaterialType.METAL_MATERIAL).setStoragePlacement("bar", "bar").setCreativeTab(MineFantasyTabs.tabMaterials);
 
 		CLAY_POT = new ItemBowl("clay_pot").setStoragePlacement(Constants.StorageTextures.POT, Constants.StorageTextures.POT);
 		CLAY_POT_UNCOOKED = new ItemBaseMFR("clay_pot_uncooked").setCreativeTab(MineFantasyTabs.tabMaterials);
@@ -1242,7 +1243,7 @@ public class MineFantasyItems {
 		BOMB_CASING_CERAMIC = new ItemBombComponent("bomb_casing_ceramic", Rarity.COMMON, "bombcase", "ceramic",0);
 		MINE_CASING_CERAMIC = new ItemBombComponent("mine_casing_ceramic", Rarity.COMMON, "minecase", "ceramic",0);
 		BOMB_CASING_IRON = new ItemBombComponent("bomb_casing_iron", Rarity.COMMON, "bombcase", "iron", 1);
-		MINE_CASING_IRON = new ItemBombComponent("mine_casing_iron", Rarity.COMMON, "bombcase", "iron", 1);
+		MINE_CASING_IRON = new ItemBombComponent("mine_casing_iron", Rarity.COMMON, "minecase", "iron", 1);
 		BOMB_CASING_OBSIDIAN = new ItemBombComponent("bomb_casing_obsidian", Rarity.UNCOMMON, "bombcase", "obsidian",2);
 		MINE_CASING_OBSIDIAN = new ItemBombComponent("mine_casing_obsidian", Rarity.UNCOMMON, "minecase", "obsidian", 2);
 		BOMB_CASING_CRYSTAL = new ItemBombComponent("bomb_casing_crystal", Rarity.UNCOMMON, "bombcase", "crystal", 3);
@@ -1321,17 +1322,17 @@ public class MineFantasyItems {
 		CROSSBOW_STRING_UNLOADED = new ItemCrossbowPart("crossbow_string_unloaded", "string_unloaded");
 		CROSSBOW_STRING_LOADED = new ItemCrossbowPart("crossbow_string_loaded", "string_load");
 
-		CHAIN_MESH = new ItemMetalComponent("chain_mesh", 1F, "metal").setStoragePlacement("sheet", "mail");
-		SCALE_MESH = new ItemMetalComponent("scale_mesh", 1F, "metal").setStoragePlacement("sheet", "scale");
-		SPLINT_MESH = new ItemMetalComponent("splint_mesh", 1F, "metal").setStoragePlacement("sheet", "splint");
-		PLATE = new ItemMetalComponent("plate", 2F, "metal").setStoragePlacement("sheet", "plate");
-		PLATE_HUGE = new ItemMetalComponent("plate_huge", 8F, "metal").setStoragePlacement("bigplate", "bigplate");
-		METAL_HUNK = new ItemMetalComponent("metal_hunk", 0.25F, "metal");
-		ARROWHEAD = new ItemMetalComponent("arrowhead", 1 / 4F, "metal");
-		BODKIN_HEAD = new ItemMetalComponent("bodkin_head", 1 / 4F, "metal");
-		BROAD_HEAD = new ItemMetalComponent("broad_head", 1 / 4F, "metal");
+		CHAIN_MESH = new ItemMetalComponent("chain_mesh", 1F, CustomMaterialType.METAL_MATERIAL).setStoragePlacement("sheet", "mail");
+		SCALE_MESH = new ItemMetalComponent("scale_mesh", 1F, CustomMaterialType.METAL_MATERIAL).setStoragePlacement("sheet", "scale");
+		SPLINT_MESH = new ItemMetalComponent("splint_mesh", 1F, CustomMaterialType.METAL_MATERIAL).setStoragePlacement("sheet", "splint");
+		PLATE = new ItemMetalComponent("plate", 2F, CustomMaterialType.METAL_MATERIAL).setStoragePlacement("sheet", "plate");
+		PLATE_HUGE = new ItemMetalComponent("plate_huge", 8F, CustomMaterialType.METAL_MATERIAL).setStoragePlacement("bigplate", "bigplate");
+		METAL_HUNK = new ItemMetalComponent("metal_hunk", 0.25F, CustomMaterialType.METAL_MATERIAL);
+		ARROWHEAD = new ItemMetalComponent("arrowhead", 1 / 4F, CustomMaterialType.METAL_MATERIAL);
+		BODKIN_HEAD = new ItemMetalComponent("bodkin_head", 1 / 4F, CustomMaterialType.METAL_MATERIAL);
+		BROAD_HEAD = new ItemMetalComponent("broad_head", 1 / 4F, CustomMaterialType.METAL_MATERIAL);
 
-		COGWORK_ARMOUR = new ItemMetalComponent("cogwork_armour", 30F, "metal").setCanDamage().setCreativeTab(MineFantasyTabs.tabGadget).setMaxStackSize(1);
+		COGWORK_ARMOUR = new ItemMetalComponent("cogwork_armour", 30F, CustomMaterialType.METAL_MATERIAL).setCanDamage().setCreativeTab(MineFantasyTabs.tabGadget).setMaxStackSize(1);
 
 		FLUX_POT = new ItemBaseMFR("flux_pot").setCreativeTab(MineFantasyTabs.tabMaterials).setContainerItem(CLAY_POT);
 		COAL_FLUX = new ItemBaseMFR("coal_flux").setCreativeTab(MineFantasyTabs.tabMaterials);
@@ -1357,7 +1358,6 @@ public class MineFantasyItems {
 		GameRegistry.registerFuelHandler(new FuelHandlerMF());
 		MineFantasyReforgedAPI.registerFuelHandler(new AdvancedFuelHandler());
 
-		addRandomDrops();
 		initFuels();
 	}
 
@@ -1376,19 +1376,19 @@ public class MineFantasyItems {
 		MineFantasyFuels.addForgeFuel(COAL_DUST, 1200, 180);// 180C , 60s
 	}
 
-	private static void addRandomDrops() {
-		RandomOre.addOre(new ItemStack(KAOLINITE), 1.5F, Blocks.STONE, -1, 32, 128, false);
-		RandomOre.addOre(new ItemStack(FLUX), 2F, Blocks.STONE, -1, 0, 128, false);
-		RandomOre.addOre(new ItemStack(FLUX_STRONG), 1F, Blocks.STONE, 2, 0, 128, false);
-		RandomOre.addOre(new ItemStack(FLUX), 20F, MineFantasyBlocks.LIMESTONE, -1, 0, 256, true);
-		RandomOre.addOre(new ItemStack(FLUX_STRONG), 10F, MineFantasyBlocks.LIMESTONE, 2, 0, 256, true);
-		RandomOre.addOre(new ItemStack(Items.COAL), 2F, Blocks.STONE, -1, 0, 128, false);
-		RandomOre.addOre(new ItemStack(SULFUR), 2F, Blocks.STONE, -1, 0, 16, false);
-		RandomOre.addOre(new ItemStack(NITRE), 3F, Blocks.STONE, -1, 0, 64, false);
-		RandomOre.addOre(new ItemStack(Items.REDSTONE), 5F, Blocks.STONE, 2, 0, 16, false);
-		RandomOre.addOre(new ItemStack(Items.FLINT), 1F, Blocks.STONE, -1, 0, 64, false);
-		RandomOre.addOre(new ItemStack(DIAMOND_SHARDS), 0.2F, Blocks.STONE, 2, 0, 16, false);
-		RandomOre.addOre(new ItemStack(Items.QUARTZ), 0.5F, Blocks.STONE, 3, 0, 16, false);
+	public static void addRandomDrops() {
+		RandomOre.addOre(new ItemStack(KAOLINITE), 1.5F, "stone", -1, 32, 128, false);
+		RandomOre.addOre(new ItemStack(FLUX), 2F, "stone", -1, 0, 128, false);
+		RandomOre.addOre(new ItemStack(FLUX_STRONG), 1F, "stone", 2, 0, 128, false);
+		RandomOre.addOre(new ItemStack(FLUX), 20F, "stoneLimestone", -1, 0, 256, true);
+		RandomOre.addOre(new ItemStack(FLUX_STRONG), 10F, "stoneLimestone", 2, 0, 256, true);
+		RandomOre.addOre(new ItemStack(Items.COAL), 2F, "stone", -1, 0, 128, false);
+		RandomOre.addOre(new ItemStack(SULFUR), 2F, "stone", -1, 0, 16, false);
+		RandomOre.addOre(new ItemStack(NITRE), 3F, "stone", -1, 0, 64, false);
+		RandomOre.addOre(new ItemStack(Items.REDSTONE), 5F, "stone", 2, 0, 16, false);
+		RandomOre.addOre(new ItemStack(Items.FLINT), 1F,"stone", -1, 0, 64, false);
+		RandomOre.addOre(new ItemStack(DIAMOND_SHARDS), 0.2F,"stone", 2, 0, 16, false);
+		RandomOre.addOre(new ItemStack(Items.QUARTZ), 0.5F, "stone", 3, 0, 16, false);
 
 		RandomOre.addOre(new ItemStack(SULFUR), 10F, Blocks.NETHERRACK, -1, 0, 512, false);
 		RandomOre.addOre(new ItemStack(Items.GLOWSTONE_DUST), 5F, Blocks.NETHERRACK, -1, 0, 512, false);
@@ -1405,13 +1405,13 @@ public class MineFantasyItems {
 		RandomDigs.addOre(new ItemStack(Items.MELON_SEEDS), 5F, Blocks.GRASS, -1, 0, 256, false);
 		RandomDigs.addOre(new ItemStack(Items.PUMPKIN_SEEDS), 8F, Blocks.GRASS, -1, 0, 256, false);
 
-		RandomOre.addOre(new ItemStack(ORE_COPPER), 4F, Blocks.STONE, 0, 48, 96, false);
-		RandomOre.addOre(new ItemStack(ORE_TIN), 2F, Blocks.STONE, 0, 48, 96, false);
-		RandomOre.addOre(new ItemStack(ORE_IRON), 5F, Blocks.STONE, 0, 0, 64, false);
-		RandomOre.addOre(new ItemStack(ORE_SILVER), 1.5F, Blocks.STONE, 0, 0, 32, false);
-		RandomOre.addOre(new ItemStack(ORE_GOLD), 1F, Blocks.STONE, 0, 0, 32, false);
+		RandomOre.addOre(new ItemStack(ORE_COPPER), 4F, "stone", 0, 48, 96, false);
+		RandomOre.addOre(new ItemStack(ORE_TIN), 2F, "stone", 0, 48, 96, false);
+		RandomOre.addOre(new ItemStack(ORE_IRON), 5F, "stone", 0, 0, 64, false);
+		RandomOre.addOre(new ItemStack(ORE_SILVER), 1.5F, "stone", 0, 0, 32, false);
+		RandomOre.addOre(new ItemStack(ORE_GOLD), 1F, "stone", 0, 0, 32, false);
 
-		RandomOre.addOre(new ItemStack(ORE_TUNGSTEN), 2F, Blocks.STONE, 3, 0, 16, false, "tungsten");
+		RandomOre.addOre(new ItemStack(ORE_TUNGSTEN), 2F, "stone", 3, 0, 16, false, "tungsten");
 	}
 
 	public static ItemStack bar(String material) {
@@ -1469,10 +1469,12 @@ public class MineFantasyItems {
 		STANDARD_MALLET = (ItemBasicCraftTool) new ItemBasicCraftTool(standard + "_mallet", Tool.MALLET, 0, 64).setCustom(standard).setCreativeTab(tab);
 		STANDARD_SPANNER = (ItemSpanner) new ItemSpanner(standard + "_spanner", 0, 0).setCustom(standard).setCreativeTab(tab);
 
+		WASH_CLOTH_WOOL = new ItemWashCloth("wash_cloth_wool", 1).setMaxUses(6);
+
 		tab = MineFantasyTabs.tabArchery;
 		STANDARD_BOW = (ItemBowMFR) new ItemBowMFR(standard + "_bow", EnumBowType.SHORTBOW).setCustom(standard).setCreativeTab(tab);
-		STANDARD_ARROW = (ItemArrowMFR) new ItemArrowMFR(standard, ArrowType.BOLT, 20).setCustom().setAmmoType("bolt").setCreativeTab(tab);
-		STANDARD_BOLT = (ItemArrowMFR) new ItemArrowMFR(standard, ArrowType.NORMAL, 16).setCustom().setCreativeTab(tab);
+		STANDARD_BOLT = (ItemArrowMFR) new ItemArrowMFR(standard, ArrowType.BOLT, 20).setCustom().setAmmoType("bolt").setCreativeTab(tab);
+		STANDARD_ARROW = (ItemArrowMFR) new ItemArrowMFR(standard, ArrowType.NORMAL, 16).setCustom().setCreativeTab(tab);
 		STANDARD_ARROW_BODKIN = (ItemArrowMFR) new ItemArrowMFR(standard, ArrowType.BODKIN, 16).setCustom().setCreativeTab(tab);
 		STANDARD_ARROW_BROAD = (ItemArrowMFR) new ItemArrowMFR(standard, ArrowType.BROADHEAD, 16).setCustom().setCreativeTab(tab);
 	}
@@ -1483,22 +1485,22 @@ public class MineFantasyItems {
 		float ratingMod = 0.8F;
 
 		// Weapons
-		ORNATE_SWORD = new ItemSword(ornate + "_sword", ORNATE, 0, 1F).setCustom(ornate).setTab(tab).modifyBaseDamage(1);
-		ORNATE_WARAXE = new ItemWaraxe(ornate + "_waraxe", ORNATE, 0, 1F).setCustom(ornate).setTab(tab).modifyBaseDamage(1);
-		ORNATE_MACE = new ItemMace(ornate + "_mace", ORNATE, 0, 1F).setCustom(ornate).setTab(tab).modifyBaseDamage(1);
-		ORNATE_DAGGER = new ItemDagger(ornate + "_dagger", ORNATE, 0, 1F).setCustom(ornate).setTab(tab).modifyBaseDamage(1);
-		ORNATE_SPEAR = new ItemSpear(ornate + "_spear", ORNATE, 0, 1F).setCustom(ornate).setTab(tab).modifyBaseDamage(1);
-		ORNATE_GREATSWORD = new ItemGreatsword(ornate + "_greatsword", ORNATE, 0, 1F).setCustom(ornate).setTab(tab).modifyBaseDamage(1);
-		ORNATE_BATTLEAXE = new ItemBattleaxe(ornate + "_battleaxe", ORNATE, 0, 1F).setCustom(ornate).setTab(tab).modifyBaseDamage(1);
-		ORNATE_WARHAMMER = new ItemWarhammer(ornate + "_warhammer", ORNATE, 0, 1F).setCustom(ornate).setTab(tab).modifyBaseDamage(1);
-		ORNATE_KATANA = new ItemKatana(ornate + "_katana", ORNATE, 0, 1F).setCustom(ornate).setTab(tab).modifyBaseDamage(1);
-		ORNATE_HALBEARD = new ItemHalbeard(ornate + "_halbeard", ORNATE, 0, 1F).setCustom(ornate).setTab(tab).modifyBaseDamage(1);
-		ORNATE_LANCE = new ItemLance(ornate + "_lance", ORNATE, 0, 1F).setCustom(ornate).setTab(tab).modifyBaseDamage(1);
+		ORNATE_SWORD = new ItemSword(ornate + "_sword", ORNATE, 0, 1F).setCustom(ornate).setTab(tab).modifyBaseDamage(-1);
+		ORNATE_WARAXE = new ItemWaraxe(ornate + "_waraxe", ORNATE, 0, 1F).setCustom(ornate).setTab(tab).modifyBaseDamage(-1);
+		ORNATE_MACE = new ItemMace(ornate + "_mace", ORNATE, 0, 1F).setCustom(ornate).setTab(tab).modifyBaseDamage(-1);
+		ORNATE_DAGGER = new ItemDagger(ornate + "_dagger", ORNATE, 0, 1F).setCustom(ornate).setTab(tab).modifyBaseDamage(-1);
+		ORNATE_SPEAR = new ItemSpear(ornate + "_spear", ORNATE, 0, 1F).setCustom(ornate).setTab(tab).modifyBaseDamage(-1);
+		ORNATE_GREATSWORD = new ItemGreatsword(ornate + "_greatsword", ORNATE, 0, 1F).setCustom(ornate).setTab(tab).modifyBaseDamage(-1);
+		ORNATE_BATTLEAXE = new ItemBattleaxe(ornate + "_battleaxe", ORNATE, 0, 1F).setCustom(ornate).setTab(tab).modifyBaseDamage(-1);
+		ORNATE_WARHAMMER = new ItemWarhammer(ornate + "_warhammer", ORNATE, 0, 1F).setCustom(ornate).setTab(tab).modifyBaseDamage(-1);
+		ORNATE_KATANA = new ItemKatana(ornate + "_katana", ORNATE, 0, 1F).setCustom(ornate).setTab(tab).modifyBaseDamage(-1);
+		ORNATE_HALBEARD = new ItemHalbeard(ornate + "_halbeard", ORNATE, 0, 1F).setCustom(ornate).setTab(tab).modifyBaseDamage(-1);
+		ORNATE_LANCE = new ItemLance(ornate + "_lance", ORNATE, 0, 1F).setCustom(ornate).setTab(tab).modifyBaseDamage(-1);
 
 		ORNATE_BOW = (ItemBowMFR) new ItemBowMFR(ornate + "_bow", ORNATE, EnumBowType.SHORTBOW, 1).setCustom(ornate).setCreativeTab(tab);
 
 		// Tools
-		ORNATE_PICK = (ItemPickMFR) new ItemPickMFR(ornate + "_pick", ORNATE, 0).setCustom(ornate).setCreativeTab(tab);
+		ORNATE_PICK = (ItemPickMFR) new ItemPickMFR(ornate + "_pick", ORNATE, 0).setEfficiencyMod(1.25F).setCustom(ornate).setCreativeTab(tab);
 		ORNATE_AXE = (ItemAxeMFR) new ItemAxeMFR(ornate + "_axe", ORNATE, 0).setCustom(ornate).setCreativeTab(tab);
 		ORNATE_SPADE = (ItemSpade) new ItemSpade(ornate + "_spade", ORNATE, 0).setCustom(ornate).setCreativeTab(tab);
 		ORNATE_HOE = (ItemHoeMFR) new ItemHoeMFR(ornate + "_hoe", ORNATE, 0).setCustom(ornate).setCreativeTab(tab);
@@ -1564,7 +1566,7 @@ public class MineFantasyItems {
 		DRAGONFORGED_BOW = (ItemBowMFR) new ItemBowMFR(dragonforged + "_bow", DRAGONFORGED, EnumBowType.SHORTBOW, 1).setCustom(dragonforged).setCreativeTab(tab);
 
 		// Tools
-		DRAGONFORGED_PICK = (ItemPickMFR) new ItemPickMFR(dragonforged + "_pick", DRAGONFORGED, 0).setCustom(dragonforged).setCreativeTab(tab);
+		DRAGONFORGED_PICK = (ItemPickMFR) new ItemPickMFR(dragonforged + "_pick", DRAGONFORGED, 0).setEfficiencyMod(1.25F).setCustom(dragonforged).setCreativeTab(tab);
 		DRAGONFORGED_AXE = (ItemAxeMFR) new ItemAxeMFR(dragonforged + "_axe", DRAGONFORGED, 0).setCustom(dragonforged).setCreativeTab(tab);
 		DRAGONFORGED_SPADE = (ItemSpade) new ItemSpade(dragonforged + "_spade", DRAGONFORGED, 0).setCustom(dragonforged).setCreativeTab(tab);
 		DRAGONFORGED_HOE = (ItemHoeMFR) new ItemHoeMFR(dragonforged + "_hoe", DRAGONFORGED, 0).setCustom(dragonforged).setCreativeTab(tab);
@@ -1607,121 +1609,6 @@ public class MineFantasyItems {
 		DRAGONFORGED_PLATE_CHESTPLATE = (ItemCustomArmour) new ItemCustomArmour(dragonforged, "plate_chestplate", ArmourDesign.FIELDPLATE, EntityEquipmentSlot.CHEST, "plate_layer_1", 0).modifyRating(ratingMod).setCreativeTab(tab);
 		DRAGONFORGED_PLATE_LEGGINGS = (ItemCustomArmour) new ItemCustomArmour(dragonforged, "plate_leggings", ArmourDesign.FIELDPLATE, EntityEquipmentSlot.LEGS, "plate_layer_2", 0).modifyRating(ratingMod).setCreativeTab(tab);
 		DRAGONFORGED_PLATE_BOOTS = (ItemCustomArmour) new ItemCustomArmour(dragonforged, "plate_boots", ArmourDesign.FIELDPLATE, EntityEquipmentSlot.FEET, "plate_layer_1", 0).modifyRating(ratingMod).setCreativeTab(tab);
-	}
-
-	@SuppressWarnings("Duplicates")
-	public static void loadCrafting() {
-		String ornate = "ornate";
-
-		SpecialForging.addSpecialCraft(ornate, STANDARD_DAGGER, ORNATE_DAGGER);
-		SpecialForging.addSpecialCraft(ornate, STANDARD_SWORD, ORNATE_SWORD);
-		SpecialForging.addSpecialCraft(ornate, STANDARD_MACE, ORNATE_MACE);
-		SpecialForging.addSpecialCraft(ornate, STANDARD_WARAXE, ORNATE_WARAXE);
-		SpecialForging.addSpecialCraft(ornate, STANDARD_SPEAR, ORNATE_SPEAR);
-		SpecialForging.addSpecialCraft(ornate, STANDARD_KATANA, ORNATE_KATANA);
-		SpecialForging.addSpecialCraft(ornate, STANDARD_GREATSWORD, ORNATE_GREATSWORD);
-		SpecialForging.addSpecialCraft(ornate, STANDARD_WARHAMMER, ORNATE_WARHAMMER);
-		SpecialForging.addSpecialCraft(ornate, STANDARD_BATTLEAXE, ORNATE_BATTLEAXE);
-		SpecialForging.addSpecialCraft(ornate, STANDARD_HALBEARD, ORNATE_HALBEARD);
-		SpecialForging.addSpecialCraft(ornate, STANDARD_LANCE, ORNATE_LANCE);
-		SpecialForging.addSpecialCraft(ornate, STANDARD_BOW, ORNATE_BOW);
-
-		SpecialForging.addSpecialCraft(ornate, STANDARD_PICK, ORNATE_PICK);
-		SpecialForging.addSpecialCraft(ornate, STANDARD_AXE, ORNATE_AXE);
-		SpecialForging.addSpecialCraft(ornate, STANDARD_SPADE, ORNATE_SPADE);
-		SpecialForging.addSpecialCraft(ornate, STANDARD_HOE, ORNATE_HOE);
-		SpecialForging.addSpecialCraft(ornate, STANDARD_SHEARS, ORNATE_SHEARS);
-		SpecialForging.addSpecialCraft(ornate, STANDARD_HEAVY_PICK, ORNATE_HEAVY_PICK);
-		SpecialForging.addSpecialCraft(ornate, STANDARD_HEAVY_SHOVEL, ORNATE_HEAVY_SHOVEL);
-		SpecialForging.addSpecialCraft(ornate, STANDARD_TROW, ORNATE_TROW);
-		SpecialForging.addSpecialCraft(ornate, STANDARD_HANDPICK, ORNATE_HANDPICK);
-		SpecialForging.addSpecialCraft(ornate, STANDARD_MATTOCK, ORNATE_MATTOCK);
-		SpecialForging.addSpecialCraft(ornate, STANDARD_SPADE, ORNATE_SPADE);
-		SpecialForging.addSpecialCraft(ornate, STANDARD_SCYTHE, ORNATE_SCYTHE);
-		SpecialForging.addSpecialCraft(ornate, STANDARD_SPANNER, ORNATE_SPANNER);
-		SpecialForging.addSpecialCraft(ornate, STANDARD_LUMBER, ORNATE_LUMBER);
-
-		SpecialForging.addSpecialCraft(ornate, STANDARD_HAMMER, ORNATE_HAMMER);
-		SpecialForging.addSpecialCraft(ornate, STANDARD_HEAVY_HAMMER, ORNATE_HEAVY_HAMMER);
-		SpecialForging.addSpecialCraft(ornate, STANDARD_TONGS, ORNATE_TONGS);
-		SpecialForging.addSpecialCraft(ornate, STANDARD_SAW, ORNATE_SAW);
-		SpecialForging.addSpecialCraft(ornate, STANDARD_NEEDLE, ORNATE_NEEDLE);
-		SpecialForging.addSpecialCraft(ornate, STANDARD_KNIFE, ORNATE_KNIFE);
-
-		SpecialForging.addSpecialCraft(ornate, STANDARD_CHAIN_BOOTS, ORNATE_CHAIN_BOOTS);
-		SpecialForging.addSpecialCraft(ornate, STANDARD_CHAIN_LEGGINGS, ORNATE_CHAIN_LEGGINGS);
-		SpecialForging.addSpecialCraft(ornate, STANDARD_CHAIN_CHESTPLATE, ORNATE_CHAIN_CHESTPLATE);
-		SpecialForging.addSpecialCraft(ornate, STANDARD_CHAIN_HELMET, ORNATE_CHAIN_HELMET);
-
-		SpecialForging.addSpecialCraft(ornate, STANDARD_SCALE_BOOTS, ORNATE_SCALE_BOOTS);
-		SpecialForging.addSpecialCraft(ornate, STANDARD_SCALE_LEGGINGS, ORNATE_SCALE_LEGGINGS);
-		SpecialForging.addSpecialCraft(ornate, STANDARD_SCALE_CHESTPLATE, ORNATE_SCALE_CHESTPLATE);
-		SpecialForging.addSpecialCraft(ornate, STANDARD_SCALE_HELMET, ORNATE_SCALE_HELMET);
-
-		SpecialForging.addSpecialCraft(ornate, STANDARD_SPLINT_BOOTS, ORNATE_SPLINT_BOOTS);
-		SpecialForging.addSpecialCraft(ornate, STANDARD_SPLINT_LEGGINGS, ORNATE_SPLINT_LEGGINGS);
-		SpecialForging.addSpecialCraft(ornate, STANDARD_SPLINT_CHESTPLATE, ORNATE_SPLINT_CHESTPLATE);
-		SpecialForging.addSpecialCraft(ornate, STANDARD_SPLINT_HELMET, ORNATE_SPLINT_HELMET);
-
-		SpecialForging.addSpecialCraft(ornate, STANDARD_PLATE_BOOTS, ORNATE_PLATE_BOOTS);
-		SpecialForging.addSpecialCraft(ornate, STANDARD_PLATE_LEGGINGS, ORNATE_PLATE_LEGGINGS);
-		SpecialForging.addSpecialCraft(ornate, STANDARD_PLATE_CHESTPLATE, ORNATE_PLATE_CHESTPLATE);
-		SpecialForging.addSpecialCraft(ornate, STANDARD_PLATE_HELMET, ORNATE_PLATE_HELMET);
-
-		SpecialForging.addDragonforgeCraft(STANDARD_DAGGER, DRAGONFORGED_DAGGER);
-		SpecialForging.addDragonforgeCraft(STANDARD_SWORD, DRAGONFORGED_SWORD);
-		SpecialForging.addDragonforgeCraft(STANDARD_MACE, DRAGONFORGED_MACE);
-		SpecialForging.addDragonforgeCraft(STANDARD_WARAXE, DRAGONFORGED_WARAXE);
-		SpecialForging.addDragonforgeCraft(STANDARD_SPEAR, DRAGONFORGED_SPEAR);
-		SpecialForging.addDragonforgeCraft(STANDARD_KATANA, DRAGONFORGED_KATANA);
-		SpecialForging.addDragonforgeCraft(STANDARD_GREATSWORD, DRAGONFORGED_GREATSWORD);
-		SpecialForging.addDragonforgeCraft(STANDARD_WARHAMMER, DRAGONFORGED_WARHAMMER);
-		SpecialForging.addDragonforgeCraft(STANDARD_BATTLEAXE, DRAGONFORGED_BATTLEAXE);
-		SpecialForging.addDragonforgeCraft(STANDARD_HALBEARD, DRAGONFORGED_HALBEARD);
-		SpecialForging.addDragonforgeCraft(STANDARD_LANCE, DRAGONFORGED_LANCE);
-		SpecialForging.addDragonforgeCraft(STANDARD_BOW, DRAGONFORGED_BOW);
-
-		SpecialForging.addDragonforgeCraft(STANDARD_PICK, DRAGONFORGED_PICK);
-		SpecialForging.addDragonforgeCraft(STANDARD_AXE, DRAGONFORGED_AXE);
-		SpecialForging.addDragonforgeCraft(STANDARD_SPADE, DRAGONFORGED_SPADE);
-		SpecialForging.addDragonforgeCraft(STANDARD_HOE, DRAGONFORGED_HOE);
-		SpecialForging.addDragonforgeCraft(STANDARD_SHEARS, DRAGONFORGED_SHEARS);
-		SpecialForging.addDragonforgeCraft(STANDARD_HEAVY_PICK, DRAGONFORGED_HEAVY_PICK);
-		SpecialForging.addDragonforgeCraft(STANDARD_HEAVY_SHOVEL, DRAGONFORGED_HEAVY_SHOVEL);
-		SpecialForging.addDragonforgeCraft(STANDARD_TROW, DRAGONFORGED_TROW);
-		SpecialForging.addDragonforgeCraft(STANDARD_HANDPICK, DRAGONFORGED_HANDPICK);
-		SpecialForging.addDragonforgeCraft(STANDARD_MATTOCK, DRAGONFORGED_MATTOCK);
-		SpecialForging.addDragonforgeCraft(STANDARD_SPADE, DRAGONFORGED_SPADE);
-		SpecialForging.addDragonforgeCraft(STANDARD_SCYTHE, DRAGONFORGED_SCYTHE);
-		SpecialForging.addDragonforgeCraft(STANDARD_SPANNER, DRAGONFORGED_SPANNER);
-		SpecialForging.addDragonforgeCraft(STANDARD_LUMBER, DRAGONFORGED_LUMBER);
-
-		SpecialForging.addDragonforgeCraft(STANDARD_HAMMER, DRAGONFORGED_HAMMER);
-		SpecialForging.addDragonforgeCraft(STANDARD_HEAVY_HAMMER, DRAGONFORGED_HEAVY_HAMMER);
-		SpecialForging.addDragonforgeCraft(STANDARD_TONGS, DRAGONFORGED_TONGS);
-		SpecialForging.addDragonforgeCraft(STANDARD_SAW, DRAGONFORGED_SAW);
-		SpecialForging.addDragonforgeCraft(STANDARD_NEEDLE, DRAGONFORGED_NEEDLE);
-		SpecialForging.addDragonforgeCraft(STANDARD_KNIFE, DRAGONFORGED_KNIFE);
-
-		SpecialForging.addDragonforgeCraft(STANDARD_CHAIN_BOOTS, DRAGONFORGED_CHAIN_BOOTS);
-		SpecialForging.addDragonforgeCraft(STANDARD_CHAIN_LEGGINGS, DRAGONFORGED_CHAIN_LEGGINGS);
-		SpecialForging.addDragonforgeCraft(STANDARD_CHAIN_CHESTPLATE, DRAGONFORGED_CHAIN_CHESTPLATE);
-		SpecialForging.addDragonforgeCraft(STANDARD_CHAIN_HELMET, DRAGONFORGED_CHAIN_HELMET);
-
-		SpecialForging.addDragonforgeCraft(STANDARD_SCALE_BOOTS, DRAGONFORGED_SCALE_BOOTS);
-		SpecialForging.addDragonforgeCraft(STANDARD_SCALE_LEGGINGS, DRAGONFORGED_SCALE_LEGGINGS);
-		SpecialForging.addDragonforgeCraft(STANDARD_SCALE_CHESTPLATE, DRAGONFORGED_SCALE_CHESTPLATE);
-		SpecialForging.addDragonforgeCraft(STANDARD_SCALE_HELMET, DRAGONFORGED_SCALE_HELMET);
-
-		SpecialForging.addDragonforgeCraft(STANDARD_SPLINT_BOOTS, DRAGONFORGED_SPLINT_BOOTS);
-		SpecialForging.addDragonforgeCraft(STANDARD_SPLINT_LEGGINGS, DRAGONFORGED_SPLINT_LEGGINGS);
-		SpecialForging.addDragonforgeCraft(STANDARD_SPLINT_CHESTPLATE, DRAGONFORGED_SPLINT_CHESTPLATE);
-		SpecialForging.addDragonforgeCraft(STANDARD_SPLINT_HELMET, DRAGONFORGED_SPLINT_HELMET);
-
-		SpecialForging.addDragonforgeCraft(STANDARD_PLATE_BOOTS, DRAGONFORGED_PLATE_BOOTS);
-		SpecialForging.addDragonforgeCraft(STANDARD_PLATE_LEGGINGS, DRAGONFORGED_PLATE_LEGGINGS);
-		SpecialForging.addDragonforgeCraft(STANDARD_PLATE_CHESTPLATE, DRAGONFORGED_PLATE_CHESTPLATE);
-		SpecialForging.addDragonforgeCraft(STANDARD_PLATE_HELMET, DRAGONFORGED_PLATE_HELMET);
 	}
 
 	public static void initTool() {
@@ -1871,6 +1758,8 @@ public class MineFantasyItems {
 		registry.register(SPAWNER_MINOTAUR);
 		registry.register(SPAWNER_HOUND);
 		registry.register(SPAWNER_COGWORK);
+
+		registry.register(WASH_CLOTH_WOOL);
 	}
 
 	public static void loadTool() {

@@ -1,13 +1,15 @@
 package minefantasy.mfr.item;
 
+import com.google.common.collect.Lists;
 import minefantasy.mfr.api.crafting.ISpecialSalvage;
 import minefantasy.mfr.entity.EntityArrowMFR;
 import minefantasy.mfr.init.MineFantasyItems;
-import minefantasy.mfr.init.MineFantasyMaterials;
 import minefantasy.mfr.init.MineFantasyTabs;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.projectile.EntityArrow;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 import net.minecraft.world.World;
@@ -17,7 +19,7 @@ import java.util.List;
 public class ItemExplodingBolt extends ItemArrowMFR implements ISpecialSalvage {
 
 	public ItemExplodingBolt() {
-		super("exploding_bolt", 1, MineFantasyMaterials.IRON.getToolMaterial(), ArrowType.EXPLOSIVEBOLT);
+		super("exploding_bolt", 1, ArrowType.EXPLOSIVEBOLT);
 		setCreativeTab(MineFantasyTabs.tabGadget);
 		setAmmoType("bolt");
 		setMaxStackSize(20);
@@ -33,10 +35,10 @@ public class ItemExplodingBolt extends ItemArrowMFR implements ISpecialSalvage {
 	}
 
 	@Override
-	public EntityArrowMFR getFiredArrow(EntityArrowMFR instance, ItemStack arrow) {
-		instance = super.getFiredArrow(instance, arrow);
-		instance.canBePickedUp = 0;
-		return instance.setBombStats(ItemBomb.getPowder(arrow), ItemBomb.getFilling(arrow));
+	public EntityArrow createArrow(World world, ItemStack stack, EntityLivingBase shooter) {
+		EntityArrowMFR instance = (EntityArrowMFR) super.createArrow(world, stack, shooter);
+		instance.pickupStatus = EntityArrow.PickupStatus.DISALLOWED;
+		return instance.setBombStats(ItemBomb.getPowder(stack), ItemBomb.getFilling(stack));
 	}
 
 	@Override
@@ -49,7 +51,7 @@ public class ItemExplodingBolt extends ItemArrowMFR implements ISpecialSalvage {
 		int damage = (int) (fill.damage * powder.damageModifier * 0.5F);
 		float range = fill.range * powder.rangeModifier * 0.5F;
 
-		list.add(I18n.format(MineFantasyItems.BOMB_CUSTOM.getUnlocalizedName(item) + ".name"));
+		list.add(I18n.format(MineFantasyItems.BOMB_CUSTOM.getTranslationKey(item) + ".name"));
 		list.add(I18n.format("bomb.powder." + powder.name + ".name"));
 		list.add("");
 		list.add(I18n.format("bomb.damage.name") + ": " + damage);
@@ -70,9 +72,10 @@ public class ItemExplodingBolt extends ItemArrowMFR implements ISpecialSalvage {
 	}
 
 	@Override
-	public Object[] getSalvage(ItemStack item) {
-		return new Object[] {MineFantasyItems.BOMB_CASING_BOLT,
+	public List<ItemStack> getSalvage(ItemStack item) {
+		return Lists.newArrayList(
+				new ItemStack(MineFantasyItems.BOMB_CASING_BOLT),
 				ItemBombComponent.getBombComponent("powder", ItemBomb.getPowder(item)),
-				ItemBombComponent.getBombComponent("filling", ItemBomb.getFilling(item)),};
+				ItemBombComponent.getBombComponent("filling", ItemBomb.getFilling(item)));
 	}
 }

@@ -1,16 +1,16 @@
 package minefantasy.mfr.block;
 
+import minefantasy.mfr.api.crafting.IIgnitable;
 import minefantasy.mfr.api.heating.ForgeFuel;
 import minefantasy.mfr.api.heating.ForgeItemHandler;
 import minefantasy.mfr.api.heating.Heatable;
 import minefantasy.mfr.api.heating.TongsHelper;
+import minefantasy.mfr.api.tool.ILighter;
 import minefantasy.mfr.init.MineFantasyItems;
-import minefantasy.mfr.init.MineFantasyKnowledgeList;
 import minefantasy.mfr.init.MineFantasyTabs;
 import minefantasy.mfr.item.ItemApron;
 import minefantasy.mfr.item.ItemLighter;
 import minefantasy.mfr.item.ItemTongs;
-import minefantasy.mfr.mechanics.knowledge.ResearchLogic;
 import minefantasy.mfr.tile.TileEntityForge;
 import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
@@ -24,14 +24,13 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.inventory.EntityEquipmentSlot;
+import net.minecraft.item.ItemFlintAndSteel;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.EnumParticleTypes;
+import net.minecraft.util.*;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
@@ -40,9 +39,9 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import javax.annotation.Nonnull;
 import java.util.Random;
 
-public class BlockForge extends BlockTileEntity<TileEntityForge> {
+public class BlockForge extends BlockTileEntity<TileEntityForge> implements IIgnitable {
 	private static final PropertyBool BURNING = PropertyBool.create("burning");
-	private static final PropertyBool UNDER = PropertyBool.create("under");
+	public static final PropertyBool UNDER = PropertyBool.create("under");
 	private static final PropertyInteger FUEL_COUNT = PropertyInteger.create("fuel_count", 0, 3);
 
 	public int tier;
@@ -56,7 +55,7 @@ public class BlockForge extends BlockTileEntity<TileEntityForge> {
 		this.type = type;
 
 		setRegistryName("forge_" + type);
-		setUnlocalizedName("forge_" + type);
+		setTranslationKey("forge_" + type);
 		this.setSoundType(SoundType.STONE);
 		this.setHardness(5F);
 		this.setResistance(8F);
@@ -78,7 +77,7 @@ public class BlockForge extends BlockTileEntity<TileEntityForge> {
 	@Override
 	public IBlockState getActualState(IBlockState state, IBlockAccess world, BlockPos pos) {
 		TileEntityForge tile = (TileEntityForge) getTile(world, pos);
-		return state.withProperty(BURNING, tile.getIsLit()).withProperty(FUEL_COUNT, tile.getFuelCount()).withProperty(UNDER, tile.hasBlockAbove());
+		return state.withProperty(BURNING, tile.isLit()).withProperty(FUEL_COUNT, tile.getFuelCount()).withProperty(UNDER, tile.hasBlockAbove());
 	}
 
 	@Override
@@ -167,32 +166,44 @@ public class BlockForge extends BlockTileEntity<TileEntityForge> {
 	@Override
 	public boolean isBurning(IBlockAccess world, BlockPos pos) {
 		TileEntityForge tile = (TileEntityForge) getTile(world, pos);
-		return tile != null && tile.getIsLit();
+		return tile != null && tile.isLit();
 	}
 
 	@Override
 	public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
 		ItemStack held = player.getHeldItemMainhand();
-		TileEntityForge tile = (TileEntityForge) getTile(world, pos);
-		if (tile != null) {
-			if (tile.getIsLit() && !ItemApron.isUserProtected(player)) {
+		TileEntityForge forge = (TileEntityForge) world.getTileEntity(pos);
+		if (forge != null) {
+			// Burn unprotected players
+			if (forge.isLit() && !ItemApron.isUserProtected(player)) {
 				player.setFire(5);
-				player.attackEntityFrom(DamageSource.ON_FIRE, 1.0F);
+				player.attackEntityFrom(DamageSource.ON_FIRE, player.isWet() ? 3 : 1);
+				if (!player.world.isRemote) {
+					player.sendMessage(new TextComponentTranslation("info.noHeatProtection.message"));
+				}
 			}
 			if (!held.isEmpty()) {
-				if (facing == EnumFacing.UP && held.getItem() instanceof ItemTongs && onUsedTongs(player, held, tile)) {
+				// Tong use
+				if (facing == EnumFacing.UP && held.getItem() instanceof ItemTongs && onUsedTongs(player, held, forge)) {
 					return true;
 				}
-				int uses = ItemLighter.tryUse(held, player);
-				if (!tile.getIsLit() && uses != 0) {
-					player.playSound(SoundEvents.ITEM_FLINTANDSTEEL_USE, 1.0F, 1.0F);
-					if (uses == 1) {
-						tile.fireUpForge();
-						held.damageItem(1, player);
+				// Ignition
+				if (held.getItem() instanceof ItemFlintAndSteel || held.getItem() instanceof ILighter) {
+					if (!forge.isLit() && forge.getFuel() > 0 && forge.getTier() != 1) {
+						// 1 for ignition, -1 for a failed attempt, 0 for a null input or for an item that needs to bypass normal ignition
+						int uses = ItemLighter.tryUse(held, player);
+						if (uses != 0) {
+							player.playSound(SoundEvents.ITEM_FLINTANDSTEEL_USE, 1.0F, 1.0F);
+							if (uses == 1 && !world.isRemote) {
+								held.damageItem(1, player);
+								igniteBlock(world, pos, state);
+							}
+						}
+						return true;
 					}
-					return true;
 				}
-				if (Heatable.canHeatItem(held) && tile.tryAddHeatable(held)) {
+				// Adding heatable items
+				if (Heatable.canHeatItem(held) && forge.tryAddHeatable(held)) {
 					held.shrink(1);
 					if (held.getCount() <= 0) {
 						player.setItemStackToSlot(EntityEquipmentSlot.MAINHAND, ItemStack.EMPTY);
@@ -200,8 +211,9 @@ public class BlockForge extends BlockTileEntity<TileEntityForge> {
 					return true;
 				}
 
+				// Adding fuel
 				ForgeFuel stats = ForgeItemHandler.getStats(held);
-				if (stats != null && tile.addFuel(stats, true, tier)) {
+				if (stats != null && forge.addFuel(stats, true)) {
 					if (player.capabilities.isCreativeMode) {
 						return true;
 					}
@@ -224,17 +236,9 @@ public class BlockForge extends BlockTileEntity<TileEntityForge> {
 					}
 					return true;
 				}
-				if (!world.isRemote && ResearchLogic.getResearchCheck(player, MineFantasyKnowledgeList.smelt_dragonforged) && held.getItem() == MineFantasyItems.DRAGON_HEART) {
-					if (held.getCount() == 1) {
-						player.setItemStackToSlot(EntityEquipmentSlot.MAINHAND, ItemStack.EMPTY);
-					} else {
-						held.shrink(1);
-					}
-					tile.dragonHeartPower = 1.0F;
-					return true;
-				}
 			}
-			if (!world.isRemote && !tile.hasBlockAbove()) {
+			// Open GUI
+			if (!world.isRemote && !forge.hasBlockAbove()) {
 				TileEntityForge tileEntity = (TileEntityForge) getTile(world, pos);
 				if (tileEntity != null) {
 					tileEntity.openGUI(world, player);
@@ -242,6 +246,27 @@ public class BlockForge extends BlockTileEntity<TileEntityForge> {
 			}
 		}
 		return true;
+	}
+
+	/**
+	 * Standardized function to handle block ignition
+	 * @param world World
+	 * @param pos BlockPos
+	 * @param state IBlockState
+	 */
+	@Override
+	public void igniteBlock(World world, BlockPos pos, IBlockState state) {
+		TileEntityForge forge = (TileEntityForge) getTile(world, pos);
+		if (forge != null) {
+			if (world.isRainingAt(pos.add(0, 1, 0)) && forge.getFuel() > 0) {
+				world.playSound(null, pos, SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.AMBIENT, 0.5F, 1.0F);
+				//world.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, pos.getX() + 0.5D, pos.getY() - 0.5D, pos.getZ() + 0.5D, 0F, 0.1F, 0F);
+			} else if (!state.getValue(BURNING) && forge.getFuel() > 0) {
+				IIgnitable.playIgnitionSound(world, pos);
+				forge.setIsLit(true);
+				setActiveState(true, forge.getFuelCount(), forge.hasBlockAbove(), world, pos);
+			}
+		}
 	}
 
 	private boolean onUsedTongs(EntityPlayer user, ItemStack held, TileEntityForge tile) {
@@ -289,12 +314,13 @@ public class BlockForge extends BlockTileEntity<TileEntityForge> {
 	public void neighborChanged(IBlockState state, World world, BlockPos pos, Block blockIn, BlockPos fromPos) {
 		TileEntityForge tile = (TileEntityForge) getTile(world, pos);
 		if (tier == 1 && !world.isRemote) {
-			if (tile.getIsLit() && !world.isBlockPowered(pos)) {
+			if (tile.isLit() && !world.isBlockPowered(pos)) {
 				setActiveState(false, tile.getFuelCount(), tile.hasBlockAbove(), world, pos);
 				tile.setIsLit(false);
-			} else if (!tile.getIsLit() && world.isBlockPowered(pos)) {
-				setActiveState(true, tile.getFuelCount(), tile.hasBlockAbove(), world, pos);
-				tile.setIsLit(true);
+				world.playSound(null, pos, SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.AMBIENT, 0.5F, 1.0F);
+			} else if (!tile.isLit() && world.isBlockPowered(pos)) {
+				igniteBlock(world, pos, state);
+				world.playSound(null, pos, SoundEvents.ITEM_FLINTANDSTEEL_USE, SoundCategory.AMBIENT, 1.0F, 1.0F);
 			}
 		}
 	}
@@ -305,9 +331,8 @@ public class BlockForge extends BlockTileEntity<TileEntityForge> {
 	@Override
 	public void updateTick(World world, BlockPos pos, IBlockState state, Random rand) {
 		TileEntityForge tile = (TileEntityForge) getTile(world, pos);
-		if (tier == 1 && !world.isRemote && tile.getIsLit() && !world.isBlockPowered(pos)) {
-			setActiveState(tile.getIsLit(), tile.getFuelCount(), tile.hasBlockAbove(), world, pos);
+		if (tier == 1 && !world.isRemote && tile.isLit() && !world.isBlockPowered(pos)) {
+			setActiveState(tile.isLit(), tile.getFuelCount(), tile.hasBlockAbove(), world, pos);
 		}
 	}
-
 }

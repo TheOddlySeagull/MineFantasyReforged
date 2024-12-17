@@ -1,6 +1,5 @@
 package minefantasy.mfr.item;
 
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import minefantasy.mfr.MineFantasyReforged;
 import minefantasy.mfr.api.tier.IToolMaterial;
@@ -9,10 +8,13 @@ import minefantasy.mfr.init.MineFantasyMaterials;
 import minefantasy.mfr.init.MineFantasyTabs;
 import minefantasy.mfr.material.CustomMaterial;
 import minefantasy.mfr.proxy.IClientRegister;
+import minefantasy.mfr.registry.CustomMaterialRegistry;
+import minefantasy.mfr.registry.types.CustomMaterialType;
 import minefantasy.mfr.util.CustomToolHelper;
 import minefantasy.mfr.util.ModelLoaderHelper;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.SharedMonsterAttributes;
@@ -30,6 +32,7 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -37,6 +40,8 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+
+import static minefantasy.mfr.registry.CustomMaterialRegistry.DECIMAL_FORMAT;
 
 /**
  * @author Anonymous Productions
@@ -51,7 +56,7 @@ public class ItemMattock extends ItemPickaxe implements IToolMaterial, IClientRe
 		super(material);
 		itemRarity = rarity;
 		setRegistryName(name);
-		setUnlocalizedName(name);
+		setTranslationKey(name);
 
 		setCreativeTab(MineFantasyTabs.tabOldTools);
 		this.setHarvestLevel("pickaxe", Math.max(0, material.getHarvestLevel() - 2));
@@ -132,10 +137,12 @@ public class ItemMattock extends ItemPickaxe implements IToolMaterial, IClientRe
 			return super.getAttributeModifiers(slot, stack);
 		}
 
-		Multimap<String, AttributeModifier> map = HashMultimap.create();
-		map.put(SharedMonsterAttributes.ATTACK_DAMAGE.getName(), new AttributeModifier(ATTACK_DAMAGE_MODIFIER, "Weapon modifier", getMeleeDamage(stack), 0));
-		map.put(SharedMonsterAttributes.ATTACK_SPEED.getName(), new AttributeModifier(ATTACK_SPEED_MODIFIER, "Weapon modifier", -3F, 0));
-		return map;
+		Multimap<String, AttributeModifier> multimap = super.getAttributeModifiers(slot, stack);
+		multimap.put(SharedMonsterAttributes.ATTACK_DAMAGE.getName(),
+				new AttributeModifier(ATTACK_DAMAGE_MODIFIER, "Tool modifier", getMeleeDamage(stack), 0));
+		multimap.put(SharedMonsterAttributes.ATTACK_SPEED.getName(),
+				new AttributeModifier(ATTACK_SPEED_MODIFIER, "Tool modifier", -3F, 0));
+		return multimap;
 	}
 
 	/**
@@ -165,12 +172,23 @@ public class ItemMattock extends ItemPickaxe implements IToolMaterial, IClientRe
 
 	@Override
 	public float getDestroySpeed(ItemStack stack, IBlockState state) {
-		return CustomToolHelper.getEfficiency(stack, super.getDestroySpeed(stack, state), efficiencyMod);
+		return CustomToolHelper.getEfficiency(stack, super.getDestroySpeed(stack, state), efficiencyMod / 2F);
 	}
 
 	@Override
 	public int getHarvestLevel(ItemStack stack, String toolClass, @Nullable EntityPlayer player, @Nullable IBlockState blockState) {
 		return CustomToolHelper.getHarvestLevel(stack, super.getHarvestLevel(stack, toolClass, player, blockState));
+	}
+
+	/**
+	 * ItemStack sensitive version of getItemEnchantability
+	 *
+	 * @param stack The ItemStack
+	 * @return the item echantability value
+	 */
+	@Override
+	public int getItemEnchantability(ItemStack stack) {
+		return CustomToolHelper.getCustomPrimaryMaterial(stack).getEnchantability();
 	}
 
 	@Override
@@ -179,10 +197,10 @@ public class ItemMattock extends ItemPickaxe implements IToolMaterial, IClientRe
 			return;
 		}
 		if (isCustom) {
-			ArrayList<CustomMaterial> metal = CustomMaterial.getList("metal");
+			ArrayList<CustomMaterial> metal = CustomMaterialRegistry.getList(CustomMaterialType.METAL_MATERIAL);
 			for (CustomMaterial customMat : metal) {
 				if (MineFantasyReforged.isDebug() || !customMat.getItemStack().isEmpty()) {
-					items.add(this.construct(customMat.name, MineFantasyMaterials.Names.OAK_WOOD));
+					items.add(this.construct(customMat.getName(), MineFantasyMaterials.Names.OAK_WOOD));
 				}
 			}
 		} else {
@@ -195,11 +213,16 @@ public class ItemMattock extends ItemPickaxe implements IToolMaterial, IClientRe
 		if (isCustom) {
 			CustomToolHelper.addInformation(item, list);
 		}
+
+		CustomMaterial material = CustomToolHelper.getCustomPrimaryMaterial(item);
+		float efficiency = material.getHardness() > 0 ? material.getHardness() : this.efficiency;
+		list.add(TextFormatting.GREEN + I18n.format("attribute.tool.digEfficiency.name",
+				DECIMAL_FORMAT.format(CustomToolHelper.getEfficiency(item, efficiency, efficiencyMod / 2F))));
+
 		super.addInformation(item, world, list, flag);
 	}
 
 	@Override
-	@SideOnly(Side.CLIENT)
 	public String getItemStackDisplayName(ItemStack item) {
 		String unlocalName = this.getUnlocalizedNameInefficiently(item) + ".name";
 		return CustomToolHelper.getLocalisedName(item, unlocalName);

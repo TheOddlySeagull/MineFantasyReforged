@@ -2,6 +2,7 @@ package minefantasy.mfr.world.gen.structure.pieces;
 
 import minefantasy.mfr.block.BlockAmmoBox;
 import minefantasy.mfr.block.BlockAnvilMF;
+import minefantasy.mfr.config.ConfigWorldGen;
 import minefantasy.mfr.entity.mob.EntityMinotaur;
 import minefantasy.mfr.entity.mob.MinotaurBreed;
 import minefantasy.mfr.init.MineFantasyBlocks;
@@ -9,7 +10,7 @@ import minefantasy.mfr.init.MineFantasyLoot;
 import minefantasy.mfr.init.MineFantasyMaterials;
 import minefantasy.mfr.item.ItemBomb;
 import minefantasy.mfr.item.ItemMine;
-import minefantasy.mfr.material.WoodMaterial;
+import minefantasy.mfr.registry.CustomMaterialRegistry;
 import minefantasy.mfr.tile.TileEntityAmmoBox;
 import minefantasy.mfr.world.gen.structure.StructureModuleMFR;
 import minefantasy.mfr.world.gen.structure.WorldGenDwarvenStronghold;
@@ -422,7 +423,10 @@ public class StructureGenDSRoom extends StructureModuleMFR {
         placeBlock(world, MineFantasyBlocks.REINFORCED_STONE_FRAMED_IRON, ((width - 1) * position), 3, z + 1);
 
         placeBlockWithState(world, MineFantasyBlocks.ANVIL_IRON.getDefaultState().withProperty(BlockAnvilMF.FACING, facing.rotateY()), position * 2, 1, z);
-        placeBlockWithState(world, Blocks.CAULDRON.getDefaultState().withProperty(BlockCauldron.LEVEL, 3),  position * 2, 1, z - 1);
+
+        if (ConfigWorldGen.dwarvenStrongholdShouldCauldronSpawn) {
+            placeBlockWithState(world, Blocks.CAULDRON.getDefaultState().withProperty(BlockCauldron.LEVEL, 3),  position * 2, 1, z - 1);
+        }
 
         placeMiscMachine1(-(width - 2) * position, 0, depth - 3);
         placeMiscMachine1(-(width - 2) * position, 0, 3);
@@ -471,7 +475,7 @@ public class StructureGenDSRoom extends StructureModuleMFR {
             LootContext.Builder lootContext = new LootContext.Builder((WorldServer)this.world);
             List<ItemStack> result = this.world.getLootTableManager().getLootTableFromLocation(loot).generateLootForPools(this.random, lootContext.build());
             ItemStack ammo = result.get(random.nextInt(result.size()));
-            ammoBox.setMaterial(WoodMaterial.getMaterial(MineFantasyMaterials.Names.REFINED_WOOD));
+            ammoBox.setMaterial(CustomMaterialRegistry.getMaterial(MineFantasyMaterials.Names.REFINED_WOOD));
             ammoBox.inventoryStack = ammo;
             ammoBox.stock = ammo.getMaxStackSize() * (random.nextInt(2) + 1)
                     + (ammo.getCount() > 1 ? random.nextInt(ammo.getCount()) : 0);

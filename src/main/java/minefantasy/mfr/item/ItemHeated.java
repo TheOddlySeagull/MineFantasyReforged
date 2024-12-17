@@ -1,11 +1,14 @@
 package minefantasy.mfr.item;
 
+import minefantasy.mfr.MineFantasyReforged;
 import minefantasy.mfr.api.heating.Heatable;
 import minefantasy.mfr.api.heating.IHotItem;
 import minefantasy.mfr.api.heating.TongsHelper;
 import minefantasy.mfr.client.render.item.RenderHotItem;
+import minefantasy.mfr.entity.EntityItemHeated;
 import minefantasy.mfr.init.MineFantasyItems;
 import minefantasy.mfr.material.CustomMaterial;
+import minefantasy.mfr.registry.CustomMaterialRegistry;
 import minefantasy.mfr.util.CustomToolHelper;
 import minefantasy.mfr.util.GuiHelper;
 import minefantasy.mfr.util.MFRLogUtil;
@@ -31,6 +34,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
+import javax.annotation.Nullable;
 import java.awt.*;
 import java.util.List;
 
@@ -41,6 +45,7 @@ public class ItemHeated extends ItemBaseMFR implements IHotItem {
 	public ItemHeated() {
 		super("hot_item");
 		this.setMaxStackSize(64);
+		MineFantasyReforged.PROXY.addClientRegister(this);
 	}
 
 	public static int getTemp(ItemStack item) {
@@ -224,17 +229,20 @@ public class ItemHeated extends ItemBaseMFR implements IHotItem {
 		}
 	}
 
-	public int getColorFromItemStack(ItemStack stack) {
+	public static int getColorIntFromItemStack(ItemStack stack) {
 		if (!renderDynamicHotIngotRendering) {
 			return Color.WHITE.getRGB();
 		}
 		int heat = getTemp(stack);
-		int maxHeat = Heatable.forgeMaximumMetalHeat;
+		int maxHeat = Heatable.FORGE_MAXIMUM_METAL_HEAT;
 		double heatPer = (double) heat / (double) maxHeat * 100D;
 
 		int red = getRedOnHeat();
 		int green = getGreenOnHeat(heatPer);
 		int blue = getBlueOnHeat(heatPer);
+		if (heat > 0 && blue <= 80) {
+			blue = 80;
+		}
 
 		float curr_red;
 		float curr_green;
@@ -243,8 +251,8 @@ public class ItemHeated extends ItemBaseMFR implements IHotItem {
 		ItemStack held = getStack(stack);
 		if (!held.isEmpty()) {
 			int colour = -1;
-			CustomMaterial material = CustomMaterial.getMaterialFor(held, CustomToolHelper.slot_main);
-			if (material != CustomMaterial.NONE) {
+			CustomMaterial material = CustomMaterialRegistry.getMaterialFor(held, CustomToolHelper.slot_main);
+			if (material != CustomMaterialRegistry.NONE) {
 				colour = material.getColourInt();
 			}
 
@@ -260,17 +268,15 @@ public class ItemHeated extends ItemBaseMFR implements IHotItem {
 		return GuiHelper.getColourForRGB(red, green, blue);
 	}
 
-	private int getRedOnHeat() {
+	public static int getRedOnHeat() {
 		return 255;
 	}
 
-	private int getGreenOnHeat(double percent) {
+	public static int getGreenOnHeat(double percent) {
 		if (percent <= 0)
 			return 255;
 		if (percent > 100)
 			percent = 100;
-		if (percent < 0)
-			percent = 0;
 
 		if (percent <= 55) {
 			return (int) (255 - ((255 / 55) * percent));
@@ -279,14 +285,12 @@ public class ItemHeated extends ItemBaseMFR implements IHotItem {
 		}
 	}
 
-	private int getBlueOnHeat(double percent) {
+	public static int getBlueOnHeat(double percent) {
 		if (percent <= 0)
 			return 255;
 
 		if (percent > 100)
 			percent = 100;
-		if (percent < 0)
-			percent = 0;
 
 		if (percent <= 55) {
 			return (int) (255 - ((255 / 55) * percent));
@@ -316,9 +320,20 @@ public class ItemHeated extends ItemBaseMFR implements IHotItem {
 	}
 
 	@Override
+	public boolean hasCustomEntity(ItemStack stack) {
+		return true;
+	}
+
+	@Nullable
+	@Override
+	public Entity createEntity(World world, Entity location, ItemStack itemstack) {
+		return new EntityItemHeated(world, (EntityItem) location);
+	}
+
+	@Override
 	public boolean onEntityItemUpdate(EntityItem entityItem) {
 		ItemStack stack = entityItem.getItem();
-		if (entityItem.getItem().getItem() instanceof ItemHeated && !entityItem.hasCustomName()){
+		if (entityItem.getItem().getItem() instanceof ItemHeated && !stack.getTagCompound().getBoolean("bloomery")){
 			setTemp(stack, getTemp(stack) - 1);
 
 			ItemStack cooledStack = getStack(stack);
@@ -329,7 +344,6 @@ public class ItemHeated extends ItemBaseMFR implements IHotItem {
 			if (entityItem.isInWater()){
 				entityItem.playSound(SoundEvents.ENTITY_GENERIC_EXTINGUISH_FIRE, 1F, 1F);
 				entityItem.setItem(cooledStack);
-
 			}
 		}
 		return false;

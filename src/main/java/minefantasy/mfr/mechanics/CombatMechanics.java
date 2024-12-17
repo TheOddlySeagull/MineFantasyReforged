@@ -30,6 +30,7 @@ import minefantasy.mfr.mechanics.knowledge.ResearchLogic;
 import minefantasy.mfr.network.DodgeCommandPacket;
 import minefantasy.mfr.network.NetworkHandler;
 import minefantasy.mfr.network.ParryPacket;
+import minefantasy.mfr.registry.CustomMaterialRegistry;
 import minefantasy.mfr.util.ArmourCalculator;
 import minefantasy.mfr.util.ArrowEffectsMF;
 import minefantasy.mfr.util.CustomToolHelper;
@@ -92,7 +93,6 @@ public class CombatMechanics {
 	public static final float specialOrnateModifier = 1.5F;
 	private static final float power_attack_base = 25F;
 	private static final float parryFatigue = 5F;
-	public static boolean swordSkeleton = true;
 	private static final boolean debugParry = true;
 	private static final XSTRandom random = new XSTRandom();
 	protected static float jumpEvade_cost = 30;
@@ -107,7 +107,7 @@ public class CombatMechanics {
 		if (!canExecutePower(player)) {
 			return 0;
 		}
-		if (StaminaBar.isSystemActive && StaminaBar.doesAffectEntity(player)) {
+		if (ConfigStamina.isSystemActive && StaminaBar.doesAffectEntity(player)) {
 			float points = power_attack_base * (StaminaBar.getBaseDecayModifier(player, true, true) * 0.5F + 0.5F);
 			if (StaminaBar.isStaminaAvailable(player, points, properHit)) {
 				if (properHit) {
@@ -216,8 +216,10 @@ public class CombatMechanics {
 		float bulk = ArmourCalculator.getTotalBulk(user);
 		int cost = (int) ((type == 0 ? 15 : 10) * (bulk + 1));// Medium armour cost 2x more
 		if (user.getHeldItemOffhand().getItem() instanceof ItemShield){
-			cost += 100; //ToDo: Add Config option for shield dodge cost
+			cost += ConfigStamina.dodgeShieldCost;
 		}
+
+		cost *= ConfigStamina.dodgeCostModifier;
 
 		if (bulk <= 1.0F && ItemWeaponMFR.tryPerformAbility(user, cost)) {
 			float force = 1.0F - (bulk * 0.25F);// Medium armour gives 75%
@@ -229,7 +231,7 @@ public class CombatMechanics {
 				direction -= 90;// LEFT
 			if (type == -1)
 				direction += 90;// RIGHT
-			TacticalManager.leap(user, direction, force, 0.0F);
+			TacticalManager.leap(user, direction, force * ConfigStamina.dodgeForceModifier, 0.0F);
 		}
 	}
 
@@ -302,8 +304,8 @@ public class CombatMechanics {
 			}
 		}
 
-		if (material != CustomMaterial.NONE) {
-			if (isSilverishMaterial(material.name) && hit_entity instanceof EntityLivingBase) {
+		if (material != CustomMaterialRegistry.NONE) {
+			if (isSilverishMaterial(material.getName()) && hit_entity instanceof EntityLivingBase) {
 				if (hit_entity.getClass().getName().contains("Werewolf")) {
 					modifier *= specialWerewolfModifier;
 					applyUndeadBane((EntityLivingBase) hit_entity);
@@ -497,7 +499,7 @@ public class CombatMechanics {
 		}
 		if (user != null) {
 			// TODO: Stamina Traits
-			if (StaminaBar.isSystemActive) {
+			if (ConfigStamina.isSystemActive) {
 				if (StaminaBar.getStaminaValue(user) <= 0) {
 					damage *= ConfigStamina.weaponDrain;
 				}
@@ -614,12 +616,12 @@ public class CombatMechanics {
 				threshold = parry.getMaxDamageParry(user, weapon);
 				weaponFatigue = parry.getParryStaminaDecay(source, weapon);
 			}
-			if (StaminaBar.isSystemActive && !StaminaBar.isAnyStamina(user, false)) {
+			if (ConfigStamina.isSystemActive && !StaminaBar.isAnyStamina(user, false)) {
 				threshold /= 2;
 			}
 			threshold *= TacticalManager.getHighgroundModifier(user, entityHitting, 1.15F);
 
-			if (ArmourCalculator.advancedDamageTypes && !user.world.isRemote) {
+			if (ConfigArmour.advancedDamageTypes && !user.world.isRemote) {
 				threshold = ArmourCalculator.adjustArmorClassForDamage(source, threshold, 1.0F, 0.75F, 0.5F);
 			}
 
@@ -643,7 +645,7 @@ public class CombatMechanics {
 					}
 					ticks = ArmourCalculator.modifyParryCooldown(user, ticks);
 
-					if (StaminaBar.isSystemActive && StaminaBar.doesAffectEntity(user)
+					if (ConfigStamina.isSystemActive && StaminaBar.doesAffectEntity(user)
 							&& !StaminaBar.isAnyStamina(user, false)) {
 						ticks *= 3;
 					}
@@ -664,7 +666,7 @@ public class CombatMechanics {
 				}
 			}
 		}
-		if (StaminaBar.isSystemActive && StaminaBar.doesAffectEntity(user) && !StaminaBar.isAnyStamina(user, false)) {
+		if (ConfigStamina.isSystemActive && StaminaBar.doesAffectEntity(user) && !StaminaBar.isAnyStamina(user, false)) {
 			dam *= Math.max(1.0F, ConfigStamina.exhaustDamage);
 		}
 
@@ -719,7 +721,7 @@ public class CombatMechanics {
 	}
 
 	private static SoundEvent getDefaultParrySound(ItemStack weapon) {
-		if (weapon.getUnlocalizedName().contains("wood") || weapon.getUnlocalizedName().contains("Wood") || weapon.getUnlocalizedName().contains("stone") || weapon.getUnlocalizedName().contains("Stone")) {
+		if (weapon.getTranslationKey().contains("wood") || weapon.getTranslationKey().contains("Wood") || weapon.getTranslationKey().contains("stone") || weapon.getTranslationKey().contains("Stone")) {
 			return MineFantasySounds.WOOD_PARRY;
 		}
 		return SoundEvents.ENTITY_ZOMBIE_ATTACK_IRON_DOOR;
@@ -767,7 +769,7 @@ public class CombatMechanics {
 	private static boolean canEvade(EntityLivingBase user) {
 		float stamModifier = 1.0F;
 		if (user instanceof EntityPlayer) {
-			if (!ResearchLogic.hasInfoUnlocked((EntityPlayer) user, "parrypro")) {
+			if (!ResearchLogic.hasInfoUnlocked((EntityPlayer) user, "parry_pro")) {
 				return false;
 			}
 
@@ -887,7 +889,7 @@ public class CombatMechanics {
 	@SubscribeEvent
 	public static void jump(LivingJumpEvent event) {
 		if (event.getEntityLiving() instanceof EntityPlayer) {
-			if (StaminaBar.isSystemActive && StaminaBar.doesAffectEntity(event.getEntityLiving())) {
+			if (ConfigStamina.isSystemActive && StaminaBar.doesAffectEntity(event.getEntityLiving())) {
 				StaminaMechanics.onJump((EntityPlayer) event.getEntityLiving());
 			}
 		}
@@ -897,7 +899,9 @@ public class CombatMechanics {
 	}
 
 	private static void tryDodge(EntityPlayer user) {
-		if (user.isActiveItemStackBlocking() || user.getActiveItemStack().getItemUseAction() == EnumAction.valueOf("mfr_block")) {
+		if (user.isActiveItemStackBlocking()
+				|| user.getActiveItemStack().getItemUseAction() == EnumAction.valueOf("mfr_block")
+				|| (TacticalManager.checkAllowsOffhandOnBoth(user))) {
 			float forward = user.moveForward;
 			float side = user.moveStrafing;
 			if (side > 0F) {
